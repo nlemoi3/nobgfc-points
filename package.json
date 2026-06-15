@@ -1,0 +1,7 @@
+{
+  "name": "nobgfc-points",
+  "private": true,
+  "scripts": {
+    "build": "echo Build successful"
+  }
+}
