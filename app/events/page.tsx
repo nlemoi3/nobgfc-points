@@ -1,0 +1,24 @@
+import { supabase } from "../../lib/supabase";
+
+export default async function EventsPage() {
+  const { data: events, error } = await supabase
+    .from("events")
+    .select("*")
+    .order("start_date");
+
+  return (
+    <main style={{ padding: "40px", fontFamily: "Arial, sans-serif" }}>
+      <h1>2026 Events</h1>
+
+      {error && <p style={{ color: "red" }}>Error: {error.message}</p>}
+
+      <ul>
+        {events?.map((event) => (
+          <li key={event.id}>
+            <strong>{event.name}</strong> — {event.start_date} to {event.end_date}
+          </li>
+        ))}
+      </ul>
+    </main>
+  );
+}
