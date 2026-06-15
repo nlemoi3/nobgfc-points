@@ -13,6 +13,7 @@ export default function HomePage() {
         <li>Events - coming next</li>
         <li>Historical Rankings - coming next</li>
         <li>Standings - coming next</li>
+        <li><Link href="/rosters">Rosters</Link></li>
       </ul>
     </main>
   );
