@@ -14,6 +14,7 @@ export default function HomePage() {
         <li>Historical Rankings - coming next</li>
         <li>Standings - coming next</li>
         <li><Link href="/rosters">Rosters</Link></li>
+        <li><Link href="/catches">Catches</Link></li>
       </ul>
     </main>
   );
