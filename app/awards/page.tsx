@@ -14,29 +14,6 @@ const AWARD_SPECIES = [
 
 export default async function AwardsPage() {
   const { data: catches, error } = await supabase
-  const blueMarlinCatches =
-  catches?.filter(
-    (c: any) => c.species?.name === "Blue Marlin"
-  ) || [];
-
-const anglerCounts: Record<string, number> = {};
-const boatCounts: Record<string, number> = {};
-
-blueMarlinCatches.forEach((c: any) => {
-  const angler =
-    `${c.anglers?.first_name || ""} ${c.anglers?.last_name || ""}`.trim();
-
-  const boat = c.boats?.name || "Unknown Boat";
-
-  anglerCounts[angler] = (anglerCounts[angler] || 0) + 1;
-  boatCounts[boat] = (boatCounts[boat] || 0) + 1;
-});
-
-const topAngler = Object.entries(anglerCounts)
-  .sort((a, b) => b[1] - a[1])[0];
-
-const topBoat = Object.entries(boatCounts)
-  .sort((a, b) => b[1] - a[1])[0];
     .from("catches")
     .select(`
       weight,
@@ -45,6 +22,26 @@ const topBoat = Object.entries(boatCounts)
       boats(name),
       events(name)
     `);
+
+  const blueMarlinCatches =
+    catches?.filter((c: any) => c.species?.name === "Blue Marlin") || [];
+
+  const anglerCounts: Record<string, number> = {};
+  const boatCounts: Record<string, number> = {};
+
+  blueMarlinCatches.forEach((c: any) => {
+    const angler = `${c.anglers?.first_name || ""} ${
+      c.anglers?.last_name || ""
+    }`.trim();
+
+    const boat = c.boats?.name || "Unknown Boat";
+
+    anglerCounts[angler] = (anglerCounts[angler] || 0) + 1;
+    boatCounts[boat] = (boatCounts[boat] || 0) + 1;
+  });
+
+  const topAngler = Object.entries(anglerCounts).sort((a, b) => b[1] - a[1])[0];
+  const topBoat = Object.entries(boatCounts).sort((a, b) => b[1] - a[1])[0];
 
   const speciesAwards: Record<string, any> = {};
 
@@ -61,51 +58,32 @@ const topBoat = Object.entries(boatCounts)
   return (
     <main style={{ padding: "40px", fontFamily: "Arial, sans-serif" }}>
       <h1>Annual Awards</h1>
-      <div
-  style={{
-    display: "flex",
-    gap: "40px",
-    marginBottom: "30px",
-  }}
->
-  <div
-    style={{
-      border: "1px solid #ccc",
-      padding: "15px",
-      minWidth: "300px",
-    }}
-  >
-    <h2>Most Blue Marlin - Member</h2>
 
-    {topAngler ? (
-      <>
-        <p><strong>{topAngler[0]}</strong></p>
-        <p>{topAngler[1]} Blue Marlin</p>
-      </>
-    ) : (
-      <p>No Blue Marlin entered</p>
-    )}
-  </div>
+      <div style={{ display: "flex", gap: "40px", marginBottom: "30px" }}>
+        <div style={{ border: "1px solid #ccc", padding: "15px", minWidth: "300px" }}>
+          <h2>Most Blue Marlin - Member</h2>
+          {topAngler ? (
+            <>
+              <p><strong>{topAngler[0]}</strong></p>
+              <p>{topAngler[1]} Blue Marlin</p>
+            </>
+          ) : (
+            <p>No Blue Marlin entered</p>
+          )}
+        </div>
 
-  <div
-    style={{
-      border: "1px solid #ccc",
-      padding: "15px",
-      minWidth: "300px",
-    }}
-  >
-    <h2>Most Blue Marlin - Boat</h2>
-
-    {topBoat ? (
-      <>
-        <p><strong>{topBoat[0]}</strong></p>
-        <p>{topBoat[1]} Blue Marlin</p>
-      </>
-    ) : (
-      <p>No Blue Marlin entered</p>
-    )}
-  </div>
-</div>
+        <div style={{ border: "1px solid #ccc", padding: "15px", minWidth: "300px" }}>
+          <h2>Most Blue Marlin - Boat</h2>
+          {topBoat ? (
+            <>
+              <p><strong>{topBoat[0]}</strong></p>
+              <p>{topBoat[1]} Blue Marlin</p>
+            </>
+          ) : (
+            <p>No Blue Marlin entered</p>
+          )}
+        </div>
+      </div>
 
       {error && <p style={{ color: "red" }}>Error: {error.message}</p>}
 
@@ -127,7 +105,6 @@ const topBoat = Object.entries(boatCounts)
             return (
               <tr key={species}>
                 <td>{species}</td>
-
                 {catchRecord ? (
                   <>
                     <td>{catchRecord.weight} lbs</td>
@@ -140,7 +117,10 @@ const topBoat = Object.entries(boatCounts)
                   </>
                 ) : (
                   <>
-                    <td colSpan={4}>No qualifying catch</td>
+                    <td>—</td>
+                    <td>—</td>
+                    <td>—</td>
+                    <td>—</td>
                   </>
                 )}
               </tr>
