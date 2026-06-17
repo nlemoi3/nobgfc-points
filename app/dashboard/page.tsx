@@ -31,12 +31,14 @@ export default async function DashboardPage() {
     anglerCatches[angler].push(c);
   });
 
-  const boatLeader = Object.entries(boatCatches)
+    const boatStandings = Object.entries(boatCatches)
     .map(([name, catches]) => ({
-      name,
-      points: getOfficialEligiblePoints(catches),
+        name,
+        points: getOfficialEligiblePoints(catches),
     }))
-    .sort((a, b) => b.points - a.points)[0];
+    .sort((a, b) => b.points - a.points);
+
+    const boatLeader = boatStandings[0];
 
   const anglerLeader = Object.entries(anglerCatches)
     .map(([name, catches]) => ({
@@ -113,6 +115,27 @@ export default async function DashboardPage() {
               <td>{c.weight || "Released"}</td>
               <td>{c.points_awarded}</td>
             </tr>
+            <h2 style={{ marginTop: "40px" }}>Top 10 Boats</h2>
+
+<table border={1} cellPadding={8} style={{ borderCollapse: "collapse" }}>
+  <thead>
+    <tr>
+      <th>Rank</th>
+      <th>Boat</th>
+      <th>Official Points</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    {boatStandings.slice(0, 10).map((boat, index) => (
+      <tr key={boat.name}>
+        <td>{index + 1}</td>
+        <td>{boat.name}</td>
+        <td>{boat.points.toFixed(1)}</td>
+      </tr>
+    ))}
+  </tbody>
+</table>
           ))}
         </tbody>
       </table>
