@@ -13,6 +13,7 @@ async function saveCatch(formData: FormData) {
   const line_class = Number(formData.get("line_class"));
   const released = formData.get("released") === "on";
   const tagged = formData.get("tagged") === "on";
+  const catch_datetime = formData.get("catch_datetime") || null;
 
   const { data: speciesRow } = await supabase
     .from("species")
@@ -71,6 +72,7 @@ async function saveCatch(formData: FormData) {
     line_class,
     released,
     tagged,
+    catch_datetime,
     points_awarded,
   });
 
@@ -92,25 +94,38 @@ export default async function CatchEntryPage() {
 
       <form action={saveCatch}>
         <p>
-          <label>Event</label><br />
+          <label>Event</label>
+          <br />
           <select name="event_id" required>
             {events?.map((event: any) => (
-              <option key={event.id} value={event.id}>{event.name}</option>
+              <option key={event.id} value={event.id}>
+                {event.name}
+              </option>
             ))}
           </select>
         </p>
 
         <p>
-          <label>Boat</label><br />
+          <label>Catch Date & Time</label>
+          <br />
+          <input name="catch_datetime" type="datetime-local" />
+        </p>
+
+        <p>
+          <label>Boat</label>
+          <br />
           <select name="boat_id" required>
             {boats?.map((boat: any) => (
-              <option key={boat.id} value={boat.id}>{boat.name}</option>
+              <option key={boat.id} value={boat.id}>
+                {boat.name}
+              </option>
             ))}
           </select>
         </p>
 
         <p>
-          <label>Angler</label><br />
+          <label>Angler</label>
+          <br />
           <select name="angler_id" required>
             {anglers?.map((angler: any) => (
               <option key={angler.id} value={angler.id}>
@@ -121,21 +136,26 @@ export default async function CatchEntryPage() {
         </p>
 
         <p>
-          <label>Species</label><br />
+          <label>Species</label>
+          <br />
           <select name="species_id" required>
             {species?.map((fish: any) => (
-              <option key={fish.id} value={fish.id}>{fish.name}</option>
+              <option key={fish.id} value={fish.id}>
+                {fish.name}
+              </option>
             ))}
           </select>
         </p>
 
         <p>
-          <label>Weight</label><br />
+          <label>Weight</label>
+          <br />
           <input name="weight" type="number" step="0.1" />
         </p>
 
         <p>
-          <label>Line Class</label><br />
+          <label>Line Class</label>
+          <br />
           <select name="line_class" required>
             <option value="130">130</option>
             <option value="80">80</option>
@@ -151,11 +171,15 @@ export default async function CatchEntryPage() {
         </p>
 
         <p>
-          <label><input name="released" type="checkbox" /> Released</label>
+          <label>
+            <input name="released" type="checkbox" /> Released
+          </label>
         </p>
 
         <p>
-          <label><input name="tagged" type="checkbox" /> Tagged</label>
+          <label>
+            <input name="tagged" type="checkbox" /> Tagged
+          </label>
         </p>
 
         <button type="submit">Save Catch</button>
