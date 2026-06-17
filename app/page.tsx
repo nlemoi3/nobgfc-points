@@ -17,6 +17,7 @@ export default function HomePage() {
         <li><Link href="/catches">Catches</Link></li>
         <li><Link href="/standings">Standings</Link></li>
         <li><Link href="/official-standings">Official Boat Standings</Link></li>
+        <li><Link href="/official-angler-standings">Official Angler Standings</Link></li>
       </ul>
     </main>
   );
