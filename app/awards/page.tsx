@@ -61,7 +61,7 @@ export default async function AwardsPage() {
 
       <div style={{ display: "flex", gap: "40px", marginBottom: "30px" }}>
         <div style={{ border: "1px solid #ccc", padding: "15px", minWidth: "300px" }}>
-          <h2>Most Blue Marlin - Member</h2>
+          <h2>Most Blue Marlin - Angler</h2>
           {topAngler ? (
             <>
               <p><strong>{topAngler[0]}</strong></p>
