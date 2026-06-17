@@ -38,7 +38,8 @@ export default async function CatchesPage() {
             {" "}{c.boats?.name} |
             {" "}{c.anglers?.first_name} {c.anglers?.last_name} |
             {" "}{c.species?.name} |
-            {" "}{c.weight} lbs
+            {" "}{c.weight ? `${c.weight} lbs` : "Released"} |
+            {" "}{c.points_awarded} points
           </li>
         ))}
       </ul>
