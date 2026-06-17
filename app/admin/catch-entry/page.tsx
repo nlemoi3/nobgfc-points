@@ -14,14 +14,53 @@ async function saveCatch(formData: FormData) {
   const released = formData.get("released") === "on";
   const tagged = formData.get("tagged") === "on";
 
+  const { data: speciesRow } = await supabase
+    .from("species")
+    .select("name")
+    .eq("id", species_id)
+    .single();
+
   const { data: multiplierRow } = await supabase
     .from("line_class_multipliers")
     .select("multiplier")
     .eq("line_class", line_class)
     .single();
 
+  const speciesName = speciesRow?.name || "";
   const multiplier = Number(multiplierRow?.multiplier || 1);
-  const points_awarded = weight ? weight * multiplier : 0;
+
+  let basePoints = 0;
+  let tagBonus = 0;
+
+  if (released && speciesName === "Blue Marlin") {
+    basePoints = 500;
+  } else if (
+    released &&
+    ["White Marlin", "Sailfish", "Spearfish", "Swordfish"].includes(speciesName)
+  ) {
+    basePoints = 150;
+  } else if (
+    released &&
+    ["Yellowfin Tuna", "Bigeye Tuna"].includes(speciesName)
+  ) {
+    basePoints = 100;
+  } else if (weight !== null) {
+    basePoints = Math.floor(weight);
+  }
+
+  if (tagged && speciesName === "Blue Marlin") {
+    tagBonus = 50;
+  } else if (
+    tagged &&
+    ["White Marlin", "Sailfish", "Spearfish"].includes(speciesName)
+  ) {
+    tagBonus = 25;
+  }
+
+  const points_awarded =
+    ["Yellowfin Tuna", "Bigeye Tuna"].includes(speciesName) && released
+      ? basePoints
+      : basePoints * multiplier + tagBonus;
 
   await supabase.from("catches").insert({
     event_id,
