@@ -19,6 +19,7 @@ export default function HomePage() {
         <li><Link href="/official-standings">Official Boat Standings</Link></li>
         <li><Link href="/official-angler-standings">Official Angler Standings</Link></li>
         <li><Link href="/awards">Awards</Link></li>
+        <li><Link href="/dashboard">Dashboard</Link></li>
       </ul>
     </main>
   );
