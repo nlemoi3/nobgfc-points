@@ -8,7 +8,8 @@ async function saveCatch(formData: FormData) {
   const boat_id = Number(formData.get("boat_id"));
   const angler_id = Number(formData.get("angler_id"));
   const species_id = Number(formData.get("species_id"));
-  const weight = Number(formData.get("weight"));
+  const weightValue = formData.get("weight");
+  const weight = weightValue ? Number(weightValue) : null;
   const line_class = Number(formData.get("line_class"));
   const released = formData.get("released") === "on";
   const tagged = formData.get("tagged") === "on";
@@ -20,7 +21,7 @@ async function saveCatch(formData: FormData) {
     .single();
 
   const multiplier = Number(multiplierRow?.multiplier || 1);
-  const points_awarded = weight * multiplier;
+  const points_awarded = weight ? weight * multiplier : 0;
 
   await supabase.from("catches").insert({
     event_id,
@@ -91,7 +92,7 @@ export default async function CatchEntryPage() {
 
         <p>
           <label>Weight</label><br />
-          <input name="weight" type="number" step="0.1" required />
+          <input name="weight" type="number" step="0.1" />
         </p>
 
         <p>
