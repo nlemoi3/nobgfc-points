@@ -21,7 +21,8 @@ export default async function DashboardPage() {
 
   catches?.forEach((c: any) => {
     const boat = c.boats?.name || "Unknown Boat";
-    const angler = `${c.anglers?.first_name || ""} ${c.anglers?.last_name || ""}`.trim();
+    const angler =
+      `${c.anglers?.first_name || ""} ${c.anglers?.last_name || ""}`.trim();
 
     if (!boatCatches[boat]) boatCatches[boat] = [];
     if (!anglerCatches[angler]) anglerCatches[angler] = [];
@@ -39,43 +40,139 @@ export default async function DashboardPage() {
 
   const boatLeader = boatStandings[0];
 
-  const anglerLeader = Object.entries(anglerCatches)
+  const anglerStandings = Object.entries(anglerCatches)
     .map(([name, catches]) => ({
       name,
       points: getOfficialEligiblePoints(catches),
     }))
-    .sort((a, b) => b.points - a.points)[0];
+    .sort((a, b) => b.points - a.points);
+
+  const anglerLeader = anglerStandings[0];
 
   const recentCatches = [...(catches || [])]
     .sort((a: any, b: any) => (b.id || 0) - (a.id || 0))
     .slice(0, 10);
 
+  const largestBlueMarlin =
+    catches
+      ?.filter((c: any) => c.species?.name === "Blue Marlin" && c.weight)
+      .sort((a: any, b: any) => b.weight - a.weight)[0];
+
+  const largestTuna =
+    catches
+      ?.filter(
+        (c: any) =>
+          ["Yellowfin Tuna", "Bigeye Tuna"].includes(c.species?.name) &&
+          c.weight
+      )
+      .sort((a: any, b: any) => b.weight - a.weight)[0];
+
+  const largestWahoo =
+    catches
+      ?.filter((c: any) => c.species?.name === "Wahoo" && c.weight)
+      .sort((a: any, b: any) => b.weight - a.weight)[0];
+
+  const largestDolphin =
+    catches
+      ?.filter((c: any) => c.species?.name === "Dolphin" && c.weight)
+      .sort((a: any, b: any) => b.weight - a.weight)[0];
+
+  const blueMarlinCatches =
+    catches?.filter((c: any) => c.species?.name === "Blue Marlin") || [];
+
+  const anglerCounts: Record<string, number> = {};
+  const boatCounts: Record<string, number> = {};
+
+  blueMarlinCatches.forEach((c: any) => {
+    const angler =
+      `${c.anglers?.first_name || ""} ${c.anglers?.last_name || ""}`.trim();
+
+    const boat = c.boats?.name || "Unknown Boat";
+
+    anglerCounts[angler] = (anglerCounts[angler] || 0) + 1;
+    boatCounts[boat] = (boatCounts[boat] || 0) + 1;
+  });
+
+  const topBlueMarlinAngler = Object.entries(anglerCounts)
+    .sort((a, b) => b[1] - a[1])[0];
+
+  const topBlueMarlinBoat = Object.entries(boatCounts)
+    .sort((a, b) => b[1] - a[1])[0];
+
   return (
     <main style={{ padding: "40px", fontFamily: "Arial, sans-serif" }}>
       <h1>NOBGFC Dashboard</h1>
 
-      <div style={{ display: "flex", gap: "30px", marginBottom: "30px" }}>
-        <div style={{ border: "1px solid #ccc", padding: "20px", minWidth: "300px" }}>
+      <div style={{ display: "flex", gap: "20px", flexWrap: "wrap", marginBottom: "30px" }}>
+        <div style={{ border: "1px solid #ccc", padding: "15px", minWidth: "250px" }}>
           <h2>Boat Champion Leader</h2>
-          {boatLeader ? (
+          {boatLeader && (
             <>
-              <p><strong>{boatLeader.name}</strong></p>
-              <p>{boatLeader.points.toFixed(1)} points</p>
+              <strong>{boatLeader.name}</strong>
+              <br />
+              {boatLeader.points.toFixed(1)} pts
             </>
-          ) : (
-            <p>No catches entered</p>
           )}
         </div>
 
-        <div style={{ border: "1px solid #ccc", padding: "20px", minWidth: "300px" }}>
+        <div style={{ border: "1px solid #ccc", padding: "15px", minWidth: "250px" }}>
           <h2>Angling Champion Leader</h2>
-          {anglerLeader ? (
+          {anglerLeader && (
             <>
-              <p><strong>{anglerLeader.name}</strong></p>
-              <p>{anglerLeader.points.toFixed(1)} points</p>
+              <strong>{anglerLeader.name}</strong>
+              <br />
+              {anglerLeader.points.toFixed(1)} pts
+            </>
+          )}
+        </div>
+      </div>
+
+      <div style={{ display: "flex", gap: "20px", flexWrap: "wrap", marginBottom: "30px" }}>
+        <div style={{ border: "1px solid #ccc", padding: "15px", minWidth: "220px" }}>
+          <h3>Largest Blue Marlin</h3>
+          {largestBlueMarlin ? `${largestBlueMarlin.weight} lbs` : "No catches"}
+        </div>
+
+        <div style={{ border: "1px solid #ccc", padding: "15px", minWidth: "220px" }}>
+          <h3>Largest Tuna</h3>
+          {largestTuna ? `${largestTuna.weight} lbs` : "No catches"}
+        </div>
+
+        <div style={{ border: "1px solid #ccc", padding: "15px", minWidth: "220px" }}>
+          <h3>Largest Wahoo</h3>
+          {largestWahoo ? `${largestWahoo.weight} lbs` : "No catches"}
+        </div>
+
+        <div style={{ border: "1px solid #ccc", padding: "15px", minWidth: "220px" }}>
+          <h3>Largest Dolphin</h3>
+          {largestDolphin ? `${largestDolphin.weight} lbs` : "No catches"}
+        </div>
+      </div>
+
+      <div style={{ display: "flex", gap: "20px", flexWrap: "wrap", marginBottom: "30px" }}>
+        <div style={{ border: "1px solid #ccc", padding: "15px", minWidth: "250px" }}>
+          <h3>Most Blue Marlin Angler</h3>
+          {topBlueMarlinAngler ? (
+            <>
+              <strong>{topBlueMarlinAngler[0]}</strong>
+              <br />
+              {topBlueMarlinAngler[1]} Blue Marlin
             </>
           ) : (
-            <p>No catches entered</p>
+            "No Blue Marlin"
+          )}
+        </div>
+
+        <div style={{ border: "1px solid #ccc", padding: "15px", minWidth: "250px" }}>
+          <h3>Most Blue Marlin Boat</h3>
+          {topBlueMarlinBoat ? (
+            <>
+              <strong>{topBlueMarlinBoat[0]}</strong>
+              <br />
+              {topBlueMarlinBoat[1]} Blue Marlin
+            </>
+          ) : (
+            "No Blue Marlin"
           )}
         </div>
       </div>
