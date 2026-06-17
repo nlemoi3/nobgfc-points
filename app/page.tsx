@@ -15,6 +15,7 @@ export default function HomePage() {
         <li>Standings - coming next</li>
         <li><Link href="/rosters">Rosters</Link></li>
         <li><Link href="/catches">Catches</Link></li>
+        <li><Link href="/standings">Standings</Link></li>
       </ul>
     </main>
   );
