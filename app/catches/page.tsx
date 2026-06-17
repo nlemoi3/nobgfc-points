@@ -34,13 +34,13 @@ export default async function CatchesPage() {
       <ul>
         {catches?.map((c: any) => (
           <li key={c.id}>
-            {c.events?.name} |
-            {" "}{c.boats?.name} |
-            {" "}{c.anglers?.first_name} {c.anglers?.last_name} |
-            {" "}{c.species?.name} |
-            {" "}{c.weight ? `${c.weight} lbs` : "Released"} |
-            {" "}{c.points_awarded} points
-          </li>
+          {c.events?.name} |
+          {" "}{c.boats?.name} |
+          {" "}{c.anglers?.first_name} {c.anglers?.last_name} |
+          {" "}{c.species?.name} |
+          {" "}{c.weight ? `${c.weight} lbs` : "Released"} |
+          {" "}{c.points_awarded} points
+</li>
         ))}
       </ul>
     </main>
