@@ -1,5 +1,17 @@
 import { supabase } from "../../lib/supabase";
 
+const AWARD_SPECIES = [
+  "Blue Marlin",
+  "White Marlin",
+  "Sailfish",
+  "Spearfish",
+  "Swordfish",
+  "Yellowfin Tuna",
+  "Bigeye Tuna",
+  "Dolphin",
+  "Wahoo",
+];
+
 export default async function AwardsPage() {
   const { data: catches, error } = await supabase
     .from("catches")
@@ -18,27 +30,16 @@ export default async function AwardsPage() {
 
     if (!species || !c.weight) return;
 
-    if (
-      !speciesAwards[species] ||
-      c.weight > speciesAwards[species].weight
-    ) {
+    if (!speciesAwards[species] || c.weight > speciesAwards[species].weight) {
       speciesAwards[species] = c;
     }
   });
-
-  const awards = Object.entries(speciesAwards).sort((a, b) =>
-    a[0].localeCompare(b[0])
-  );
 
   return (
     <main style={{ padding: "40px", fontFamily: "Arial, sans-serif" }}>
       <h1>Annual Awards</h1>
 
-      {error && (
-        <p style={{ color: "red" }}>
-          Error: {error.message}
-        </p>
-      )}
+      {error && <p style={{ color: "red" }}>Error: {error.message}</p>}
 
       <table border={1} cellPadding={8} style={{ borderCollapse: "collapse" }}>
         <thead>
@@ -52,18 +53,31 @@ export default async function AwardsPage() {
         </thead>
 
         <tbody>
-          {awards.map(([species, catchRecord]: any) => (
-            <tr key={species}>
-              <td>{species}</td>
-              <td>{catchRecord.weight} lbs</td>
-              <td>
-                {catchRecord.anglers?.first_name}{" "}
-                {catchRecord.anglers?.last_name}
-              </td>
-              <td>{catchRecord.boats?.name}</td>
-              <td>{catchRecord.events?.name}</td>
-            </tr>
-          ))}
+          {AWARD_SPECIES.map((species) => {
+            const catchRecord = speciesAwards[species];
+
+            return (
+              <tr key={species}>
+                <td>{species}</td>
+
+                {catchRecord ? (
+                  <>
+                    <td>{catchRecord.weight} lbs</td>
+                    <td>
+                      {catchRecord.anglers?.first_name}{" "}
+                      {catchRecord.anglers?.last_name}
+                    </td>
+                    <td>{catchRecord.boats?.name}</td>
+                    <td>{catchRecord.events?.name}</td>
+                  </>
+                ) : (
+                  <>
+                    <td colSpan={4}>No qualifying catch</td>
+                  </>
+                )}
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </main>
