@@ -1,4 +1,41 @@
+import { redirect } from "next/navigation";
 import { supabase } from "../../../lib/supabase";
+
+async function saveCatch(formData: FormData) {
+  "use server";
+
+  const event_id = Number(formData.get("event_id"));
+  const boat_id = Number(formData.get("boat_id"));
+  const angler_id = Number(formData.get("angler_id"));
+  const species_id = Number(formData.get("species_id"));
+  const weight = Number(formData.get("weight"));
+  const line_class = Number(formData.get("line_class"));
+  const released = formData.get("released") === "on";
+  const tagged = formData.get("tagged") === "on";
+
+  const { data: multiplierRow } = await supabase
+    .from("line_class_multipliers")
+    .select("multiplier")
+    .eq("line_class", line_class)
+    .single();
+
+  const multiplier = Number(multiplierRow?.multiplier || 1);
+  const points_awarded = weight * multiplier;
+
+  await supabase.from("catches").insert({
+    event_id,
+    boat_id,
+    angler_id,
+    species_id,
+    weight,
+    line_class,
+    released,
+    tagged,
+    points_awarded,
+  });
+
+  redirect("/catches");
+}
 
 export default async function CatchEntryPage() {
   const [{ data: events }, { data: boats }, { data: anglers }, { data: species }] =
@@ -13,11 +50,11 @@ export default async function CatchEntryPage() {
     <main style={{ padding: "40px", fontFamily: "Arial, sans-serif" }}>
       <h1>Catch Entry</h1>
 
-      <form>
+      <form action={saveCatch}>
         <p>
           <label>Event</label><br />
-          <select name="event_id">
-            {events?.map((event) => (
+          <select name="event_id" required>
+            {events?.map((event: any) => (
               <option key={event.id} value={event.id}>{event.name}</option>
             ))}
           </select>
@@ -25,8 +62,8 @@ export default async function CatchEntryPage() {
 
         <p>
           <label>Boat</label><br />
-          <select name="boat_id">
-            {boats?.map((boat) => (
+          <select name="boat_id" required>
+            {boats?.map((boat: any) => (
               <option key={boat.id} value={boat.id}>{boat.name}</option>
             ))}
           </select>
@@ -34,8 +71,8 @@ export default async function CatchEntryPage() {
 
         <p>
           <label>Angler</label><br />
-          <select name="angler_id">
-            {anglers?.map((angler) => (
+          <select name="angler_id" required>
+            {anglers?.map((angler: any) => (
               <option key={angler.id} value={angler.id}>
                 {angler.first_name} {angler.last_name}
               </option>
@@ -45,8 +82,8 @@ export default async function CatchEntryPage() {
 
         <p>
           <label>Species</label><br />
-          <select name="species_id">
-            {species?.map((fish) => (
+          <select name="species_id" required>
+            {species?.map((fish: any) => (
               <option key={fish.id} value={fish.id}>{fish.name}</option>
             ))}
           </select>
@@ -54,12 +91,12 @@ export default async function CatchEntryPage() {
 
         <p>
           <label>Weight</label><br />
-          <input name="weight" type="number" step="0.1" />
+          <input name="weight" type="number" step="0.1" required />
         </p>
 
         <p>
           <label>Line Class</label><br />
-          <select name="line_class">
+          <select name="line_class" required>
             <option value="130">130</option>
             <option value="80">80</option>
             <option value="50">50</option>
@@ -74,15 +111,11 @@ export default async function CatchEntryPage() {
         </p>
 
         <p>
-          <label>
-            <input name="released" type="checkbox" /> Released
-          </label>
+          <label><input name="released" type="checkbox" /> Released</label>
         </p>
 
         <p>
-          <label>
-            <input name="tagged" type="checkbox" /> Tagged
-          </label>
+          <label><input name="tagged" type="checkbox" /> Tagged</label>
         </p>
 
         <button type="submit">Save Catch</button>
