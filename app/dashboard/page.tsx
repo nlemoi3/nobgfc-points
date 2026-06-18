@@ -1,6 +1,47 @@
 import { supabase } from "../../lib/supabase";
 import { getOfficialEligiblePoints } from "../../lib/scoring";
 
+function formatDateTime(value: string | null) {
+  if (!value) return "No date entered";
+
+  return new Date(value).toLocaleString("en-US", {
+    month: "numeric",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
+
+function LargestFishCard({
+  title,
+  catchRecord,
+}: {
+  title: string;
+  catchRecord: any;
+}) {
+  return (
+    <div style={{ border: "1px solid #ccc", padding: "15px", minWidth: "240px" }}>
+      <h3>{title}</h3>
+
+      {catchRecord ? (
+        <>
+          <p>
+            <strong>{catchRecord.weight} lbs</strong>
+          </p>
+          <p>
+            {catchRecord.anglers?.first_name} {catchRecord.anglers?.last_name}
+          </p>
+          <p>{catchRecord.boats?.name}</p>
+          <p>{formatDateTime(catchRecord.catch_datetime)}</p>
+        </>
+      ) : (
+        <p>No catches</p>
+      )}
+    </div>
+  );
+}
+
 export default async function DashboardPage() {
   const { data: catches } = await supabase
     .from("catches")
@@ -10,6 +51,7 @@ export default async function DashboardPage() {
       weight,
       released,
       tagged,
+      catch_datetime,
       created_at,
       boats(name),
       anglers(first_name,last_name),
@@ -50,7 +92,16 @@ export default async function DashboardPage() {
   const anglerLeader = anglerStandings[0];
 
   const recentCatches = [...(catches || [])]
-    .sort((a: any, b: any) => (b.id || 0) - (a.id || 0))
+    .sort((a: any, b: any) => {
+      const aTime = a.catch_datetime
+        ? new Date(a.catch_datetime).getTime()
+        : a.id || 0;
+      const bTime = b.catch_datetime
+        ? new Date(b.catch_datetime).getTime()
+        : b.id || 0;
+
+      return bTime - aTime;
+    })
     .slice(0, 10);
 
   const largestBlueMarlin =
@@ -93,11 +144,13 @@ export default async function DashboardPage() {
     boatCounts[boat] = (boatCounts[boat] || 0) + 1;
   });
 
-  const topBlueMarlinAngler = Object.entries(anglerCounts)
-    .sort((a, b) => b[1] - a[1])[0];
+  const topBlueMarlinAngler = Object.entries(anglerCounts).sort(
+    (a, b) => b[1] - a[1]
+  )[0];
 
-  const topBlueMarlinBoat = Object.entries(boatCounts)
-    .sort((a, b) => b[1] - a[1])[0];
+  const topBlueMarlinBoat = Object.entries(boatCounts).sort(
+    (a, b) => b[1] - a[1]
+  )[0];
 
   return (
     <main style={{ padding: "40px", fontFamily: "Arial, sans-serif" }}>
@@ -106,47 +159,36 @@ export default async function DashboardPage() {
       <div style={{ display: "flex", gap: "20px", flexWrap: "wrap", marginBottom: "30px" }}>
         <div style={{ border: "1px solid #ccc", padding: "15px", minWidth: "250px" }}>
           <h2>Boat Champion Leader</h2>
-          {boatLeader && (
+          {boatLeader ? (
             <>
               <strong>{boatLeader.name}</strong>
               <br />
               {boatLeader.points.toFixed(1)} pts
             </>
+          ) : (
+            <p>No catches</p>
           )}
         </div>
 
         <div style={{ border: "1px solid #ccc", padding: "15px", minWidth: "250px" }}>
           <h2>Angling Champion Leader</h2>
-          {anglerLeader && (
+          {anglerLeader ? (
             <>
               <strong>{anglerLeader.name}</strong>
               <br />
               {anglerLeader.points.toFixed(1)} pts
             </>
+          ) : (
+            <p>No catches</p>
           )}
         </div>
       </div>
 
       <div style={{ display: "flex", gap: "20px", flexWrap: "wrap", marginBottom: "30px" }}>
-        <div style={{ border: "1px solid #ccc", padding: "15px", minWidth: "220px" }}>
-          <h3>Largest Blue Marlin</h3>
-          {largestBlueMarlin ? `${largestBlueMarlin.weight} lbs` : "No catches"}
-        </div>
-
-        <div style={{ border: "1px solid #ccc", padding: "15px", minWidth: "220px" }}>
-          <h3>Largest Tuna</h3>
-          {largestTuna ? `${largestTuna.weight} lbs` : "No catches"}
-        </div>
-
-        <div style={{ border: "1px solid #ccc", padding: "15px", minWidth: "220px" }}>
-          <h3>Largest Wahoo</h3>
-          {largestWahoo ? `${largestWahoo.weight} lbs` : "No catches"}
-        </div>
-
-        <div style={{ border: "1px solid #ccc", padding: "15px", minWidth: "220px" }}>
-          <h3>Largest Dolphin</h3>
-          {largestDolphin ? `${largestDolphin.weight} lbs` : "No catches"}
-        </div>
+        <LargestFishCard title="Largest Blue Marlin" catchRecord={largestBlueMarlin} />
+        <LargestFishCard title="Largest Tuna" catchRecord={largestTuna} />
+        <LargestFishCard title="Largest Wahoo" catchRecord={largestWahoo} />
+        <LargestFishCard title="Largest Dolphin" catchRecord={largestDolphin} />
       </div>
 
       <div style={{ display: "flex", gap: "20px", flexWrap: "wrap", marginBottom: "30px" }}>
@@ -159,7 +201,7 @@ export default async function DashboardPage() {
               {topBlueMarlinAngler[1]} Blue Marlin
             </>
           ) : (
-            "No Blue Marlin"
+            <p>No Blue Marlin</p>
           )}
         </div>
 
@@ -172,7 +214,7 @@ export default async function DashboardPage() {
               {topBlueMarlinBoat[1]} Blue Marlin
             </>
           ) : (
-            "No Blue Marlin"
+            <p>No Blue Marlin</p>
           )}
         </div>
       </div>
@@ -182,6 +224,7 @@ export default async function DashboardPage() {
       <table border={1} cellPadding={8} style={{ borderCollapse: "collapse" }}>
         <thead>
           <tr>
+            <th>Date/Time</th>
             <th>Boat</th>
             <th>Angler</th>
             <th>Species</th>
@@ -192,10 +235,13 @@ export default async function DashboardPage() {
         <tbody>
           {recentCatches.map((c: any) => (
             <tr key={c.id}>
+              <td>{formatDateTime(c.catch_datetime)}</td>
               <td>{c.boats?.name}</td>
-              <td>{c.anglers?.first_name} {c.anglers?.last_name}</td>
+              <td>
+                {c.anglers?.first_name} {c.anglers?.last_name}
+              </td>
               <td>{c.species?.name}</td>
-              <td>{c.weight || "Released"}</td>
+              <td>{c.weight ? `${c.weight} lbs` : "Released"}</td>
               <td>{c.points_awarded}</td>
             </tr>
           ))}
