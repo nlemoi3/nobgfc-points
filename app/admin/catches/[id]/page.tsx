@@ -74,7 +74,9 @@ async function uploadCatchPhoto(file: File | null, catchId: number) {
       upsert: true,
     });
 
-  if (error) throw new Error(error.message);
+  if (error) {
+  throw new Error(`Catch photo upload failed: ${error.message}`);
+}
 
   const { data } = supabase.storage
     .from("catch-media")
@@ -123,7 +125,9 @@ async function updateCatch(formData: FormData) {
     })
     .eq("id", id);
 
-  if (error) throw new Error(error.message);
+  if (error) {
+  throw new Error(`Catch update failed: ${error.message}`);
+}
 
   redirect("/admin/catches");
 }
