@@ -16,6 +16,9 @@ export default function Nav() {
       <Link href="/standings" style={{ marginRight: "15px" }}>Raw Standings</Link>
       <Link href="/official-standings" style={{ marginRight: "15px" }}>Official Boats</Link>
       <Link href="/official-angler-standings" style={{ marginRight: "15px" }}>Official Anglers</Link>
+      <Link href="/official-youth-standings" style={{ marginRight: "15px" }}>
+  Youth Standings
+</Link>
       <Link href="/tournament-standings" style={{ marginRight: "15px" }}>Tournaments</Link>
       <Link href="/awards" style={{ marginRight: "15px" }}>Awards</Link>
 
