@@ -1,5 +1,4 @@
 import { supabase } from "../../../lib/supabase";
-import { getOfficialEligiblePoints } from "../../../lib/scoring";
 
 export default async function BoatProfilePage({
   params,
@@ -34,7 +33,11 @@ export default async function BoatProfilePage({
     return <main style={{ padding: "40px" }}>Boat not found.</main>;
   }
 
-  const officialPoints = getOfficialEligiblePoints(catches || []);
+  const officialPoints =
+  catches?.reduce(
+    (total: number, c: any) => total + Number(c.points_awarded || 0),
+    0
+  ) || 0;
 
   const blueMarlinCount =
     catches?.filter((c: any) => c.species?.name === "Blue Marlin").length || 0;
