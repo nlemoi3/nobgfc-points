@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { supabase } from "../../lib/supabase";
 
 function formatDate(value: string | null) {
@@ -57,7 +58,10 @@ export default async function TournamentStandingsPage() {
 
         return (
           <section key={eventId} style={{ marginBottom: "40px" }}>
-            <h2>{event?.name}</h2>
+            <h2>
+              <Link href={`/tournament/${eventId}`}>{event?.name}</Link>
+            </h2>
+
             <p>
               {formatDate(event?.start_date)} – {formatDate(event?.end_date)}
               <br />
