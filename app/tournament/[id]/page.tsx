@@ -24,18 +24,20 @@ export default async function TournamentPage({
     .eq("id", eventId)
     .single();
 
-  const { data: catches } = await supabase
-    .from("catches")
-    .select(`
-      id,
-      weight,
-      points_awarded,
-      catch_datetime,
-      boats(name),
-      anglers(first_name,last_name),
-      species(name)
-    `)
-    .eq("event_id", eventId);
+const { data: catches } = await supabase
+  .from("catches")
+  .select(`
+    id,
+    weight,
+    points_awarded,
+    status,
+    catch_datetime,
+    boats(name),
+    anglers(first_name,last_name),
+    species(name)
+  `)
+  .eq("event_id", eventId)
+  .eq("status", "approved");
 
   const boatScores: Record<string, number> = {};
   const anglerScores: Record<string, number> = {};
