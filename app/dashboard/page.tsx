@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { supabase } from "../../../../lib/supabase";
+import { supabase } from "../../../lib/supabase";
 
 async function calculatePoints(
   species_id: number,
