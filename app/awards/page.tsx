@@ -13,15 +13,17 @@ const AWARD_SPECIES = [
 ];
 
 export default async function AwardsPage() {
-  const { data: catches, error } = await supabase
-    .from("catches")
-    .select(`
-      weight,
-      species(name),
-      anglers(first_name,last_name),
-      boats(name),
-      events(name)
-    `);
+const { data: catches, error } = await supabase
+  .from("catches")
+  .select(`
+    weight,
+    status,
+    species(name),
+    anglers(first_name,last_name),
+    boats(name),
+    events(name)
+  `)
+  .eq("status", "approved");
 
   const blueMarlinCatches =
     catches?.filter((c: any) => c.species?.name === "Blue Marlin") || [];
