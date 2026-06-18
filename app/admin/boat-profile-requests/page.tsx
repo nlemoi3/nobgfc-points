@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { unstable_noStore as noStore } from "next/cache";
 import { supabase } from "../../../lib/supabase";
 
@@ -38,7 +39,7 @@ export default async function AdminBoatProfileRequestsPage() {
             <th>Details</th>
             <th>Links</th>
             <th>Notes</th>
-            <th>Status</th>
+            <th>Status / Review</th>
           </tr>
         </thead>
 
@@ -46,27 +47,39 @@ export default async function AdminBoatProfileRequestsPage() {
           {requests?.map((request: any) => (
             <tr key={request.id}>
               <td>{formatDate(request.created_at)}</td>
+
               <td>{request.boat_name}</td>
+
               <td>
                 {request.contact_name}
                 <br />
                 {request.contact_email}
               </td>
+
               <td>
-                {request.year || ""} {request.make || ""} {request.model || ""}
+                {[request.year, request.make, request.model]
+                  .filter(Boolean)
+                  .join(" ")}
                 <br />
                 {request.length_feet ? `${request.length_feet} ft` : ""}
                 <br />
                 {request.home_port || ""}
               </td>
+
               <td>
                 {request.website_url && <p>Website: {request.website_url}</p>}
                 {request.facebook_url && <p>Facebook: {request.facebook_url}</p>}
                 {request.instagram_url && <p>Instagram: {request.instagram_url}</p>}
                 {request.youtube_url && <p>YouTube: {request.youtube_url}</p>}
               </td>
+
               <td>{request.notes || "-"}</td>
-              <td>{request.status || "new"}</td>
+
+              <td>
+                <Link href={`/admin/boat-profile-requests/${request.id}`}>
+                  {request.status || "new"}
+                </Link>
+              </td>
             </tr>
           ))}
         </tbody>
