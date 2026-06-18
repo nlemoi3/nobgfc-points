@@ -90,21 +90,23 @@ export default async function BoatProfilePage({
     .single();
 
   const { data: allCatches } = await supabase
-    .from("catches")
-    .select(`
-      id,
-      boat_id,
-      weight,
-      points_awarded,
-      released,
-      tagged,
-      catch_datetime,
-      photo_url,
-      boats(id,name),
-      species(name),
-      anglers(first_name,last_name),
-      events(id,name)
-    `);
+  .from("catches")
+  .select(`
+    id,
+    boat_id,
+    weight,
+    points_awarded,
+    released,
+    tagged,
+    status,
+    catch_datetime,
+    photo_url,
+    boats(id,name),
+    species(name),
+    anglers(first_name,last_name),
+    events(id,name)
+  `)
+  .eq("status", "approved");
 
   if (!boat) {
     return <main style={{ padding: "40px" }}>Boat not found.</main>;
