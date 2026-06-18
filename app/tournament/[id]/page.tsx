@@ -29,7 +29,7 @@ export default async function TournamentPage({
       species(name),
       events(id,name,start_date,end_date,status)
     `)
-    .eq("event_id", eventId);
+   .eq("event_id", params.id);
 
   const event: any = catches?.[0]?.events;
 
