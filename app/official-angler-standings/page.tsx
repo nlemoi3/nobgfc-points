@@ -10,13 +10,15 @@ export default async function OfficialAnglerStandingsPage() {
       released,
       tagged,
       weight,
-      anglers(first_name,last_name),
+      anglers(first_name,last_name,is_member),
       species(name)
     `);
 
   const anglerCatches: Record<string, any[]> = {};
 
   data?.forEach((catchRecord: any) => {
+    if (!catchRecord.anglers?.is_member) return;
+
     const anglerName =
       `${catchRecord.anglers?.first_name || "Unknown"} ${catchRecord.anglers?.last_name || "Angler"}`;
 
@@ -37,6 +39,7 @@ export default async function OfficialAnglerStandingsPage() {
   return (
     <main style={{ padding: "40px", fontFamily: "Arial, sans-serif" }}>
       <h1>Official Angler Standings</h1>
+      <p>Members only.</p>
 
       {error && <p style={{ color: "red" }}>Error: {error.message}</p>}
 
