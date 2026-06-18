@@ -8,14 +8,20 @@ async function calculatePoints(species_id: number, weight: number | null, line_c
     .eq("id", species_id)
     .single();
 
-  const { data: multiplierRow } = await supabase
-    .from("line_class_multipliers")
-    .select("multiplier")
-    .eq("line_class", line_class)
-    .single();
+const lineMultipliers: Record<number, number> = {
+  130: 1.0,
+  80: 1.3,
+  50: 1.5,
+  30: 2.0,
+  20: 3.0,
+  16: 3.5,
+  12: 4.0,
+  8: 4.5,
+  4: 5.0,
+  2: 6.0,
+};
 
-  const speciesName = speciesRow?.name || "";
-  const multiplier = Number(multiplierRow?.multiplier || 1);
+const multiplier = lineMultipliers[line_class] || 1;
 
   let basePoints = 0;
   let tagBonus = 0;
