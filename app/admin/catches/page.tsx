@@ -25,6 +25,7 @@ export default async function AdminCatchesPage() {
       points_awarded,
       released,
       tagged,
+      status,
       catch_datetime,
       boats(name),
       anglers(first_name,last_name),
@@ -50,6 +51,7 @@ export default async function AdminCatchesPage() {
             <th>Weight</th>
             <th>Released</th>
             <th>Tagged</th>
+            <th>Status</th>
             <th>Points</th>
             <th>Action</th>
           </tr>
@@ -66,7 +68,22 @@ export default async function AdminCatchesPage() {
               <td>{c.weight ? `${c.weight} lbs` : "Released"}</td>
               <td>{c.released ? "Yes" : "No"}</td>
               <td>{c.tagged ? "Yes" : "No"}</td>
-              <td>{c.points_awarded}</td>
+
+            <td
+              style={{
+                fontWeight: "bold",
+                color:
+                  c.status === "approved"
+                    ? "green"
+                   : c.status === "pending"
+                    ? "orange"
+                    : "red",
+              }}
+            >
+              {c.status || "approved"}
+            </td>
+
+            <td>{c.points_awarded}</td>
               <td>
                 <Link href={`/admin/catches/${c.id}`}>Edit / Delete</Link>
               </td>
