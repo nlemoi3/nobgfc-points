@@ -8,6 +8,8 @@ async function calculatePoints(species_id: number, weight: number | null, line_c
     .eq("id", species_id)
     .single();
 
+const speciesName = speciesRow?.name || "";
+
 const lineMultipliers: Record<number, number> = {
   130: 1.0,
   80: 1.3,
