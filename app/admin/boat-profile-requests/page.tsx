@@ -1,89 +1,160 @@
-import Link from "next/link";
-import { unstable_noStore as noStore } from "next/cache";
-import { supabase } from "../../../lib/supabase";
+import { redirect } from "next/navigation";
+import { supabase } from "../../../../lib/supabase";
 
-function formatDate(value: string | null) {
-  if (!value) return "No date";
+async function updateRequest(formData: FormData) {
+  "use server";
 
-  return new Date(value).toLocaleString("en-US", {
-    month: "numeric",
-    day: "numeric",
-    year: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  });
+  const requestId = Number(formData.get("request_id"));
+  const boatId = Number(formData.get("boat_id"));
+  const status = String(formData.get("status") || "new");
+
+  if (boatId > 0) {
+    const { data: request } = await supabase
+      .from("boat_profile_requests")
+      .select("*")
+      .eq("id", requestId)
+      .single();
+
+    if (request) {
+      await supabase
+        .from("boats")
+        .update({
+          make: request.make,
+          model: request.model,
+          year: request.year,
+          length_feet: request.length_feet,
+          home_port: request.home_port,
+          website_url: request.website_url,
+          facebook_url: request.facebook_url,
+          instagram_url: request.instagram_url,
+          youtube_url: request.youtube_url,
+          notes: request.notes,
+        })
+        .eq("id", boatId);
+    }
+  }
+
+  await supabase
+    .from("boat_profile_requests")
+    .update({
+      status,
+    })
+    .eq("id", requestId);
+
+  redirect("/admin/boat-profile-requests");
 }
 
-export default async function AdminBoatProfileRequestsPage() {
-  noStore();
+export default async function BoatProfileRequestDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
 
-  const { data: requests, error } = await supabase
+  const { data: request } = await supabase
     .from("boat_profile_requests")
     .select("*")
-    .order("created_at", { ascending: false });
+    .eq("id", Number(id))
+    .single();
+
+  const { data: boats } = await supabase
+    .from("boats")
+    .select("id,name")
+    .order("name");
+
+  if (!request) {
+    return (
+      <main style={{ padding: "40px", fontFamily: "Arial, sans-serif" }}>
+        <h1>Boat Profile Request</h1>
+        <p>Request not found.</p>
+      </main>
+    );
+  }
 
   return (
     <main style={{ padding: "40px", fontFamily: "Arial, sans-serif" }}>
-      <h1>Boat Profile Requests</h1>
+      <h1>Boat Profile Request</h1>
 
-      {error && <p style={{ color: "red" }}>Error: {error.message}</p>}
+      <p><strong>Boat:</strong> {request.boat_name}</p>
+      <p><strong>Contact:</strong> {request.contact_name}</p>
+      <p><strong>Email:</strong> {request.contact_email}</p>
 
-      {requests?.length === 0 && <p>No requests submitted yet.</p>}
+      <h2>Requested Details</h2>
 
-      <table border={1} cellPadding={8} style={{ borderCollapse: "collapse" }}>
-        <thead>
-          <tr>
-            <th>Submitted</th>
-            <th>Boat</th>
-            <th>Contact</th>
-            <th>Details</th>
-            <th>Links</th>
-            <th>Notes</th>
-            <th>Status / Review</th>
-          </tr>
-        </thead>
+      <p>
+        {[request.year, request.make, request.model]
+          .filter(Boolean)
+          .join(" ")}
+        {request.length_feet ? ` — ${request.length_feet} ft` : ""}
+      </p>
 
-        <tbody>
-          {requests?.map((request: any) => (
-            <tr key={request.id}>
-              <td>{formatDate(request.created_at)}</td>
+      {request.home_port && (
+        <p><strong>Home Port:</strong> {request.home_port}</p>
+      )}
 
-              <td>{request.boat_name}</td>
+      {request.website_url && (
+        <p><strong>Website:</strong> {request.website_url}</p>
+      )}
 
-              <td>
-                {request.contact_name}
-                <br />
-                {request.contact_email}
-              </td>
+      {request.facebook_url && (
+        <p><strong>Facebook:</strong> {request.facebook_url}</p>
+      )}
 
-              <td>
-                {[request.year, request.make, request.model]
-                  .filter(Boolean)
-                  .join(" ")}
-                <br />
-                {request.length_feet ? `${request.length_feet} ft` : ""}
-                <br />
-                {request.home_port || ""}
-              </td>
+      {request.instagram_url && (
+        <p><strong>Instagram:</strong> {request.instagram_url}</p>
+      )}
 
-              <td>
-                {request.website_url && <p>Website: {request.website_url}</p>}
-                {request.facebook_url && <p>Facebook: {request.facebook_url}</p>}
-                {request.instagram_url && <p>Instagram: {request.instagram_url}</p>}
-                {request.youtube_url && <p>YouTube: {request.youtube_url}</p>}
-              </td>
+      {request.youtube_url && (
+        <p><strong>YouTube:</strong> {request.youtube_url}</p>
+      )}
 
-              <td>{request.notes || "-"}</td>
+      {request.notes && (
+        <p><strong>Notes:</strong> {request.notes}</p>
+      )}
 
-              <td>
-                <Link href={`/admin/boat-profile-requests/${request.id}`}>
-                  {request.status || "new"}
-                </Link>
-              </td>
-            </tr>
+      <form action={updateRequest}>
+        <input
+          type="hidden"
+          name="request_id"
+          value={request.id}
+        />
+
+        <h2>Apply To Boat</h2>
+
+        <select name="boat_id" defaultValue="0">
+          <option value="0">
+            -- Do Not Apply --
+          </option>
+
+          {boats?.map((boat: any) => (
+            <option key={boat.id} value={boat.id}>
+              {boat.name}
+            </option>
           ))}
-        </tbody>
-      </table>
+        </select>
+
+        <br />
+        <br />
+
+        <h2>Status</h2>
+
+        <select
+          name="status"
+          defaultValue={request.status || "new"}
+        >
+          <option value="new">new</option>
+          <option value="reviewed">reviewed</option>
+          <option value="applied">applied</option>
+          <option value="rejected">rejected</option>
+        </select>
+
+        <br />
+        <br />
+
+        <button type="submit">
+          Save Changes
+        </button>
+      </form>
     </main>
   );
 }
