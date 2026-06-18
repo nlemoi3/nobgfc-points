@@ -12,14 +12,16 @@ function formatDate(value: string | null) {
 }
 
 export default async function TournamentStandingsPage() {
-  const { data: catches, error } = await supabase
-    .from("catches")
-    .select(`
-      id,
-      points_awarded,
-      events(id,name,start_date,end_date,status),
-      boats(name)
-    `);
+const { data: catches, error } = await supabase
+  .from("catches")
+  .select(`
+    id,
+    points_awarded,
+    status,
+    events(id,name,start_date,end_date,status),
+    boats(name)
+  `)
+  .eq("status", "approved");
 
   const eventStandings: Record<string, Record<string, number>> = {};
   const eventInfo: Record<string, any> = {};
