@@ -1,12 +1,14 @@
 import { supabase } from "../../lib/supabase";
 
 export default async function AnglerStandingsPage() {
-  const { data } = await supabase
-    .from("catches")
-    .select(`
-      points_awarded,
-      anglers(first_name,last_name)
-    `);
+const { data } = await supabase
+  .from("catches")
+  .select(`
+    points_awarded,
+    status,
+    anglers(first_name,last_name)
+  `)
+  .eq("status", "approved");
 
   const standings: Record<string, number> = {};
 
