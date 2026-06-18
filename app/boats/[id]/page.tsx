@@ -24,17 +24,13 @@ function SocialLink({ href, label }: { href: string | null; label: string }) {
   );
 }
 
-function StatCard({
-  title,
-  value,
-}: {
-  title: string;
-  value: string | number;
-}) {
+function StatCard({ title, value }: { title: string; value: string | number }) {
   return (
     <div style={{ border: "1px solid #ccc", padding: "15px", minWidth: "220px" }}>
       <h3>{title}</h3>
-      <p><strong>{value}</strong></p>
+      <p>
+        <strong>{value}</strong>
+      </p>
     </div>
   );
 }
@@ -52,8 +48,24 @@ function LargestFishCard({
 
       {catchRecord ? (
         <>
-          <p><strong>{catchRecord.weight} lbs</strong></p>
-          <p>{catchRecord.anglers?.first_name} {catchRecord.anglers?.last_name}</p>
+          {catchRecord.photo_url && (
+            <img
+              src={catchRecord.photo_url}
+              alt={title}
+              style={{
+                maxWidth: "200px",
+                display: "block",
+                marginBottom: "10px",
+              }}
+            />
+          )}
+
+          <p>
+            <strong>{catchRecord.weight} lbs</strong>
+          </p>
+          <p>
+            {catchRecord.anglers?.first_name} {catchRecord.anglers?.last_name}
+          </p>
           <p>{formatDateTime(catchRecord.catch_datetime)}</p>
         </>
       ) : (
@@ -87,6 +99,7 @@ export default async function BoatProfilePage({
       released,
       tagged,
       catch_datetime,
+      photo_url,
       boats(id,name),
       species(name),
       anglers(first_name,last_name),
@@ -163,7 +176,9 @@ export default async function BoatProfilePage({
     (a, b) => b[1].points - a[1].points
   );
 
-  const tournamentWins = tournamentHistory.filter(([, result]) => result.points > 0).length;
+  const tournamentAppearances = tournamentHistory.filter(
+    ([, result]) => result.points > 0
+  ).length;
 
   return (
     <main style={{ padding: "40px", fontFamily: "Arial, sans-serif" }}>
@@ -198,7 +213,7 @@ export default async function BoatProfilePage({
         <StatCard title="Current Rank" value={currentRank ? `#${currentRank}` : "Unranked"} />
         <StatCard title="Official Points" value={officialPoints.toFixed(1)} />
         <StatCard title="Blue Marlin Count" value={blueMarlinCount} />
-        <StatCard title="Tournament Results" value={tournamentWins} />
+        <StatCard title="Tournament Appearances" value={tournamentAppearances} />
       </div>
 
       <h2>Boat Details</h2>
@@ -208,9 +223,23 @@ export default async function BoatProfilePage({
         {boat.length_feet ? ` — ${boat.length_feet} ft` : ""}
       </p>
 
-      {boat.home_port && <p><strong>Home Port:</strong> {boat.home_port}</p>}
-      {boat.captain_name && <p><strong>Captain:</strong> {boat.captain_name}</p>}
-      {boat.owner_name && <p><strong>Owner:</strong> {boat.owner_name}</p>}
+      {boat.home_port && (
+        <p>
+          <strong>Home Port:</strong> {boat.home_port}
+        </p>
+      )}
+
+      {boat.captain_name && (
+        <p>
+          <strong>Captain:</strong> {boat.captain_name}
+        </p>
+      )}
+
+      {boat.owner_name && (
+        <p>
+          <strong>Owner:</strong> {boat.owner_name}
+        </p>
+      )}
 
       <p>
         <SocialLink href={boat.website_url} label="Website" />
@@ -267,6 +296,7 @@ export default async function BoatProfilePage({
         <table border={1} cellPadding={8} style={{ borderCollapse: "collapse" }}>
           <thead>
             <tr>
+              <th>Photo</th>
               <th>Date/Time</th>
               <th>Event</th>
               <th>Angler</th>
@@ -291,9 +321,28 @@ export default async function BoatProfilePage({
               })
               .map((c: any) => (
                 <tr key={c.id}>
+                  <td>
+                    {c.photo_url ? (
+                      <a href={c.photo_url} target="_blank">
+                        <img
+                          src={c.photo_url}
+                          alt="Catch"
+                          style={{
+                            width: "80px",
+                            height: "80px",
+                            objectFit: "cover",
+                          }}
+                        />
+                      </a>
+                    ) : (
+                      "-"
+                    )}
+                  </td>
                   <td>{formatDateTime(c.catch_datetime)}</td>
                   <td>{c.events?.name}</td>
-                  <td>{c.anglers?.first_name} {c.anglers?.last_name}</td>
+                  <td>
+                    {c.anglers?.first_name} {c.anglers?.last_name}
+                  </td>
                   <td>{c.species?.name}</td>
                   <td>{c.weight ? `${c.weight} lbs` : "Released"}</td>
                   <td>{c.released ? "Yes" : "No"}</td>
