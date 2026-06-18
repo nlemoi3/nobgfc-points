@@ -16,23 +16,25 @@ function formatDateTime(value: string | null) {
 export default async function CatchesPage() {
   noStore();
 
-  const { data: catches, error } = await supabase
-    .from("catches")
-    .select(`
-      id,
-      weight,
-      points_awarded,
-      released,
-      tagged,
-      line_class,
-      catch_datetime,
-      photo_url,
-      boats(name),
-      anglers(first_name,last_name),
-      species(name),
-      events(name)
-    `)
-    .order("catch_datetime", { ascending: false });
+const { data: catches, error } = await supabase
+  .from("catches")
+  .select(`
+    id,
+    weight,
+    points_awarded,
+    released,
+    tagged,
+    status,
+    line_class,
+    catch_datetime,
+    photo_url,
+    boats(name),
+    anglers(first_name,last_name),
+    species(name),
+    events(name)
+  `)
+  .eq("status", "approved")
+  .order("catch_datetime", { ascending: false });
 
   return (
     <main style={{ padding: "40px", fontFamily: "Arial, sans-serif" }}>
