@@ -24,7 +24,28 @@ function SocialLink({ href, label }: { href: string | null; label: string }) {
   );
 }
 
-function LargestFishCard({ title, catchRecord }: { title: string; catchRecord: any }) {
+function StatCard({
+  title,
+  value,
+}: {
+  title: string;
+  value: string | number;
+}) {
+  return (
+    <div style={{ border: "1px solid #ccc", padding: "15px", minWidth: "220px" }}>
+      <h3>{title}</h3>
+      <p><strong>{value}</strong></p>
+    </div>
+  );
+}
+
+function LargestFishCard({
+  title,
+  catchRecord,
+}: {
+  title: string;
+  catchRecord: any;
+}) {
   return (
     <div style={{ border: "1px solid #ccc", padding: "15px", minWidth: "220px" }}>
       <h3>{title}</h3>
@@ -82,7 +103,11 @@ export default async function BoatProfilePage({
 
   allCatches?.forEach((c: any) => {
     const boatName = c.boats?.name || "Unknown Boat";
-    if (!groupedByBoat[boatName]) groupedByBoat[boatName] = [];
+
+    if (!groupedByBoat[boatName]) {
+      groupedByBoat[boatName] = [];
+    }
+
     groupedByBoat[boatName].push(c);
   });
 
@@ -138,6 +163,8 @@ export default async function BoatProfilePage({
     (a, b) => b[1].points - a[1].points
   );
 
+  const tournamentWins = tournamentHistory.filter(([, result]) => result.points > 0).length;
+
   return (
     <main style={{ padding: "40px", fontFamily: "Arial, sans-serif" }}>
       <p>
@@ -168,20 +195,10 @@ export default async function BoatProfilePage({
       )}
 
       <div style={{ display: "flex", gap: "20px", flexWrap: "wrap", marginBottom: "30px" }}>
-        <div style={{ border: "1px solid #ccc", padding: "15px", minWidth: "220px" }}>
-          <h3>Current Rank</h3>
-          <p>{currentRank ? `#${currentRank}` : "Unranked"}</p>
-        </div>
-
-        <div style={{ border: "1px solid #ccc", padding: "15px", minWidth: "220px" }}>
-          <h3>Official Points</h3>
-          <p>{officialPoints.toFixed(1)}</p>
-        </div>
-
-        <div style={{ border: "1px solid #ccc", padding: "15px", minWidth: "220px" }}>
-          <h3>Blue Marlin Count</h3>
-          <p>{blueMarlinCount}</p>
-        </div>
+        <StatCard title="Current Rank" value={currentRank ? `#${currentRank}` : "Unranked"} />
+        <StatCard title="Official Points" value={officialPoints.toFixed(1)} />
+        <StatCard title="Blue Marlin Count" value={blueMarlinCount} />
+        <StatCard title="Tournament Results" value={tournamentWins} />
       </div>
 
       <h2>Boat Details</h2>
@@ -192,6 +209,8 @@ export default async function BoatProfilePage({
       </p>
 
       {boat.home_port && <p><strong>Home Port:</strong> {boat.home_port}</p>}
+      {boat.captain_name && <p><strong>Captain:</strong> {boat.captain_name}</p>}
+      {boat.owner_name && <p><strong>Owner:</strong> {boat.owner_name}</p>}
 
       <p>
         <SocialLink href={boat.website_url} label="Website" />
@@ -267,6 +286,7 @@ export default async function BoatProfilePage({
                 const bTime = b.catch_datetime
                   ? new Date(b.catch_datetime).getTime()
                   : b.id || 0;
+
                 return bTime - aTime;
               })
               .map((c: any) => (
