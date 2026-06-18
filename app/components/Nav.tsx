@@ -21,6 +21,7 @@ export default function Nav() {
 </Link>
       <Link href="/tournament-standings" style={{ marginRight: "15px" }}>Tournaments</Link>
       <Link href="/awards" style={{ marginRight: "15px" }}>Awards</Link>
+      <Link href="/hall-of-fame" style={{ marginRight: "15px" }}>Hall of Fame</Link>
 
       <span style={{ marginLeft: "25px", marginRight: "10px" }}>| Admin:</span>
       <Link href="/admin/catch-entry" style={{ marginRight: "15px" }}>Enter Catch</Link>
