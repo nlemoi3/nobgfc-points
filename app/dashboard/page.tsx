@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { unstable_noStore as noStore } from "next/cache";
 import { supabase } from "../../lib/supabase";
 import { getOfficialEligiblePoints } from "../../lib/scoring";
 
@@ -63,6 +64,8 @@ function LargestFishCard({
 }
 
 export default async function DashboardPage() {
+  noStore();
+
   const { data: catches } = await supabase
     .from("catches")
     .select(`
