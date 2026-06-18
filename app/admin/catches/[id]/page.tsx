@@ -74,9 +74,7 @@ async function uploadCatchPhoto(file: File | null, catchId: number) {
       upsert: true,
     });
 
-  if (error) {
-  throw new Error(`Catch photo upload failed: ${error.message}`);
-}
+  if (error) throw new Error(error.message);
 
   const { data } = supabase.storage
     .from("catch-media")
