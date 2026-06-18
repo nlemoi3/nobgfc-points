@@ -42,7 +42,7 @@ export default async function BoatProfilePage({
   const blueMarlinCount =
     catches?.filter((c: any) => c.species?.name === "Blue Marlin").length || 0;
 
-  const largestFish = [...(catches || [])]
+    const largestFish: any = [...(catches || [])]
     .filter((c: any) => c.weight)
     .sort((a: any, b: any) => b.weight - a.weight)[0];
 
