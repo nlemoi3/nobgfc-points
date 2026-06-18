@@ -155,19 +155,19 @@ export default async function EditCatchPage({
   const { id } = await params;
   const catchId = Number(id);
 
-  const [
-    { data: catchRecord },
-    { data: events },
-    { data: boats },
-    { data: anglers },
-    { data: species },
-  ] = await Promise.all([
-    supabase.from("catches").select("*").eq("id", catchId).single(),
-    supabase.from("events").select("*").order("start_date"),
-    supabase.from("boats").select("*").order("name"),
-    supabase.from("anglers").select("*").order("last_name"),
-    supabase.from("species").select("*").order("name"),
-  ]);
+const [
+  { data: catchRecord },
+  { data: events },
+  { data: boats },
+  { data: anglers },
+  { data: species },
+] = await Promise.all([
+  supabase.from("catches").select("*").eq("id", catchId).single(),
+  supabase.from("events").select("*").order("start_date"),
+  supabase.from("boats").select("*").order("name"),
+  supabase.from("anglers").select("*").order("last_name"),
+  supabase.from("species").select("*").order("name"),
+]);
 
   if (!catchRecord) {
     return (
