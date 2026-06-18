@@ -1,5 +1,15 @@
 import { supabase } from "../../lib/supabase";
 
+function formatDate(value: string | null) {
+  if (!value) return "No date";
+
+  return new Date(value).toLocaleDateString("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
 export default async function TournamentStandingsPage() {
   const { data: catches, error } = await supabase
     .from("catches")
@@ -11,17 +21,17 @@ export default async function TournamentStandingsPage() {
     `);
 
   const eventStandings: Record<string, Record<string, number>> = {};
-  const eventNames: Record<string, string> = {};
+  const eventInfo: Record<string, any> = {};
 
   catches?.forEach((c: any) => {
-    const eventId = c.events?.id;
-    const eventName = c.events?.name || "Unknown Event";
+    const event = c.events;
+    const eventId = event?.id;
     const boatName = c.boats?.name || "Unknown Boat";
     const points = Number(c.points_awarded || 0);
 
     if (!eventId) return;
 
-    eventNames[eventId] = eventName;
+    eventInfo[eventId] = event;
 
     if (!eventStandings[eventId]) {
       eventStandings[eventId] = {};
@@ -42,11 +52,17 @@ export default async function TournamentStandingsPage() {
       {eventEntries.length === 0 && <p>No tournament catches entered yet.</p>}
 
       {eventEntries.map(([eventId, boatScores]) => {
+        const event = eventInfo[eventId];
         const standings = Object.entries(boatScores).sort((a, b) => b[1] - a[1]);
 
         return (
           <section key={eventId} style={{ marginBottom: "40px" }}>
-            <h2>{eventNames[eventId]}</h2>
+            <h2>{event?.name}</h2>
+            <p>
+              {formatDate(event?.start_date)} – {formatDate(event?.end_date)}
+              <br />
+              Status: {event?.status || "scheduled"}
+            </p>
 
             <table border={1} cellPadding={8} style={{ borderCollapse: "collapse" }}>
               <thead>
