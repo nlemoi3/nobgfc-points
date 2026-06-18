@@ -2,17 +2,19 @@ import { supabase } from "../../lib/supabase";
 import { getOfficialEligiblePoints } from "../../lib/scoring";
 
 export default async function OfficialStandingsPage() {
-  const { data, error } = await supabase
-    .from("catches")
-    .select(`
-      id,
-      points_awarded,
-      released,
-      tagged,
-      weight,
-      boats(name),
-      species(name)
-    `);
+const { data, error } = await supabase
+  .from("catches")
+  .select(`
+    id,
+    points_awarded,
+    released,
+    tagged,
+    status,
+    weight,
+    boats(name),
+    species(name)
+  `)
+  .eq("status", "approved");
 
   const boatCatches: Record<string, any[]> = {};
 
