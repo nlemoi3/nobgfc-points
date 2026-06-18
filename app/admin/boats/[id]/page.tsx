@@ -1,193 +1,309 @@
-import { redirect } from "next/navigation";
-import { supabase } from "../../../../lib/supabase";
+import Link from "next/link";
+import { supabase } from "../../../lib/supabase";
+import { getOfficialEligiblePoints } from "../../../lib/scoring";
 
-async function updateBoat(formData: FormData) {
-  "use server";
+function formatDateTime(value: string | null) {
+  if (!value) return "No date";
 
-  const id = Number(formData.get("id"));
-
-  const { error } = await supabase
-    .from("boats")
-    .update({
-      name: String(formData.get("name") || ""),
-      make: String(formData.get("make") || ""),
-      model: String(formData.get("model") || ""),
-      year: formData.get("year") ? Number(formData.get("year")) : null,
-      length_feet: formData.get("length_feet")
-        ? Number(formData.get("length_feet"))
-        : null,
-      home_port: String(formData.get("home_port") || ""),
-      photo_url: String(formData.get("photo_url") || ""),
-      logo_url: String(formData.get("logo_url") || ""),
-      website_url: String(formData.get("website_url") || ""),
-      facebook_url: String(formData.get("facebook_url") || ""),
-      instagram_url: String(formData.get("instagram_url") || ""),
-      youtube_url: String(formData.get("youtube_url") || ""),
-      captain_name: String(formData.get("captain_name") || ""),
-      captain_email: String(formData.get("captain_email") || ""),
-      owner_name: String(formData.get("owner_name") || ""),
-      owner_email: String(formData.get("owner_email") || ""),
-      profile_status: String(formData.get("profile_status") || "draft"),
-      notes: String(formData.get("notes") || ""),
-    })
-    .eq("id", id);
-
-  if (error) throw new Error(error.message);
-
-  redirect("/admin/boats");
+  return new Date(value).toLocaleString("en-US", {
+    month: "numeric",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
 }
 
-export default async function EditBoatPage({
+function SocialLink({ href, label }: { href: string | null; label: string }) {
+  if (!href) return null;
+
+  return (
+    <a href={href} target="_blank" style={{ marginRight: "12px" }}>
+      {label}
+    </a>
+  );
+}
+
+function StatCard({
+  title,
+  value,
+}: {
+  title: string;
+  value: string | number;
+}) {
+  return (
+    <div style={{ border: "1px solid #ccc", padding: "15px", minWidth: "220px" }}>
+      <h3>{title}</h3>
+      <p><strong>{value}</strong></p>
+    </div>
+  );
+}
+
+function LargestFishCard({
+  title,
+  catchRecord,
+}: {
+  title: string;
+  catchRecord: any;
+}) {
+  return (
+    <div style={{ border: "1px solid #ccc", padding: "15px", minWidth: "220px" }}>
+      <h3>{title}</h3>
+
+      {catchRecord ? (
+        <>
+          <p><strong>{catchRecord.weight} lbs</strong></p>
+          <p>{catchRecord.anglers?.first_name} {catchRecord.anglers?.last_name}</p>
+          <p>{formatDateTime(catchRecord.catch_datetime)}</p>
+        </>
+      ) : (
+        <p>No catch</p>
+      )}
+    </div>
+  );
+}
+
+export default async function BoatProfilePage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  const boatId = Number(id);
 
   const { data: boat } = await supabase
     .from("boats")
     .select("*")
-    .eq("id", Number(id))
+    .eq("id", boatId)
     .single();
 
+  const { data: allCatches } = await supabase
+    .from("catches")
+    .select(`
+      id,
+      boat_id,
+      weight,
+      points_awarded,
+      released,
+      tagged,
+      catch_datetime,
+      boats(id,name),
+      species(name),
+      anglers(first_name,last_name),
+      events(id,name)
+    `);
+
   if (!boat) {
-    return (
-      <main style={{ padding: "40px", fontFamily: "Arial, sans-serif" }}>
-        <h1>Edit Boat</h1>
-        <p>Boat not found.</p>
-      </main>
-    );
+    return <main style={{ padding: "40px" }}>Boat not found.</main>;
   }
+
+  const boatCatches = (allCatches || []).filter((c: any) => c.boat_id === boatId);
+
+  const groupedByBoat: Record<string, any[]> = {};
+
+  allCatches?.forEach((c: any) => {
+    const boatName = c.boats?.name || "Unknown Boat";
+
+    if (!groupedByBoat[boatName]) {
+      groupedByBoat[boatName] = [];
+    }
+
+    groupedByBoat[boatName].push(c);
+  });
+
+  const boatStandings = Object.entries(groupedByBoat)
+    .map(([name, catches]) => ({
+      name,
+      id: catches[0]?.boats?.id,
+      points: getOfficialEligiblePoints(catches),
+    }))
+    .sort((a, b) => b.points - a.points);
+
+  const rankIndex = boatStandings.findIndex((b) => b.id === boatId);
+  const currentRank = rankIndex >= 0 ? rankIndex + 1 : null;
+  const officialPoints = currentRank ? boatStandings[rankIndex].points : 0;
+
+  const blueMarlinCount = boatCatches.filter(
+    (c: any) => c.species?.name === "Blue Marlin"
+  ).length;
+
+  const largestBlueMarlin = boatCatches
+    .filter((c: any) => c.species?.name === "Blue Marlin" && c.weight)
+    .sort((a: any, b: any) => b.weight - a.weight)[0];
+
+  const largestTuna = boatCatches
+    .filter(
+      (c: any) =>
+        ["Yellowfin Tuna", "Bigeye Tuna"].includes(c.species?.name) && c.weight
+    )
+    .sort((a: any, b: any) => b.weight - a.weight)[0];
+
+  const largestWahoo = boatCatches
+    .filter((c: any) => c.species?.name === "Wahoo" && c.weight)
+    .sort((a: any, b: any) => b.weight - a.weight)[0];
+
+  const largestDolphin = boatCatches
+    .filter((c: any) => c.species?.name === "Dolphin" && c.weight)
+    .sort((a: any, b: any) => b.weight - a.weight)[0];
+
+  const tournamentScores: Record<string, { eventId: number; points: number }> = {};
+
+  boatCatches.forEach((c: any) => {
+    const eventName = c.events?.name || "Unknown Event";
+    const eventId = c.events?.id;
+
+    if (!tournamentScores[eventName]) {
+      tournamentScores[eventName] = { eventId, points: 0 };
+    }
+
+    tournamentScores[eventName].points += Number(c.points_awarded || 0);
+  });
+
+  const tournamentHistory = Object.entries(tournamentScores).sort(
+    (a, b) => b[1].points - a[1].points
+  );
+
+  const tournamentWins = tournamentHistory.filter(([, result]) => result.points > 0).length;
 
   return (
     <main style={{ padding: "40px", fontFamily: "Arial, sans-serif" }}>
-      <h1>Edit Boat</h1>
+      <p>
+        <Link href="/boats">← Back to Boats</Link>
+      </p>
 
-      <form action={updateBoat}>
-        <input type="hidden" name="id" value={boat.id} />
+      <h1>{boat.name}</h1>
 
-        <p>
-          <label>Boat Name</label>
-          <br />
-          <input name="name" defaultValue={boat.name} required style={{ width: "500px" }} />
-        </p>
+      {boat.logo_url && (
+        <img
+          src={boat.logo_url}
+          alt={`${boat.name} logo`}
+          style={{ maxWidth: "200px", display: "block", marginBottom: "20px" }}
+        />
+      )}
 
-        <p>
-          <label>Make</label>
-          <br />
-          <input name="make" defaultValue={boat.make || ""} />
-        </p>
+      {boat.photo_url && (
+        <img
+          src={boat.photo_url}
+          alt={boat.name}
+          style={{
+            maxWidth: "700px",
+            width: "100%",
+            display: "block",
+            marginBottom: "20px",
+          }}
+        />
+      )}
 
-        <p>
-          <label>Model</label>
-          <br />
-          <input name="model" defaultValue={boat.model || ""} />
-        </p>
+      <div style={{ display: "flex", gap: "20px", flexWrap: "wrap", marginBottom: "30px" }}>
+        <StatCard title="Current Rank" value={currentRank ? `#${currentRank}` : "Unranked"} />
+        <StatCard title="Official Points" value={officialPoints.toFixed(1)} />
+        <StatCard title="Blue Marlin Count" value={blueMarlinCount} />
+        <StatCard title="Tournament Results" value={tournamentWins} />
+      </div>
 
-        <p>
-          <label>Year</label>
-          <br />
-          <input name="year" type="number" defaultValue={boat.year || ""} />
-        </p>
+      <h2>Boat Details</h2>
 
-        <p>
-          <label>Length</label>
-          <br />
-          <input name="length_feet" type="number" step="0.1" defaultValue={boat.length_feet || ""} />
-        </p>
+      <p>
+        {[boat.year, boat.make, boat.model].filter(Boolean).join(" ")}
+        {boat.length_feet ? ` — ${boat.length_feet} ft` : ""}
+      </p>
 
-        <p>
-          <label>Home Port</label>
-          <br />
-          <input name="home_port" defaultValue={boat.home_port || ""} />
-        </p>
+      {boat.home_port && <p><strong>Home Port:</strong> {boat.home_port}</p>}
+      {boat.captain_name && <p><strong>Captain:</strong> {boat.captain_name}</p>}
+      {boat.owner_name && <p><strong>Owner:</strong> {boat.owner_name}</p>}
 
-        <hr />
+      <p>
+        <SocialLink href={boat.website_url} label="Website" />
+        <SocialLink href={boat.facebook_url} label="Facebook" />
+        <SocialLink href={boat.instagram_url} label="Instagram" />
+        <SocialLink href={boat.youtube_url} label="YouTube" />
+      </p>
 
-        <h2>Team / Owner Contact</h2>
+      {boat.notes && <p>{boat.notes}</p>}
 
-        <p>
-          <label>Captain Name</label>
-          <br />
-          <input name="captain_name" defaultValue={boat.captain_name || ""} />
-        </p>
+      <h2>Largest Fish</h2>
 
-        <p>
-          <label>Captain Email</label>
-          <br />
-          <input name="captain_email" type="email" defaultValue={boat.captain_email || ""} />
-        </p>
+      <div style={{ display: "flex", gap: "20px", flexWrap: "wrap", marginBottom: "30px" }}>
+        <LargestFishCard title="Largest Blue Marlin" catchRecord={largestBlueMarlin} />
+        <LargestFishCard title="Largest Tuna" catchRecord={largestTuna} />
+        <LargestFishCard title="Largest Wahoo" catchRecord={largestWahoo} />
+        <LargestFishCard title="Largest Dolphin" catchRecord={largestDolphin} />
+      </div>
 
-        <p>
-          <label>Owner Name</label>
-          <br />
-          <input name="owner_name" defaultValue={boat.owner_name || ""} />
-        </p>
+      <h2>Tournament History</h2>
 
-        <p>
-          <label>Owner Email</label>
-          <br />
-          <input name="owner_email" type="email" defaultValue={boat.owner_email || ""} />
-        </p>
+      {tournamentHistory.length === 0 ? (
+        <p>No tournament points yet.</p>
+      ) : (
+        <table border={1} cellPadding={8} style={{ borderCollapse: "collapse" }}>
+          <thead>
+            <tr>
+              <th>Tournament</th>
+              <th>Points</th>
+            </tr>
+          </thead>
+          <tbody>
+            {tournamentHistory.map(([eventName, result]) => (
+              <tr key={eventName}>
+                <td>
+                  {result.eventId ? (
+                    <Link href={`/tournament/${result.eventId}`}>{eventName}</Link>
+                  ) : (
+                    eventName
+                  )}
+                </td>
+                <td>{result.points.toFixed(1)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
 
-        <p>
-          <label>Profile Status</label>
-          <br />
-          <select name="profile_status" defaultValue={boat.profile_status || "draft"}>
-            <option value="draft">draft</option>
-            <option value="submitted">submitted</option>
-            <option value="approved">approved</option>
-          </select>
-        </p>
+      <h2 style={{ marginTop: "30px" }}>Catch History</h2>
 
-        <hr />
+      {boatCatches.length === 0 ? (
+        <p>No catches entered for this boat.</p>
+      ) : (
+        <table border={1} cellPadding={8} style={{ borderCollapse: "collapse" }}>
+          <thead>
+            <tr>
+              <th>Date/Time</th>
+              <th>Event</th>
+              <th>Angler</th>
+              <th>Species</th>
+              <th>Weight</th>
+              <th>Released</th>
+              <th>Tagged</th>
+              <th>Points</th>
+            </tr>
+          </thead>
+          <tbody>
+            {boatCatches
+              .sort((a: any, b: any) => {
+                const aTime = a.catch_datetime
+                  ? new Date(a.catch_datetime).getTime()
+                  : a.id || 0;
+                const bTime = b.catch_datetime
+                  ? new Date(b.catch_datetime).getTime()
+                  : b.id || 0;
 
-        <h2>Media / Links</h2>
-
-        <p>
-          <label>Photo URL</label>
-          <br />
-          <input name="photo_url" defaultValue={boat.photo_url || ""} style={{ width: "500px" }} />
-        </p>
-
-        <p>
-          <label>Logo URL</label>
-          <br />
-          <input name="logo_url" defaultValue={boat.logo_url || ""} style={{ width: "500px" }} />
-        </p>
-
-        <p>
-          <label>Website URL</label>
-          <br />
-          <input name="website_url" defaultValue={boat.website_url || ""} style={{ width: "500px" }} />
-        </p>
-
-        <p>
-          <label>Facebook URL</label>
-          <br />
-          <input name="facebook_url" defaultValue={boat.facebook_url || ""} style={{ width: "500px" }} />
-        </p>
-
-        <p>
-          <label>Instagram URL</label>
-          <br />
-          <input name="instagram_url" defaultValue={boat.instagram_url || ""} style={{ width: "500px" }} />
-        </p>
-
-        <p>
-          <label>YouTube URL</label>
-          <br />
-          <input name="youtube_url" defaultValue={boat.youtube_url || ""} style={{ width: "500px" }} />
-        </p>
-
-        <p>
-          <label>Notes</label>
-          <br />
-          <textarea name="notes" defaultValue={boat.notes || ""} rows={5} style={{ width: "500px" }} />
-        </p>
-
-        <button type="submit">Save Boat</button>
-      </form>
+                return bTime - aTime;
+              })
+              .map((c: any) => (
+                <tr key={c.id}>
+                  <td>{formatDateTime(c.catch_datetime)}</td>
+                  <td>{c.events?.name}</td>
+                  <td>{c.anglers?.first_name} {c.anglers?.last_name}</td>
+                  <td>{c.species?.name}</td>
+                  <td>{c.weight ? `${c.weight} lbs` : "Released"}</td>
+                  <td>{c.released ? "Yes" : "No"}</td>
+                  <td>{c.tagged ? "Yes" : "No"}</td>
+                  <td>{c.points_awarded}</td>
+                </tr>
+              ))}
+          </tbody>
+        </table>
+      )}
     </main>
   );
 }
