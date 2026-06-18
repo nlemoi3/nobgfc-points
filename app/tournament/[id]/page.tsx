@@ -31,7 +31,7 @@ export default async function TournamentPage({
     `)
     .eq("event_id", eventId);
 
-  const event = catches?.[0]?.events;
+  const event: any = catches?.[0]?.events;
 
   const boatScores: Record<string, number> = {};
   const anglerScores: Record<string, number> = {};
