@@ -66,21 +66,23 @@ function LargestFishCard({
 export default async function DashboardPage() {
   noStore();
 
-  const { data: catches } = await supabase
-    .from("catches")
-    .select(`
-      id,
-      points_awarded,
-      weight,
-      released,
-      tagged,
-      catch_datetime,
-      created_at,
-      photo_url,
-      boats(id,name),
-      anglers(first_name,last_name),
-      species(name)
-    `);
+const { data: catches } = await supabase
+  .from("catches")
+  .select(`
+    id,
+    points_awarded,
+    weight,
+    released,
+    tagged,
+    status,
+    catch_datetime,
+    created_at,
+    photo_url,
+    boats(id,name),
+    anglers(first_name,last_name),
+    species(name)
+  `)
+  .eq("status", "approved");
 
   const boatCatches: Record<string, any[]> = {};
   const anglerCatches: Record<string, any[]> = {};
