@@ -81,20 +81,22 @@ function LeaderCard({
 }
 
 export default async function HallOfFamePage() {
-  const { data: catches } = await supabase
-    .from("catches")
-    .select(`
-      id,
-      weight,
-      points_awarded,
-      released,
-      tagged,
-      catch_datetime,
-      boats(id,name),
-      anglers(first_name,last_name),
-      species(name),
-      events(name)
-    `);
+const { data: catches } = await supabase
+  .from("catches")
+  .select(`
+    id,
+    weight,
+    points_awarded,
+    released,
+    tagged,
+    status,
+    catch_datetime,
+    boats(id,name),
+    anglers(first_name,last_name),
+    species(name),
+    events(name)
+  `)
+  .eq("status", "approved");
 
   const largestBySpecies = (speciesNames: string[]) =>
     catches
