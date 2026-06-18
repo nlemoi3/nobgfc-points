@@ -6,16 +6,20 @@ async function updateEvent(formData: FormData) {
 
   const id = Number(formData.get("id"));
 
-  await supabase
+  const { error } = await supabase
     .from("events")
     .update({
-      name: formData.get("name"),
-      start_date: formData.get("start_date"),
-      end_date: formData.get("end_date"),
-      status: formData.get("status"),
-      notes: formData.get("notes"),
+      name: String(formData.get("name") || ""),
+      start_date: String(formData.get("start_date") || ""),
+      end_date: String(formData.get("end_date") || ""),
+      status: String(formData.get("status") || "scheduled"),
+      notes: String(formData.get("notes") || ""),
     })
     .eq("id", id);
+
+  if (error) {
+    throw new Error(error.message);
+  }
 
   redirect("/admin/events");
 }
