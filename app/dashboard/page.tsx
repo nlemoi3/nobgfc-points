@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { supabase } from "../../lib/supabase";
 import { getOfficialEligiblePoints } from "../../lib/scoring";
 
@@ -32,7 +33,15 @@ function LargestFishCard({
           <p>
             {catchRecord.anglers?.first_name} {catchRecord.anglers?.last_name}
           </p>
-          <p>{catchRecord.boats?.name}</p>
+          <p>
+            {catchRecord.boats?.id ? (
+              <Link href={`/boats/${catchRecord.boats.id}`}>
+                {catchRecord.boats?.name}
+              </Link>
+            ) : (
+              catchRecord.boats?.name
+            )}
+          </p>
           <p>{formatDateTime(catchRecord.catch_datetime)}</p>
         </>
       ) : (
@@ -53,7 +62,7 @@ export default async function DashboardPage() {
       tagged,
       catch_datetime,
       created_at,
-      boats(name),
+      boats(id,name),
       anglers(first_name,last_name),
       species(name)
     `);
@@ -76,6 +85,7 @@ export default async function DashboardPage() {
   const boatStandings = Object.entries(boatCatches)
     .map(([name, catches]) => ({
       name,
+      id: catches[0]?.boats?.id,
       points: getOfficialEligiblePoints(catches),
     }))
     .sort((a, b) => b.points - a.points);
@@ -104,29 +114,25 @@ export default async function DashboardPage() {
     })
     .slice(0, 10);
 
-  const largestBlueMarlin =
-    catches
-      ?.filter((c: any) => c.species?.name === "Blue Marlin" && c.weight)
-      .sort((a: any, b: any) => b.weight - a.weight)[0];
+  const largestBlueMarlin = catches
+    ?.filter((c: any) => c.species?.name === "Blue Marlin" && c.weight)
+    .sort((a: any, b: any) => b.weight - a.weight)[0];
 
-  const largestTuna =
-    catches
-      ?.filter(
-        (c: any) =>
-          ["Yellowfin Tuna", "Bigeye Tuna"].includes(c.species?.name) &&
-          c.weight
-      )
-      .sort((a: any, b: any) => b.weight - a.weight)[0];
+  const largestTuna = catches
+    ?.filter(
+      (c: any) =>
+        ["Yellowfin Tuna", "Bigeye Tuna"].includes(c.species?.name) &&
+        c.weight
+    )
+    .sort((a: any, b: any) => b.weight - a.weight)[0];
 
-  const largestWahoo =
-    catches
-      ?.filter((c: any) => c.species?.name === "Wahoo" && c.weight)
-      .sort((a: any, b: any) => b.weight - a.weight)[0];
+  const largestWahoo = catches
+    ?.filter((c: any) => c.species?.name === "Wahoo" && c.weight)
+    .sort((a: any, b: any) => b.weight - a.weight)[0];
 
-  const largestDolphin =
-    catches
-      ?.filter((c: any) => c.species?.name === "Dolphin" && c.weight)
-      .sort((a: any, b: any) => b.weight - a.weight)[0];
+  const largestDolphin = catches
+    ?.filter((c: any) => c.species?.name === "Dolphin" && c.weight)
+    .sort((a: any, b: any) => b.weight - a.weight)[0];
 
   const blueMarlinCatches =
     catches?.filter((c: any) => c.species?.name === "Blue Marlin") || [];
@@ -161,7 +167,13 @@ export default async function DashboardPage() {
           <h2>Boat Champion Leader</h2>
           {boatLeader ? (
             <>
-              <strong>{boatLeader.name}</strong>
+              <strong>
+                {boatLeader.id ? (
+                  <Link href={`/boats/${boatLeader.id}`}>{boatLeader.name}</Link>
+                ) : (
+                  boatLeader.name
+                )}
+              </strong>
               <br />
               {boatLeader.points.toFixed(1)} pts
             </>
@@ -236,7 +248,13 @@ export default async function DashboardPage() {
           {recentCatches.map((c: any) => (
             <tr key={c.id}>
               <td>{formatDateTime(c.catch_datetime)}</td>
-              <td>{c.boats?.name}</td>
+              <td>
+                {c.boats?.id ? (
+                  <Link href={`/boats/${c.boats.id}`}>{c.boats?.name}</Link>
+                ) : (
+                  c.boats?.name
+                )}
+              </td>
               <td>
                 {c.anglers?.first_name} {c.anglers?.last_name}
               </td>
@@ -248,7 +266,7 @@ export default async function DashboardPage() {
         </tbody>
       </table>
 
-      <h2 style={{ marginTop: "40px" }}>Top 10 Boats</h2>
+      <h2 style={{ marginTop: "40px" }}>Boat Standings</h2>
 
       <table border={1} cellPadding={8} style={{ borderCollapse: "collapse" }}>
         <thead>
@@ -259,10 +277,16 @@ export default async function DashboardPage() {
           </tr>
         </thead>
         <tbody>
-          {boatStandings.slice(0, 10).map((boat, index) => (
+          {boatStandings.map((boat, index) => (
             <tr key={boat.name}>
               <td>{index + 1}</td>
-              <td>{boat.name}</td>
+              <td>
+                {boat.id ? (
+                  <Link href={`/boats/${boat.id}`}>{boat.name}</Link>
+                ) : (
+                  boat.name
+                )}
+              </td>
               <td>{boat.points.toFixed(1)}</td>
             </tr>
           ))}
