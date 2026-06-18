@@ -57,15 +57,17 @@ async function calculatePoints(
     tagBonus = 25;
   }
 
-  return ["Yellowfin Tuna", "Bigeye Tuna"].includes(speciesName) && released
-    ? basePoints
-    : basePoints * multiplier + tagBonus;
+  if (["Yellowfin Tuna", "Bigeye Tuna"].includes(speciesName) && released) {
+    return basePoints;
+  }
+
+  return basePoints * multiplier + tagBonus;
 }
 
 async function uploadCatchPhoto(file: File | null, catchId: number) {
   if (!file || file.size === 0) return null;
 
-  const extension = file.name.split(".").pop();
+  const extension = file.name.split(".").pop() || "jpg";
   const filePath = `catches/${catchId}/photo-${Date.now()}.${extension}`;
 
   const { error } = await supabase.storage
@@ -74,11 +76,11 @@ async function uploadCatchPhoto(file: File | null, catchId: number) {
       upsert: true,
     });
 
-  if (error) throw new Error(error.message);
+  if (error) {
+    throw new Error(`Catch photo upload failed: ${error.message}`);
+  }
 
-  const { data } = supabase.storage
-    .from("catch-media")
-    .getPublicUrl(filePath);
+  const { data } = supabase.storage.from("catch-media").getPublicUrl(filePath);
 
   return data.publicUrl;
 }
@@ -94,8 +96,10 @@ async function updateCatch(formData: FormData) {
   const released = formData.get("released") === "on";
   const tagged = formData.get("tagged") === "on";
 
-  const photoFile = formData.get("photo_file") as File | null;
-  const uploadedPhotoUrl = await uploadCatchPhoto(photoFile, id);
+  const photoFile = formData.get("photo_file");
+  const uploadedPhotoUrl =
+    photoFile instanceof File ? await uploadCatchPhoto(photoFile, id) : null;
+
   const currentPhotoUrl = String(formData.get("photo_url") || "");
 
   const points_awarded = await calculatePoints(
@@ -117,6 +121,7 @@ async function updateCatch(formData: FormData) {
       line_class,
       released,
       tagged,
+      status: String(formData.get("status") || "approved"),
       catch_datetime: formData.get("catch_datetime") || null,
       photo_url: uploadedPhotoUrl || currentPhotoUrl,
       points_awarded,
@@ -124,8 +129,8 @@ async function updateCatch(formData: FormData) {
     .eq("id", id);
 
   if (error) {
-  throw new Error(`Catch update failed: ${error.message}`);
-}
+    throw new Error(`Catch update failed: ${error.message}`);
+  }
 
   redirect("/admin/catches");
 }
@@ -135,10 +140,7 @@ async function deleteCatch(formData: FormData) {
 
   const id = Number(formData.get("id"));
 
-  const { error } = await supabase
-    .from("catches")
-    .delete()
-    .eq("id", id);
+  const { error } = await supabase.from("catches").delete().eq("id", id);
 
   if (error) throw new Error(error.message);
 
@@ -224,11 +226,7 @@ export default async function EditCatchPage({
         <p>
           <label>Angler</label>
           <br />
-          <select
-            name="angler_id"
-            defaultValue={catchRecord.angler_id}
-            required
-          >
+          <select name="angler_id" defaultValue={catchRecord.angler_id} required>
             {anglers?.map((angler: any) => (
               <option key={angler.id} value={angler.id}>
                 {angler.first_name} {angler.last_name}
@@ -240,11 +238,7 @@ export default async function EditCatchPage({
         <p>
           <label>Species</label>
           <br />
-          <select
-            name="species_id"
-            defaultValue={catchRecord.species_id}
-            required
-          >
+          <select name="species_id" defaultValue={catchRecord.species_id} required>
             {species?.map((fish: any) => (
               <option key={fish.id} value={fish.id}>
                 {fish.name}
@@ -267,11 +261,7 @@ export default async function EditCatchPage({
         <p>
           <label>Line Class</label>
           <br />
-          <select
-            name="line_class"
-            defaultValue={catchRecord.line_class}
-            required
-          >
+          <select name="line_class" defaultValue={catchRecord.line_class} required>
             <option value="130">130</option>
             <option value="80">80</option>
             <option value="50">50</option>
@@ -305,6 +295,16 @@ export default async function EditCatchPage({
             />{" "}
             Tagged
           </label>
+        </p>
+
+        <p>
+          <label>Status</label>
+          <br />
+          <select name="status" defaultValue={catchRecord.status || "approved"}>
+            <option value="pending">Pending</option>
+            <option value="approved">Approved</option>
+            <option value="rejected">Rejected</option>
+          </select>
         </p>
 
         <hr />
