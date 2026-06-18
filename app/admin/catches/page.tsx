@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { unstable_noStore as noStore } from "next/cache";
 import { supabase } from "../../../lib/supabase";
 
 function formatDateTime(value: string | null) {
@@ -14,6 +15,8 @@ function formatDateTime(value: string | null) {
 }
 
 export default async function AdminCatchesPage() {
+  noStore();
+
   const { data: catches, error } = await supabase
     .from("catches")
     .select(`
@@ -65,7 +68,7 @@ export default async function AdminCatchesPage() {
               <td>{c.tagged ? "Yes" : "No"}</td>
               <td>{c.points_awarded}</td>
               <td>
-                <Link href={`/admin/catches/${c.id}`}>Edit</Link>
+                <Link href={`/admin/catches/${c.id}`}>Edit / Delete</Link>
               </td>
             </tr>
           ))}
