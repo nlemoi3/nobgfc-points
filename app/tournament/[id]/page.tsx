@@ -13,9 +13,10 @@ function formatDate(value: string | null) {
 export default async function TournamentPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
-  const eventId = Number(params.id);
+  const { id } = await params;
+  const eventId = Number(id);
 
   const { data: event } = await supabase
     .from("events")
@@ -41,18 +42,24 @@ export default async function TournamentPage({
 
   catches?.forEach((c: any) => {
     const boat = c.boats?.name || "Unknown Boat";
-    const angler =
-      `${c.anglers?.first_name || ""} ${c.anglers?.last_name || ""}`.trim();
+    const angler = `${c.anglers?.first_name || ""} ${
+      c.anglers?.last_name || ""
+    }`.trim();
 
-    boatScores[boat] =
-      (boatScores[boat] || 0) + Number(c.points_awarded || 0);
-
+    boatScores[boat] = (boatScores[boat] || 0) + Number(c.points_awarded || 0);
     anglerScores[angler] =
       (anglerScores[angler] || 0) + Number(c.points_awarded || 0);
   });
 
   const boatStandings = Object.entries(boatScores).sort((a, b) => b[1] - a[1]);
-  const anglerStandings = Object.entries(anglerScores).sort((a, b) => b[1] - a[1]);
+  const anglerStandings = Object.entries(anglerScores).sort(
+    (a, b) => b[1] - a[1]
+  );
+
+  const firstPlaceBoat = boatStandings[0];
+  const secondPlaceBoat = boatStandings[1];
+  const thirdPlaceBoat = boatStandings[2];
+  const topAngler = anglerStandings[0];
 
   const largestBlueMarlin = catches
     ?.filter((c: any) => c.species?.name === "Blue Marlin" && c.weight)
@@ -83,7 +90,67 @@ export default async function TournamentPage({
         Status: {event?.status || "scheduled"}
       </p>
 
-      {event?.notes && <p><strong>Notes:</strong> {event.notes}</p>}
+      {event?.notes && (
+        <p>
+          <strong>Notes:</strong> {event.notes}
+        </p>
+      )}
+
+      <h2>Tournament Awards</h2>
+
+      <div style={{ display: "flex", gap: "20px", flexWrap: "wrap", marginBottom: "30px" }}>
+        <div style={{ border: "1px solid #ccc", padding: "15px", minWidth: "250px" }}>
+          <h3>1st Place Boat</h3>
+          {firstPlaceBoat ? (
+            <>
+              <strong>{firstPlaceBoat[0]}</strong>
+              <br />
+              {Number(firstPlaceBoat[1]).toFixed(1)} points
+            </>
+          ) : (
+            "No Results"
+          )}
+        </div>
+
+        <div style={{ border: "1px solid #ccc", padding: "15px", minWidth: "250px" }}>
+          <h3>2nd Place Boat</h3>
+          {secondPlaceBoat ? (
+            <>
+              <strong>{secondPlaceBoat[0]}</strong>
+              <br />
+              {Number(secondPlaceBoat[1]).toFixed(1)} points
+            </>
+          ) : (
+            "No Results"
+          )}
+        </div>
+
+        <div style={{ border: "1px solid #ccc", padding: "15px", minWidth: "250px" }}>
+          <h3>3rd Place Boat</h3>
+          {thirdPlaceBoat ? (
+            <>
+              <strong>{thirdPlaceBoat[0]}</strong>
+              <br />
+              {Number(thirdPlaceBoat[1]).toFixed(1)} points
+            </>
+          ) : (
+            "No Results"
+          )}
+        </div>
+
+        <div style={{ border: "1px solid #ccc", padding: "15px", minWidth: "250px" }}>
+          <h3>Top Angler</h3>
+          {topAngler ? (
+            <>
+              <strong>{topAngler[0]}</strong>
+              <br />
+              {Number(topAngler[1]).toFixed(1)} points
+            </>
+          ) : (
+            "No Results"
+          )}
+        </div>
+      </div>
 
       <h2>Boat Standings</h2>
 
@@ -163,7 +230,9 @@ export default async function TournamentPage({
             {catches?.map((c: any) => (
               <tr key={c.id}>
                 <td>{c.boats?.name}</td>
-                <td>{c.anglers?.first_name} {c.anglers?.last_name}</td>
+                <td>
+                  {c.anglers?.first_name} {c.anglers?.last_name}
+                </td>
                 <td>{c.species?.name}</td>
                 <td>{c.weight ? `${c.weight} lbs` : "Released"}</td>
                 <td>{c.points_awarded}</td>
