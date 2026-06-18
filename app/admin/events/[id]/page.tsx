@@ -23,9 +23,10 @@ async function updateEvent(formData: FormData) {
 export default async function EditEventPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
-  const eventId = Number(params.id);
+  const { id } = await params;
+  const eventId = Number(id);
 
   const { data: event, error } = await supabase
     .from("events")
@@ -63,13 +64,23 @@ export default async function EditEventPage({
         <p>
           <label>Start Date</label>
           <br />
-          <input name="start_date" type="date" defaultValue={event.start_date} required />
+          <input
+            name="start_date"
+            type="date"
+            defaultValue={event.start_date}
+            required
+          />
         </p>
 
         <p>
           <label>End Date</label>
           <br />
-          <input name="end_date" type="date" defaultValue={event.end_date} required />
+          <input
+            name="end_date"
+            type="date"
+            defaultValue={event.end_date}
+            required
+          />
         </p>
 
         <p>
