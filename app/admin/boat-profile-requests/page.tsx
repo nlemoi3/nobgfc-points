@@ -1,4 +1,4 @@
-import { redirect } from "next/navigation";
+
 import { supabase } from "../../../lib/supabase";
 
 async function updateRequest(formData: FormData) {
