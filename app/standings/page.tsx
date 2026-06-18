@@ -1,12 +1,14 @@
 import { supabase } from "../../lib/supabase";
 
 export default async function StandingsPage() {
-  const { data, error } = await supabase
-    .from("catches")
-    .select(`
-      points_awarded,
-      boats(name)
-    `);
+const { data, error } = await supabase
+  .from("catches")
+  .select(`
+    points_awarded,
+    status,
+    boats(name)
+  `)
+  .eq("status", "approved");
 
   const standings: Record<string, number> = {};
 
