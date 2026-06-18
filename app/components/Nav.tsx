@@ -24,6 +24,7 @@ export default function Nav() {
       <Link href="/boats" style={{ marginRight: "15px" }}>Boats</Link>
       <Link href="/anglers" style={{ marginRight: "15px" }}>Anglers</Link>
       <Link href="/admin/events" style={{ marginRight: "15px" }}>Events</Link>
+      <Link href="/admin/catches" style={{ marginRight: "15px" }}>Manage Catches</Link>
     </nav>
   );
 }
