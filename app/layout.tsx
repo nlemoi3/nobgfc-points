@@ -1,5 +1,7 @@
+import Nav from "./components/Nav";
+
 export const metadata = {
-  title: "NOBGFC Standings",
+  title: "NOBGFC Points",
   description: "Tournament scoring and standings system",
 };
 
@@ -10,7 +12,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body style={{ margin: 0 }}>
+        <Nav />
+        {children}
+      </body>
     </html>
   );
 }
