@@ -1,10 +1,40 @@
 import { redirect } from "next/navigation";
 import { supabase } from "../../../../lib/supabase";
 
+async function uploadBoatMedia(file: File | null, boatId: number, type: "photo" | "logo") {
+  if (!file || file.size === 0) return null;
+
+  const extension = file.name.split(".").pop();
+  const filePath = `boats/${boatId}/${type}-${Date.now()}.${extension}`;
+
+  const { error } = await supabase.storage
+    .from("boat-media")
+    .upload(filePath, file, {
+      upsert: true,
+    });
+
+  if (error) throw new Error(error.message);
+
+  const { data } = supabase.storage
+    .from("boat-media")
+    .getPublicUrl(filePath);
+
+  return data.publicUrl;
+}
+
 async function updateBoat(formData: FormData) {
   "use server";
 
   const id = Number(formData.get("id"));
+
+  const photoFile = formData.get("photo_file") as File | null;
+  const logoFile = formData.get("logo_file") as File | null;
+
+  const uploadedPhotoUrl = await uploadBoatMedia(photoFile, id, "photo");
+  const uploadedLogoUrl = await uploadBoatMedia(logoFile, id, "logo");
+
+  const currentPhotoUrl = String(formData.get("photo_url") || "");
+  const currentLogoUrl = String(formData.get("logo_url") || "");
 
   const { error } = await supabase
     .from("boats")
@@ -17,8 +47,8 @@ async function updateBoat(formData: FormData) {
         ? Number(formData.get("length_feet"))
         : null,
       home_port: String(formData.get("home_port") || ""),
-      photo_url: String(formData.get("photo_url") || ""),
-      logo_url: String(formData.get("logo_url") || ""),
+      photo_url: uploadedPhotoUrl || currentPhotoUrl,
+      logo_url: uploadedLogoUrl || currentLogoUrl,
       website_url: String(formData.get("website_url") || ""),
       facebook_url: String(formData.get("facebook_url") || ""),
       instagram_url: String(formData.get("instagram_url") || ""),
@@ -27,14 +57,13 @@ async function updateBoat(formData: FormData) {
       captain_email: String(formData.get("captain_email") || ""),
       owner_name: String(formData.get("owner_name") || ""),
       owner_email: String(formData.get("owner_email") || ""),
-      profile_status: String(formData.get("profile_status") || "draft"),
       notes: String(formData.get("notes") || ""),
     })
     .eq("id", id);
 
   if (error) throw new Error(error.message);
 
-  redirect("/admin/boats");
+  redirect(`/boats/${id}`);
 }
 
 export default async function EditBoatPage({
@@ -130,24 +159,42 @@ export default async function EditBoatPage({
           <input name="owner_email" type="email" defaultValue={boat.owner_email || ""} />
         </p>
 
-        <p>
-          <label>Profile Status</label>
-          <br />
-          <select name="profile_status" defaultValue={boat.profile_status || "draft"}>
-            <option value="draft">draft</option>
-            <option value="submitted">submitted</option>
-            <option value="approved">approved</option>
-          </select>
-        </p>
-
         <hr />
 
         <h2>Media / Links</h2>
+
+        {boat.photo_url && (
+          <p>
+            <strong>Current Boat Photo:</strong>
+            <br />
+            <img src={boat.photo_url} alt={boat.name} style={{ maxWidth: "300px" }} />
+          </p>
+        )}
+
+        <p>
+          <label>Upload New Boat Photo</label>
+          <br />
+          <input name="photo_file" type="file" accept="image/*" />
+        </p>
 
         <p>
           <label>Photo URL</label>
           <br />
           <input name="photo_url" defaultValue={boat.photo_url || ""} style={{ width: "500px" }} />
+        </p>
+
+        {boat.logo_url && (
+          <p>
+            <strong>Current Logo:</strong>
+            <br />
+            <img src={boat.logo_url} alt={`${boat.name} logo`} style={{ maxWidth: "200px" }} />
+          </p>
+        )}
+
+        <p>
+          <label>Upload New Logo</label>
+          <br />
+          <input name="logo_file" type="file" accept="image/*" />
         </p>
 
         <p>
