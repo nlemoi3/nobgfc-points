@@ -20,6 +20,7 @@ export default function HomePage() {
         <li><Link href="/official-angler-standings">Official Angler Standings</Link></li>
         <li><Link href="/awards">Awards</Link></li>
         <li><Link href="/dashboard">Dashboard</Link></li>
+        <li><Link href="/tournament-standings">Tournament Standings</Link></li>
       </ul>
     </main>
   );
