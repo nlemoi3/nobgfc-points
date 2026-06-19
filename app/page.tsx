@@ -21,9 +21,12 @@ export default function HomePage() {
         <li><Link href="/awards">Awards</Link></li>
         <li><Link href="/dashboard">Dashboard</Link></li>
         <li><Link href="/tournament-standings">Tournament Standings</Link></li>
-        <Link href="/admin/boat-profile-requests" style={{ marginRight: "15px" }}>
-  Profile Requests
-</Link>
+        <li>
+  <Link href="/admin/boat-profile-requests">
+    Profile Requests
+  </Link>
+</li>
+<li><Link href="/admin">Admin</Link></li>
       </ul>
     </main>
   );
