@@ -94,6 +94,7 @@ export default async function EditEventPage({
             <option value="scheduled">scheduled</option>
             <option value="rescheduled">rescheduled</option>
             <option value="cancelled">cancelled</option>
+            <option value="locked">locked</option>
             <option value="completed">completed</option>
           </select>
         </p>
