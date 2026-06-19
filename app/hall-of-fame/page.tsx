@@ -187,6 +187,10 @@ const { data: catches } = await supabase
     <main style={{ padding: "40px", fontFamily: "Arial, sans-serif" }}>
       <h1>Hall of Fame</h1>
 
+      <p>
+  <Link href="/records">View Club Records</Link>
+</p>
+
       <h2>Largest Fish Records</h2>
 
       <div style={{ display: "flex", gap: "20px", flexWrap: "wrap", marginBottom: "30px" }}>
