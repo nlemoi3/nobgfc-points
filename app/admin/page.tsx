@@ -27,6 +27,11 @@ export default function AdminPage() {
           </Link>
         </li>
       </ul>
+      <h2>Scoring Tools</h2>
+<ul>
+  <li><Link href="/admin/scoring-audit">Scoring Audit</Link></li>
+  <li><Link href="/admin/recalculate-scores">Recalculate Scores</Link></li>
+</ul>
     </main>
   );
 }
