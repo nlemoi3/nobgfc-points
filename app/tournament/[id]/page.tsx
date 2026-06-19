@@ -182,7 +182,7 @@ boatScores[boat].points += Number(c.points_awarded || 0);
             </tr>
           </thead>
           <tbody>
-            {{boatStandings.map(([boat, result], index) => (
+            {boatStandings.map(([boat, result], index) => (
   <tr key={boat}>
     <td>{index + 1}</td>
     <td>
