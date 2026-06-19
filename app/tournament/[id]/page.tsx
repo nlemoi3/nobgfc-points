@@ -281,7 +281,11 @@ boatScores[boat].points += Number(c.points_awarded || 0);
                 <td>
                   {c.anglers?.first_name} {c.anglers?.last_name}
                 </td>
-                <td>{c.species?.name}</td>
+                <td>
+  <Link href={`/catches/${c.id}`}>
+    {c.species?.name}
+  </Link>
+</td>
                 <td>{c.weight ? `${c.weight} lbs` : "Released"}</td>
                 <td>{c.points_awarded}</td>
               </tr>

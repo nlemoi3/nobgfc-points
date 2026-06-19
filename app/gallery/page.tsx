@@ -55,18 +55,18 @@ export default async function GalleryPage() {
                 padding: "12px",
               }}
             >
-              <a href={c.photo_url} target="_blank">
-                <img
-                  src={c.photo_url}
-                  alt="Catch"
-                  style={{
-                    width: "100%",
-                    height: "220px",
-                    objectFit: "cover",
-                    marginBottom: "10px",
-                  }}
-                />
-              </a>
+              <Link href={`/catches/${c.id}`}>
+  <img
+    src={c.photo_url}
+    alt="Catch"
+    style={{
+      width: "100%",
+      height: "220px",
+      objectFit: "cover",
+      marginBottom: "10px",
+    }}
+  />
+</Link>
 
               <h3>{c.species?.name || "Catch"}</h3>
 

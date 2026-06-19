@@ -245,7 +245,11 @@ export default async function AnglerProfilePage({
                     relationName(c.boats)
                   )}
                 </td>
-                <td>{relationName(c.species)}</td>
+                <td>
+  <Link href={`/catches/${c.id}`}>
+    {relationName(c.species)}
+  </Link>
+</td>
                 <td>{c.weight ? `${c.weight} lbs` : "Released"}</td>
                 <td>{c.released ? "Yes" : "No"}</td>
                 <td>{c.tagged ? "Yes" : "No"}</td>

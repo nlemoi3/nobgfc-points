@@ -453,7 +453,11 @@ const careerPoints = boatCatches.reduce(
     </>
   )}
 </td>
-                  <td>{c.species?.name}</td>
+                  <td>
+  <Link href={`/catches/${c.id}`}>
+    {c.species?.name}
+  </Link>
+</td>
                   <td>{c.weight ? `${c.weight} lbs` : "Released"}</td>
                   <td>{c.released ? "Yes" : "No"}</td>
                   <td>{c.tagged ? "Yes" : "No"}</td>
