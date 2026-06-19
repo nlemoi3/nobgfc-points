@@ -61,7 +61,7 @@ const { data: catches, error } = await supabase
         return (
           <section key={eventId} style={{ marginBottom: "40px" }}>
             <h2>
-              <Link href={`/tournament/${eventId}`}>{event?.name}</Link>
+              <Link href={`/tournaments/${eventId}`}>{event?.name}</Link>
             </h2>
 
             <p>
