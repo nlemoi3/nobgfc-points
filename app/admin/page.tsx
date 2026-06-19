@@ -31,6 +31,11 @@ export default function AdminPage() {
 <ul>
   <li><Link href="/admin/scoring-audit">Scoring Audit</Link></li>
   <li><Link href="/admin/recalculate-scores">Recalculate Scores</Link></li>
+  <li>
+  <Link href="/admin/season-champions">
+    Season Champions
+  </Link>
+</li>
 </ul>
     </main>
   );
