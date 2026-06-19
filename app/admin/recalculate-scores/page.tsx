@@ -72,9 +72,7 @@ const { data: catches, error } = await supabase
   if (error) throw new Error(error.message);
 
   for (const catchRecord of catches || []) {
-    const eventStatus = Array.isArray(catchRecord.events)
-  ? catchRecord.events[0]?.status
-  : catchRecord.events?.status;
+const eventStatus = (catchRecord as any).events?.status;
 
 if (eventStatus === "locked") {
   continue;
