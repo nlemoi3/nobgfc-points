@@ -117,7 +117,29 @@ const { data: boatAwards } = await supabase
   .eq("boat_id", boatId)
   .order("award_year", { ascending: false });
 
+  const { data: historicalRows } = await supabase
+  .from("historical_boat_standings")
+  .select("*")
+  .order("season_year", { ascending: false });
+
   const boatCatches = (allCatches || []).filter((c: any) => c.boat_id === boatId);
+
+  function normalizeBoatName(name: string) {
+  return name
+    .toLowerCase()
+    .replace(/['’]/g, "")
+    .replace(/&/g, "and")
+    .replace(/-/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+const historicalResults =
+  historicalRows?.filter(
+    (row: any) =>
+      normalizeBoatName(row.boat_name) ===
+      normalizeBoatName(boat.name)
+  ) || [];
 
   const groupedByBoat: Record<string, any[]> = {};
 
@@ -289,6 +311,37 @@ const { data: boatAwards } = await supabase
   </table>
 ) : (
   <p>No boat awards recorded.</p>
+)}
+
+<h2>Historical Season Results</h2>
+
+{historicalResults.length > 0 ? (
+  <table
+    border={1}
+    cellPadding={8}
+    style={{ borderCollapse: "collapse", marginBottom: "30px" }}
+  >
+    <thead>
+      <tr>
+        <th>Year</th>
+        <th>Rank</th>
+        <th>Points</th>
+        <th>Notes</th>
+      </tr>
+    </thead>
+    <tbody>
+      {historicalResults.map((row: any) => (
+        <tr key={row.id}>
+          <td>{row.season_year}</td>
+          <td>{row.rank}</td>
+          <td>{Number(row.points).toFixed(0)}</td>
+          <td>{row.notes || "-"}</td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+) : (
+  <p>No historical season results found.</p>
 )}
 
       <h2>Tournament History</h2>
