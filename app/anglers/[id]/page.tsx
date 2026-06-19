@@ -52,6 +52,12 @@ export default async function AnglerProfilePage({
     return <main style={{ padding: "40px" }}>Angler not found.</main>;
   }
 
+  const { data: awards } = await supabase
+  .from("angler_awards")
+  .select("*")
+  .eq("angler_id", anglerId)
+  .order("award_year", { ascending: false });
+  
   const totalPoints =
     catches?.reduce(
       (total: number, c: any) => total + Number(c.points_awarded || 0),
@@ -140,7 +146,37 @@ export default async function AnglerProfilePage({
         <p>No weighed fish yet.</p>
       )}
 
-      <h2>Boats Fished</h2>
+      <h2>Awards</h2>
+
+{awards && awards.length > 0 ? (
+  <table
+    border={1}
+    cellPadding={8}
+    style={{ borderCollapse: "collapse", marginBottom: "30px" }}
+  >
+    <thead>
+      <tr>
+        <th>Year</th>
+        <th>Award</th>
+        <th>Notes</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      {awards.map((award: any) => (
+        <tr key={award.id}>
+          <td>{award.award_year}</td>
+          <td>{award.award_name}</td>
+          <td>{award.notes || "-"}</td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+) : (
+  <p>No awards recorded.</p>
+)}
+
+<h2>Boats Fished</h2>
 
       {boatsFished.length > 0 ? (
         <ul>
