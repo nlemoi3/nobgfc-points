@@ -111,6 +111,11 @@ export default async function BoatProfilePage({
   if (!boat) {
     return <main style={{ padding: "40px" }}>Boat not found.</main>;
   }
+const { data: boatAwards } = await supabase
+  .from("boat_awards")
+  .select("*")
+  .eq("boat_id", boatId)
+  .order("award_year", { ascending: false });
 
   const boatCatches = (allCatches || []).filter((c: any) => c.boat_id === boatId);
 
@@ -260,6 +265,31 @@ export default async function BoatProfilePage({
         <LargestFishCard title="Largest Wahoo" catchRecord={largestWahoo} />
         <LargestFishCard title="Largest Dolphin" catchRecord={largestDolphin} />
       </div>
+
+<h2>Boat Awards</h2>
+
+{boatAwards && boatAwards.length > 0 ? (
+  <table border={1} cellPadding={8} style={{ borderCollapse: "collapse", marginBottom: "30px" }}>
+    <thead>
+      <tr>
+        <th>Year</th>
+        <th>Award</th>
+        <th>Notes</th>
+      </tr>
+    </thead>
+    <tbody>
+      {boatAwards.map((award: any) => (
+        <tr key={award.id}>
+          <td>{award.award_year}</td>
+          <td>{award.award_name}</td>
+          <td>{award.notes || "-"}</td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+) : (
+  <p>No boat awards recorded.</p>
+)}
 
       <h2>Tournament History</h2>
 
