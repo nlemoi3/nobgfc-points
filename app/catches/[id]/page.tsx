@@ -15,6 +15,14 @@ function formatDateTime(value: string | null) {
   });
 }
 
+function relationName(value: any) {
+  return Array.isArray(value) ? value[0]?.name : value?.name;
+}
+
+function relationId(value: any) {
+  return Array.isArray(value) ? value[0]?.id : value?.id;
+}
+
 export default async function CatchDetailPage({
   params,
 }: {
@@ -55,20 +63,35 @@ export default async function CatchDetailPage({
     );
   }
 
+  const species = relationName(catchRecord.species) || "Catch";
+  const boatId = relationId(catchRecord.boats);
+  const boatName = relationName(catchRecord.boats);
+  const anglerId = relationId(catchRecord.anglers);
+  const eventId = relationId(catchRecord.events);
+  const eventName = relationName(catchRecord.events);
+
+  const anglerName = Array.isArray(catchRecord.anglers)
+    ? `${catchRecord.anglers[0]?.first_name || ""} ${
+        catchRecord.anglers[0]?.last_name || ""
+      }`.trim()
+    : `${catchRecord.anglers?.first_name || ""} ${
+        catchRecord.anglers?.last_name || ""
+      }`.trim();
+
   return (
     <main style={{ padding: "40px", fontFamily: "Arial, sans-serif" }}>
       <p>
         <Link href="/catches">← Back to Catches</Link>
       </p>
 
-      <h1>{catchRecord.species?.name || "Catch"}</h1>
+      <h1>{species}</h1>
 
       {catchRecord.photo_url && (
         <p>
           <a href={catchRecord.photo_url} target="_blank">
             <img
               src={catchRecord.photo_url}
-              alt={catchRecord.species?.name || "Catch"}
+              alt={species}
               style={{
                 maxWidth: "700px",
                 width: "100%",
@@ -127,36 +150,28 @@ export default async function CatchDetailPage({
 
       <p>
         <strong>Boat:</strong>{" "}
-        {catchRecord.boats?.id ? (
-          <Link href={`/boats/${catchRecord.boats.id}`}>
-            {catchRecord.boats?.name}
-          </Link>
+        {boatId ? (
+          <Link href={`/boats/${boatId}`}>{boatName}</Link>
         ) : (
-          catchRecord.boats?.name || "-"
+          boatName || "-"
         )}
       </p>
 
       <p>
         <strong>Angler:</strong>{" "}
-        {catchRecord.anglers?.id ? (
-          <Link href={`/anglers/${catchRecord.anglers.id}`}>
-            {catchRecord.anglers?.first_name} {catchRecord.anglers?.last_name}
-          </Link>
+        {anglerId ? (
+          <Link href={`/anglers/${anglerId}`}>{anglerName}</Link>
         ) : (
-          <>
-            {catchRecord.anglers?.first_name} {catchRecord.anglers?.last_name}
-          </>
+          anglerName || "-"
         )}
       </p>
 
       <p>
         <strong>Tournament:</strong>{" "}
-        {catchRecord.events?.id ? (
-          <Link href={`/tournaments/${catchRecord.events.id}`}>
-            {catchRecord.events?.name}
-          </Link>
+        {eventId ? (
+          <Link href={`/tournaments/${eventId}`}>{eventName}</Link>
         ) : (
-          catchRecord.events?.name || "-"
+          eventName || "-"
         )}
       </p>
 
@@ -169,9 +184,7 @@ export default async function CatchDetailPage({
       </p>
 
       <p style={{ marginTop: "30px" }}>
-        <Link href={`/admin/catches/${catchRecord.id}`}>
-          Edit Catch
-        </Link>
+        <Link href={`/admin/catches/${catchRecord.id}`}>Edit Catch</Link>
       </p>
     </main>
   );
