@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import Link from "next/link";
 
 function NavGroup({
@@ -5,7 +6,7 @@ function NavGroup({
   children,
 }: {
   title: string;
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
   return (
     <details style={{ display: "inline-block", marginRight: "18px" }}>
