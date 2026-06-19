@@ -168,6 +168,13 @@ const historicalResults =
   const blueMarlinCount = boatCatches.filter(
     (c: any) => c.species?.name === "Blue Marlin"
   ).length;
+const totalApprovedCatches = boatCatches.length;
+
+const careerPoints = boatCatches.reduce(
+  (total: number, c: any) => total + Number(c.points_awarded || 0),
+  0
+);
+
 
   const largestBlueMarlin = boatCatches
     .filter((c: any) => c.species?.name === "Blue Marlin" && c.weight)
@@ -243,6 +250,8 @@ const historicalResults =
         <StatCard title="Official Points" value={officialPoints.toFixed(1)} />
         <StatCard title="Blue Marlin Count" value={blueMarlinCount} />
         <StatCard title="Tournament Appearances" value={tournamentAppearances} />
+        <StatCard title="Career Points" value={careerPoints.toFixed(1)} />
+<StatCard title="Approved Catches" value={totalApprovedCatches} />
       </div>
 
       <h2>Boat Details</h2>
