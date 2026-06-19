@@ -34,6 +34,7 @@ export default async function AdminAwardsPage() {
             <th>Year</th>
             <th>Award</th>
             <th>Angler</th>
+            <th>Action</th>
           </tr>
         </thead>
 
@@ -46,6 +47,9 @@ export default async function AdminAwardsPage() {
                 {award.anglers?.first_name}{" "}
                 {award.anglers?.last_name}
               </td>
+              <td>
+  <Link href={`/admin/awards/${award.id}`}>Edit / Delete</Link>
+</td>
             </tr>
           ))}
         </tbody>
