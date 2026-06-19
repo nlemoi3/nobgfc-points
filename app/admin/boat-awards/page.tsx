@@ -25,10 +25,11 @@ export default async function AdminBoatAwardsPage() {
       <table border={1} cellPadding={8}>
         <thead>
           <tr>
-            <th>Year</th>
-            <th>Award</th>
-            <th>Boat</th>
-          </tr>
+  <th>Year</th>
+  <th>Award</th>
+  <th>Boat</th>
+  <th>Action</th>
+</tr>
         </thead>
 
         <tbody>
@@ -37,6 +38,11 @@ export default async function AdminBoatAwardsPage() {
               <td>{award.award_year}</td>
               <td>{award.award_name}</td>
               <td>{award.boats?.name}</td>
+              <td>
+  <Link href={`/admin/boat-awards/${award.id}`}>
+    Edit / Delete
+  </Link>
+</td>
             </tr>
           ))}
         </tbody>
