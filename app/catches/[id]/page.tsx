@@ -70,13 +70,11 @@ export default async function CatchDetailPage({
   const eventId = relationId(catchRecord.events);
   const eventName = relationName(catchRecord.events);
 
-  const anglerName = Array.isArray(catchRecord.anglers)
-    ? `${catchRecord.anglers[0]?.first_name || ""} ${
-        catchRecord.anglers[0]?.last_name || ""
-      }`.trim()
-    : `${catchRecord.anglers?.first_name || ""} ${
-        catchRecord.anglers?.last_name || ""
-      }`.trim();
+  const anglerValue: any = catchRecord.anglers;
+
+const anglerName = Array.isArray(anglerValue)
+  ? `${anglerValue[0]?.first_name || ""} ${anglerValue[0]?.last_name || ""}`.trim()
+  : `${anglerValue?.first_name || ""} ${anglerValue?.last_name || ""}`.trim();
 
   return (
     <main style={{ padding: "40px", fontFamily: "Arial, sans-serif" }}>
