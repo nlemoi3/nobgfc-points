@@ -43,7 +43,7 @@ export default async function TournamentPage({
     .eq("event_id", eventId)
     .eq("status", "approved");
 
-  const boatScores: Record<string, number> = {};
+  const boatScores: Record<string, { points: number; id?: number }> = {};
   const anglerScores: Record<string, number> = {};
 
   catches?.forEach((c: any) => {
@@ -52,12 +52,18 @@ export default async function TournamentPage({
       c.anglers?.last_name || ""
     }`.trim();
 
-    boatScores[boat] = (boatScores[boat] || 0) + Number(c.points_awarded || 0);
+    if (!boatScores[boat]) {
+  boatScores[boat] = { points: 0, id: c.boats?.id };
+}
+
+boatScores[boat].points += Number(c.points_awarded || 0);
     anglerScores[angler] =
       (anglerScores[angler] || 0) + Number(c.points_awarded || 0);
   });
 
-  const boatStandings = Object.entries(boatScores).sort((a, b) => b[1] - a[1]);
+  const boatStandings = Object.entries(boatScores).sort(
+  (a, b) => b[1].points - a[1].points
+);
   const anglerStandings = Object.entries(anglerScores).sort(
     (a, b) => b[1] - a[1]
   );
@@ -115,7 +121,7 @@ export default async function TournamentPage({
             <>
               <strong>{firstPlaceBoat[0]}</strong>
               <br />
-              {Number(firstPlaceBoat[1]).toFixed(1)} points
+              {firstPlaceBoat[1].points.toFixed(1)} points
             </>
           ) : (
             "No Results"
@@ -128,7 +134,7 @@ export default async function TournamentPage({
             <>
               <strong>{secondPlaceBoat[0]}</strong>
               <br />
-              {Number(secondPlaceBoat[1]).toFixed(1)} points
+              {secondPlaceBoat[1].points.toFixed(1)} points
             </>
           ) : (
             "No Results"
@@ -141,7 +147,7 @@ export default async function TournamentPage({
             <>
               <strong>{thirdPlaceBoat[0]}</strong>
               <br />
-              {Number(thirdPlaceBoat[1]).toFixed(1)} points
+              {thirdPlaceBoat[1].points.toFixed(1)} points
             </>
           ) : (
             "No Results"
@@ -176,13 +182,19 @@ export default async function TournamentPage({
             </tr>
           </thead>
           <tbody>
-            {boatStandings.map(([boat, points], index) => (
-              <tr key={boat}>
-                <td>{index + 1}</td>
-                <td>{boat}</td>
-                <td>{points.toFixed(1)}</td>
-              </tr>
-            ))}
+            {{boatStandings.map(([boat, result], index) => (
+  <tr key={boat}>
+    <td>{index + 1}</td>
+    <td>
+      {result.id ? (
+        <Link href={`/boats/${result.id}`}>{boat}</Link>
+      ) : (
+        boat
+      )}
+    </td>
+    <td>{result.points.toFixed(1)}</td>
+  </tr>
+))}
           </tbody>
         </table>
       )}
