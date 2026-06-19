@@ -13,6 +13,9 @@ async function updateAngler(formData: FormData) {
       last_name: String(formData.get("last_name") || ""),
       is_member: formData.get("is_member") === "on",
       is_youth: formData.get("is_youth") === "on",
+      photo_url: String(formData.get("photo_url") || ""),
+      date_of_birth: formData.get("date_of_birth") || null,
+      biography: String(formData.get("biography") || ""),
     })
     .eq("id", id);
 
@@ -63,6 +66,16 @@ export default async function EditAnglerPage({
         </p>
 
         <p>
+          <label>Date of Birth</label>
+          <br />
+          <input
+            name="date_of_birth"
+            type="date"
+            defaultValue={angler.date_of_birth || ""}
+          />
+        </p>
+
+        <p>
           <label>
             <input
               name="is_member"
@@ -82,6 +95,43 @@ export default async function EditAnglerPage({
             />{" "}
             Youth
           </label>
+        </p>
+
+        <hr />
+
+        <h2>Profile</h2>
+
+        {angler.photo_url && (
+          <p>
+            <strong>Current Photo:</strong>
+            <br />
+            <img
+              src={angler.photo_url}
+              alt={`${angler.first_name} ${angler.last_name}`}
+              style={{ maxWidth: "250px" }}
+            />
+          </p>
+        )}
+
+        <p>
+          <label>Photo URL</label>
+          <br />
+          <input
+            name="photo_url"
+            defaultValue={angler.photo_url || ""}
+            style={{ width: "500px" }}
+          />
+        </p>
+
+        <p>
+          <label>Biography</label>
+          <br />
+          <textarea
+            name="biography"
+            defaultValue={angler.biography || ""}
+            rows={5}
+            style={{ width: "500px" }}
+          />
         </p>
 
         <button type="submit">Save Angler</button>
