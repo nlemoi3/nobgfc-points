@@ -36,6 +36,11 @@ export default function AdminPage() {
     Season Champions
   </Link>
 </li>
+<li>
+  <Link href="/admin/season-champions/generate">
+    Generate Season Awards
+  </Link>
+</li>
 </ul>
     </main>
   );
