@@ -2,38 +2,47 @@ import Link from "next/link";
 import { supabase } from "../../../lib/supabase";
 
 export default async function AdminAwardsPage() {
-  const { data: awards, error } = await supabase
+  const { data: awards, error: awardsError } = await supabase
     .from("angler_awards")
-    .select(`
-      id,
-      award_name,
-      award_year,
-      anglers(first_name,last_name)
-    `)
+    .select("*")
     .order("award_year", { ascending: false });
+
+  const { data: anglers, error: anglersError } = await supabase
+    .from("anglers")
+    .select("id,first_name,last_name");
+
+  const anglerNameById: Record<number, string> = {};
+
+  anglers?.forEach((angler: any) => {
+    anglerNameById[angler.id] =
+      `${angler.first_name || ""} ${angler.last_name || ""}`.trim();
+  });
 
   return (
     <main style={{ padding: "40px", fontFamily: "Arial, sans-serif" }}>
-      <h1>Awards</h1>
+      <h1>Angler Awards</h1>
 
       <p>
-        <Link href="/admin/awards/new">
-          Add Award
-        </Link>
+        <Link href="/admin/awards/new">Add Award</Link>
       </p>
 
-      {error && (
-        <p style={{ color: "red" }}>
-          Error: {error.message}
-        </p>
+      {awardsError && (
+        <p style={{ color: "red" }}>Awards Error: {awardsError.message}</p>
       )}
 
-      <table border={1} cellPadding={8}>
+      {anglersError && (
+        <p style={{ color: "red" }}>Anglers Error: {anglersError.message}</p>
+      )}
+
+      {awards?.length === 0 && <p>No angler awards entered yet.</p>}
+
+      <table border={1} cellPadding={8} style={{ borderCollapse: "collapse" }}>
         <thead>
           <tr>
             <th>Year</th>
             <th>Award</th>
             <th>Angler</th>
+            <th>Notes</th>
             <th>Action</th>
           </tr>
         </thead>
@@ -43,13 +52,13 @@ export default async function AdminAwardsPage() {
             <tr key={award.id}>
               <td>{award.award_year}</td>
               <td>{award.award_name}</td>
+              <td>{anglerNameById[award.angler_id] || "Unknown Angler"}</td>
+              <td>{award.notes || "-"}</td>
               <td>
-                {award.anglers?.first_name}{" "}
-                {award.anglers?.last_name}
+                <Link href={`/admin/awards/${award.id}`}>
+                  Edit / Delete
+                </Link>
               </td>
-              <td>
-  <Link href={`/admin/awards/${award.id}`}>Edit / Delete</Link>
-</td>
             </tr>
           ))}
         </tbody>
