@@ -1,4 +1,3 @@
-import Nav from "./components/Nav";
 import SiteNav from "./components/SiteNav";
 
 export const metadata = {
