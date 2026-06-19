@@ -211,6 +211,13 @@ export default async function RecordsPage() {
     <main style={{ padding: "40px", fontFamily: "Arial, sans-serif" }}>
       <h1>Club Records</h1>
 
+      <p>
+  <Link href="/record-progressions">
+    View Record Progressions
+  </Link>
+</p>
+
+
       {error && (
         <p style={{ color: "red" }}>
           Error: {error.message}
