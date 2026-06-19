@@ -7,6 +7,21 @@ async function generateAwards(formData: FormData) {
 
   const year = Number(formData.get("year"));
 
+  await supabase
+  .from("boat_awards")
+  .delete()
+  .eq("award_year", year)
+  .eq("award_name", "Boat Champion");
+
+await supabase
+  .from("angler_awards")
+  .delete()
+  .eq("award_year", year)
+  .in("award_name", [
+    "Angling Champion",
+    "Dutch Prager Youth Champion",
+  ]);
+
   const { data: catches } = await supabase
     .from("catches")
     .select(`
