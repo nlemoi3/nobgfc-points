@@ -27,20 +27,24 @@ function RecordCard({
       {catchRecord ? (
         <>
           {catchRecord.photo_url && (
-            <img
-              src={catchRecord.photo_url}
-              alt={title}
-              style={{
-                maxWidth: "220px",
-                display: "block",
-                marginBottom: "10px",
-              }}
-            />
-          )}
+  <Link href={`/catches/${catchRecord.id}`}>
+    <img
+      src={catchRecord.photo_url}
+      alt={title}
+      style={{
+        maxWidth: "220px",
+        display: "block",
+        marginBottom: "10px",
+      }}
+    />
+  </Link>
+)}
 
           <p>
-            <strong>{catchRecord.weight} lbs</strong>
-          </p>
+  <Link href={`/catches/${catchRecord.id}`}>
+    <strong>{catchRecord.weight} lbs</strong>
+  </Link>
+</p>
 
           <p>
             {catchRecord.anglers?.id ? (
