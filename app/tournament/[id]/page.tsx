@@ -1,4 +1,7 @@
+import Link from "next/link";
 import { supabase } from "../../../lib/supabase";
+
+export const dynamic = "force-dynamic";
 
 function formatDate(value: string | null) {
   if (!value) return "No date";
@@ -24,20 +27,21 @@ export default async function TournamentPage({
     .eq("id", eventId)
     .single();
 
-const { data: catches } = await supabase
-  .from("catches")
-  .select(`
-    id,
-    weight,
-    points_awarded,
-    status,
-    catch_datetime,
-    boats(name),
-    anglers(first_name,last_name),
-    species(name)
-  `)
-  .eq("event_id", eventId)
-  .eq("status", "approved");
+  const { data: catches } = await supabase
+    .from("catches")
+    .select(`
+      id,
+      weight,
+      points_awarded,
+      status,
+      catch_datetime,
+      photo_url,
+      boats(id,name),
+      anglers(first_name,last_name),
+      species(name)
+    `)
+    .eq("event_id", eventId)
+    .eq("status", "approved");
 
   const boatScores: Record<string, number> = {};
   const anglerScores: Record<string, number> = {};
@@ -84,6 +88,10 @@ const { data: catches } = await supabase
 
   return (
     <main style={{ padding: "40px", fontFamily: "Arial, sans-serif" }}>
+      <p>
+        <Link href="/tournaments">← Back to Tournament Archive</Link>
+      </p>
+
       <h1>{event?.name || "Tournament"}</h1>
 
       <p>
@@ -221,6 +229,7 @@ const { data: catches } = await supabase
         <table border={1} cellPadding={8}>
           <thead>
             <tr>
+              <th>Photo</th>
               <th>Boat</th>
               <th>Angler</th>
               <th>Species</th>
@@ -231,7 +240,32 @@ const { data: catches } = await supabase
           <tbody>
             {catches?.map((c: any) => (
               <tr key={c.id}>
-                <td>{c.boats?.name}</td>
+                <td>
+                  {c.photo_url ? (
+                    <a href={c.photo_url} target="_blank">
+                      <img
+                        src={c.photo_url}
+                        alt="Catch"
+                        style={{
+                          width: "80px",
+                          height: "80px",
+                          objectFit: "cover",
+                        }}
+                      />
+                    </a>
+                  ) : (
+                    "-"
+                  )}
+                </td>
+
+                <td>
+                  {c.boats?.id ? (
+                    <Link href={`/boats/${c.boats.id}`}>{c.boats?.name}</Link>
+                  ) : (
+                    c.boats?.name
+                  )}
+                </td>
+
                 <td>
                   {c.anglers?.first_name} {c.anglers?.last_name}
                 </td>
