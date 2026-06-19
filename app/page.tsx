@@ -39,6 +39,7 @@ export default function HomePage() {
 <li><Link href="/records">Club Records</Link></li>
 <li><Link href="/record-progressions">Record Progressions</Link></li>
 <li><Link href="/stats">Club Statistics</Link></li>
+<li><Link href="/gallery">Photo Gallery</Link></li>
 
       </ul>
     </main>
