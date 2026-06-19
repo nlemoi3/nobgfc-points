@@ -1,4 +1,5 @@
 import Nav from "./components/Nav";
+import SiteNav from "./components/SiteNav";
 
 export const metadata = {
   title: "NOBGFC Points",
@@ -6,6 +7,7 @@ export const metadata = {
 };
 
 export default function RootLayout({
+  <SiteNav />
   children,
 }: {
   children: React.ReactNode;
