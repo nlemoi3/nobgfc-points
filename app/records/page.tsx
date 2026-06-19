@@ -36,7 +36,17 @@ function RecordCard({
 
           <p><strong>{catchRecord.weight} lbs</strong></p>
 
-          <p>{catchRecord.anglers?.first_name} {catchRecord.anglers?.last_name}</p>
+          <p>
+  {catchRecord.anglers?.id ? (
+    <Link href={`/anglers/${catchRecord.anglers.id}`}>
+      {catchRecord.anglers?.first_name} {catchRecord.anglers?.last_name}
+    </Link>
+  ) : (
+    <>
+      {catchRecord.anglers?.first_name} {catchRecord.anglers?.last_name}
+    </>
+  )}
+</p>
 
           <p>
             {catchRecord.boats?.id ? (
@@ -95,7 +105,7 @@ export default async function RecordsPage() {
       catch_datetime,
       photo_url,
       boats(id,name),
-      anglers(first_name,last_name),
+      anglers(id,first_name,last_name),
       species(name),
       events(name)
     `)
