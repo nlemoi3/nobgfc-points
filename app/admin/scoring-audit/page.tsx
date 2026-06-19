@@ -83,7 +83,7 @@ export default async function ScoringAuditPage() {
       boats(name),
       anglers(first_name,last_name),
       species(name),
-      events(name)
+      events(name,status)
     `)
     .order("catch_datetime", { ascending: false });
 
@@ -135,6 +135,7 @@ export default async function ScoringAuditPage() {
             <th>Status</th>
             <th>Date</th>
             <th>Event</th>
+            <th>Event Status</th>
             <th>Boat</th>
             <th>Angler</th>
             <th>Species</th>
@@ -160,6 +161,7 @@ export default async function ScoringAuditPage() {
               <td>{c.matches ? "OK" : "CHECK"}</td>
               <td>{formatDateTime(c.catch_datetime)}</td>
               <td>{c.events?.name}</td>
+              <td>{c.events?.status || "-"}</td>
               <td>{c.boats?.name}</td>
               <td>
                 {c.anglers?.first_name} {c.anglers?.last_name}
