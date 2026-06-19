@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { unstable_noStore as noStore } from "next/cache";
 import { supabase } from "../../../lib/supabase";
 
@@ -144,6 +145,7 @@ export default async function ScoringAuditPage() {
             <th>Stored</th>
             <th>Expected</th>
             <th>Difference</th>
+            <th>Action</th>
           </tr>
         </thead>
 
@@ -170,6 +172,9 @@ export default async function ScoringAuditPage() {
               <td>{c.stored.toFixed(1)}</td>
               <td>{c.expected.toFixed(1)}</td>
               <td>{c.difference.toFixed(1)}</td>
+              <td>
+  <Link href={`/admin/catches/${c.id}`}>Edit</Link>
+</td>
             </tr>
           ))}
         </tbody>
