@@ -49,6 +49,10 @@ export default function AdminPage() {
   <li><Link href="/admin/season-champions/generate">Generate Season Awards</Link></li>
   <li><Link href="/champions">Hall of Champions</Link></li>
 <li><Link href="/historical-standings">Historical Boat Standings</Link></li>
+<li><Link href="/admin/historical-standings">Historical Standings</Link></li>
+<li><Link href="/admin/season-champions">Season Champions</Link></li>
+<li><Link href="/admin/boat-awards">Boat Awards</Link></li>
+<li><Link href="/admin/awards">Angler Awards</Link></li>
 </ul>
 <p>
   <Link href="/admin/season-champions/generate">
