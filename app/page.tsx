@@ -30,6 +30,7 @@ export default function HomePage() {
 <li><Link href="/historical-standings">Historical Boat Standings</Link></li>
 <li><Link href="/champions">Hall of Champions</Link></li>
 <li><Link href="/anglers">Anglers</Link></li>
+<li><Link href="/tournaments">Tournament Archive</Link></li>
       </ul>
     </main>
   );
