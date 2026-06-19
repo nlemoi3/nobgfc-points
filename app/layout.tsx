@@ -1,4 +1,4 @@
-import Nav from "./components/Nav";
+import Nav from "./components/nav";
 
 export const metadata = {
   title: "NOBGFC Points",
@@ -6,7 +6,6 @@ export const metadata = {
 };
 
 export default function RootLayout({
-  <Nav />
   children,
 }: {
   children: React.ReactNode;
