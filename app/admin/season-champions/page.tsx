@@ -3,18 +3,20 @@ import { supabase } from "../../../lib/supabase";
 import { getOfficialEligiblePoints } from "../../../lib/scoring";
 
 export default async function SeasonChampionsPage() {
-  const { data: catches, error } = await supabase
-    .from("catches")
-    .select(`
-      id,
-      points_awarded,
-      released,
-      tagged,
-      weight,
-      boats(id,name),
-      anglers(id,first_name,last_name,is_member,is_youth),
-      species(name)
-    `);
+const { data: catches, error } = await supabase
+  .from("catches")
+  .select(`
+    id,
+    points_awarded,
+    released,
+    tagged,
+    status,
+    weight,
+    boats(id,name),
+    anglers(id,first_name,last_name,is_member,is_youth),
+    species(name)
+  `)
+  .eq("status", "approved");
 
   const boatCatches: Record<string, any[]> = {};
   const anglerCatches: Record<string, any[]> = {};
