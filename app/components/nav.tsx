@@ -37,7 +37,7 @@ function NavGroup({
   );
 }
 
-export default function Nav() {
+export default function nav() {
   return (
     <nav
       style={{
