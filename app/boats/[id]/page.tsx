@@ -103,7 +103,7 @@ export default async function BoatProfilePage({
     photo_url,
     boats(id,name),
     species(name),
-    anglers(first_name,last_name),
+    anglers(id,first_name,last_name),
     events(id,name)
   `)
   .eq("status", "approved");
@@ -433,10 +433,26 @@ const careerPoints = boatCatches.reduce(
                     )}
                   </td>
                   <td>{formatDateTime(c.catch_datetime)}</td>
-                  <td>{c.events?.name}</td>
                   <td>
-                    {c.anglers?.first_name} {c.anglers?.last_name}
-                  </td>
+  {c.events?.id ? (
+    <Link href={`/tournaments/${c.events.id}`}>
+      {c.events?.name}
+    </Link>
+  ) : (
+    c.events?.name
+  )}
+</td>
+                  <td>
+  {c.anglers?.id ? (
+    <Link href={`/anglers/${c.anglers.id}`}>
+      {c.anglers?.first_name} {c.anglers?.last_name}
+    </Link>
+  ) : (
+    <>
+      {c.anglers?.first_name} {c.anglers?.last_name}
+    </>
+  )}
+</td>
                   <td>{c.species?.name}</td>
                   <td>{c.weight ? `${c.weight} lbs` : "Released"}</td>
                   <td>{c.released ? "Yes" : "No"}</td>

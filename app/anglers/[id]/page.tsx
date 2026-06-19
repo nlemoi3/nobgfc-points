@@ -42,7 +42,7 @@ export default async function AnglerProfilePage({
       photo_url,
       boats(id,name),
       species(name),
-      events(name)
+      events(id,name)
     `)
     .eq("angler_id", anglerId)
     .eq("status", "approved")
@@ -229,7 +229,15 @@ export default async function AnglerProfilePage({
                   )}
                 </td>
                 <td>{formatDateTime(c.catch_datetime)}</td>
-                <td>{relationName(c.events)}</td>
+                <td>
+  {c.events?.id ? (
+    <Link href={`/tournaments/${c.events.id}`}>
+      {relationName(c.events)}
+    </Link>
+  ) : (
+    relationName(c.events)
+  )}
+</td>
                 <td>
                   {c.boats?.id ? (
                     <Link href={`/boats/${c.boats.id}`}>{relationName(c.boats)}</Link>
