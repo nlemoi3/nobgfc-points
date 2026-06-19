@@ -13,6 +13,11 @@ export default async function AdminHistoricalStandingsPage() {
   return (
     <main style={{ padding: "40px", fontFamily: "Arial, sans-serif" }}>
       <h1>Manage Historical Standings</h1>
+      <p>
+  <Link href="/admin/historical-standings/new">
+    Add Historical Standing
+  </Link>
+</p>
 
       {error && <p style={{ color: "red" }}>Error: {error.message}</p>}
 
