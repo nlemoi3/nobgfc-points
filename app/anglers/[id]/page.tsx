@@ -1,3 +1,4 @@
+// Angler profile type fix
 import Link from "next/link";
 import { supabase } from "../../../lib/supabase";
 
