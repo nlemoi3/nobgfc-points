@@ -30,23 +30,31 @@ function RecordCard({
             <img
               src={catchRecord.photo_url}
               alt={title}
-              style={{ maxWidth: "220px", display: "block", marginBottom: "10px" }}
+              style={{
+                maxWidth: "220px",
+                display: "block",
+                marginBottom: "10px",
+              }}
             />
           )}
 
-          <p><strong>{catchRecord.weight} lbs</strong></p>
+          <p>
+            <strong>{catchRecord.weight} lbs</strong>
+          </p>
 
           <p>
-  {catchRecord.anglers?.id ? (
-    <Link href={`/anglers/${catchRecord.anglers.id}`}>
-      {catchRecord.anglers?.first_name} {catchRecord.anglers?.last_name}
-    </Link>
-  ) : (
-    <>
-      {catchRecord.anglers?.first_name} {catchRecord.anglers?.last_name}
-    </>
-  )}
-</p>
+            {catchRecord.anglers?.id ? (
+              <Link href={`/anglers/${catchRecord.anglers.id}`}>
+                {catchRecord.anglers?.first_name}{" "}
+                {catchRecord.anglers?.last_name}
+              </Link>
+            ) : (
+              <>
+                {catchRecord.anglers?.first_name}{" "}
+                {catchRecord.anglers?.last_name}
+              </>
+            )}
+          </p>
 
           <p>
             {catchRecord.boats?.id ? (
@@ -72,10 +80,12 @@ function CountCard({
   title,
   name,
   count,
+  boatId,
 }: {
   title: string;
   name?: string;
   count?: number;
+  boatId?: number;
 }) {
   return (
     <div style={{ border: "1px solid #ccc", padding: "15px", minWidth: "260px" }}>
@@ -83,7 +93,16 @@ function CountCard({
 
       {name && count !== undefined ? (
         <>
-          <p><strong>{name}</strong></p>
+          <p>
+            <strong>
+              {boatId ? (
+                <Link href={`/boats/${boatId}`}>{name}</Link>
+              ) : (
+                name
+              )}
+            </strong>
+          </p>
+
           <p>{count}</p>
         </>
       ) : (
@@ -116,55 +135,87 @@ export default async function RecordsPage() {
       ?.filter((c: any) => speciesNames.includes(c.species?.name) && c.weight)
       .sort((a: any, b: any) => Number(b.weight) - Number(a.weight))[0];
 
-  const highestPointCatch = [...(catches || [])]
-    .sort(
-      (a: any, b: any) =>
-        Number(b.points_awarded || 0) - Number(a.points_awarded || 0)
-    )[0];
+  const highestPointCatch = [...(catches || [])].sort(
+    (a: any, b: any) =>
+      Number(b.points_awarded || 0) -
+      Number(a.points_awarded || 0)
+  )[0];
 
-  const blueMarlinReleaseCounts: Record<string, number> = {};
-  const whiteMarlinReleaseCounts: Record<string, number> = {};
-  const sailfishReleaseCounts: Record<string, number> = {};
+  const blueMarlinReleaseCounts: Record<
+    string,
+    { count: number; id?: number }
+  > = {};
+
+  const whiteMarlinReleaseCounts: Record<
+    string,
+    { count: number; id?: number }
+  > = {};
+
+  const sailfishReleaseCounts: Record<
+    string,
+    { count: number; id?: number }
+  > = {};
 
   catches?.forEach((c: any) => {
     const boatName = c.boats?.name || "Unknown Boat";
-    const speciesName = c.species?.name;
 
     if (!c.released) return;
 
-    if (speciesName === "Blue Marlin") {
-      blueMarlinReleaseCounts[boatName] =
-        (blueMarlinReleaseCounts[boatName] || 0) + 1;
+    if (c.species?.name === "Blue Marlin") {
+      if (!blueMarlinReleaseCounts[boatName]) {
+        blueMarlinReleaseCounts[boatName] = {
+          count: 0,
+          id: c.boats?.id,
+        };
+      }
+
+      blueMarlinReleaseCounts[boatName].count += 1;
     }
 
-    if (speciesName === "White Marlin") {
-      whiteMarlinReleaseCounts[boatName] =
-        (whiteMarlinReleaseCounts[boatName] || 0) + 1;
+    if (c.species?.name === "White Marlin") {
+      if (!whiteMarlinReleaseCounts[boatName]) {
+        whiteMarlinReleaseCounts[boatName] = {
+          count: 0,
+          id: c.boats?.id,
+        };
+      }
+
+      whiteMarlinReleaseCounts[boatName].count += 1;
     }
 
-    if (speciesName === "Sailfish") {
-      sailfishReleaseCounts[boatName] =
-        (sailfishReleaseCounts[boatName] || 0) + 1;
+    if (c.species?.name === "Sailfish") {
+      if (!sailfishReleaseCounts[boatName]) {
+        sailfishReleaseCounts[boatName] = {
+          count: 0,
+          id: c.boats?.id,
+        };
+      }
+
+      sailfishReleaseCounts[boatName].count += 1;
     }
   });
 
-  const topBlueRelease = Object.entries(blueMarlinReleaseCounts).sort(
-    (a, b) => b[1] - a[1]
-  )[0];
+  const topBlueRelease = Object.entries(
+    blueMarlinReleaseCounts
+  ).sort((a, b) => b[1].count - a[1].count)[0];
 
-  const topWhiteRelease = Object.entries(whiteMarlinReleaseCounts).sort(
-    (a, b) => b[1] - a[1]
-  )[0];
+  const topWhiteRelease = Object.entries(
+    whiteMarlinReleaseCounts
+  ).sort((a, b) => b[1].count - a[1].count)[0];
 
-  const topSailfishRelease = Object.entries(sailfishReleaseCounts).sort(
-    (a, b) => b[1] - a[1]
-  )[0];
+  const topSailfishRelease = Object.entries(
+    sailfishReleaseCounts
+  ).sort((a, b) => b[1].count - a[1].count)[0];
 
   return (
     <main style={{ padding: "40px", fontFamily: "Arial, sans-serif" }}>
       <h1>Club Records</h1>
 
-      {error && <p style={{ color: "red" }}>Error: {error.message}</p>}
+      {error && (
+        <p style={{ color: "red" }}>
+          Error: {error.message}
+        </p>
+      )}
 
       <h2>Largest Fish</h2>
 
@@ -180,7 +231,10 @@ export default async function RecordsPage() {
       <h2>Point Records</h2>
 
       <div style={{ display: "flex", gap: "20px", flexWrap: "wrap", marginBottom: "30px" }}>
-        <RecordCard title="Highest Point Catch" catchRecord={highestPointCatch} />
+        <RecordCard
+          title="Highest Point Catch"
+          catchRecord={highestPointCatch}
+        />
       </div>
 
       <h2>Release Records by Boat</h2>
@@ -189,19 +243,22 @@ export default async function RecordsPage() {
         <CountCard
           title="Most Blue Marlin Releases"
           name={topBlueRelease?.[0]}
-          count={topBlueRelease?.[1]}
+          count={topBlueRelease?.[1].count}
+          boatId={topBlueRelease?.[1].id}
         />
 
         <CountCard
           title="Most White Marlin Releases"
           name={topWhiteRelease?.[0]}
-          count={topWhiteRelease?.[1]}
+          count={topWhiteRelease?.[1].count}
+          boatId={topWhiteRelease?.[1].id}
         />
 
         <CountCard
           title="Most Sailfish Releases"
           name={topSailfishRelease?.[0]}
-          count={topSailfishRelease?.[1]}
+          count={topSailfishRelease?.[1].count}
+          boatId={topSailfishRelease?.[1].id}
         />
       </div>
     </main>
