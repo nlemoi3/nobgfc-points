@@ -308,7 +308,7 @@ const { data: boatAwards } = await supabase
               <tr key={eventName}>
                 <td>
                   {result.eventId ? (
-                    <Link href={`/tournament/${result.eventId}`}>{eventName}</Link>
+                    <Link href={`/tournaments/${result.eventId}`}>{eventName}</Link>
                   ) : (
                     eventName
                   )}
