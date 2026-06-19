@@ -12,6 +12,10 @@ function formatDateTime(value: string | null) {
   });
 }
 
+function relationName(value: any) {
+  return Array.isArray(value) ? value[0]?.name : value?.name;
+}
+
 export default async function AnglerProfilePage({
   params,
 }: {
@@ -54,21 +58,16 @@ export default async function AnglerProfilePage({
       0
     ) || 0;
 
-const blueMarlinCount =
-  catches?.filter((c: any) => {
-    const speciesName = Array.isArray(c.species)
-      ? c.species[0]?.name
-      : c.species?.name;
-
-    return speciesName === "Blue Marlin";
-  }).length || 0;
+  const blueMarlinCount =
+    catches?.filter((c: any) => relationName(c.species) === "Blue Marlin")
+      .length || 0;
 
   const largestFish = [...(catches || [])]
     .filter((c: any) => c.weight)
     .sort((a: any, b: any) => b.weight - a.weight)[0];
 
   const boatsFished = Array.from(
-    new Set((catches || []).map((c: any) => c.boats?.name).filter(Boolean))
+    new Set((catches || []).map((c: any) => relationName(c.boats)).filter(Boolean))
   );
 
   return (
@@ -130,11 +129,7 @@ const blueMarlinCount =
           )}
 
           <p>
-            <strong>
-  {Array.isArray(largestFish.species)
-    ? largestFish.species[0]?.name
-    : largestFish.species?.name}
-</strong>
+            <strong>{relationName(largestFish.species)}</strong>
             <br />
             {largestFish.weight} lbs
             <br />
@@ -198,19 +193,15 @@ const blueMarlinCount =
                   )}
                 </td>
                 <td>{formatDateTime(c.catch_datetime)}</td>
-                <td>{c.events?.name}</td>
+                <td>{relationName(c.events)}</td>
                 <td>
                   {c.boats?.id ? (
-                    <Link href={`/boats/${c.boats.id}`}>{c.boats?.name}</Link>
+                    <Link href={`/boats/${c.boats.id}`}>{relationName(c.boats)}</Link>
                   ) : (
-                    c.boats?.name
+                    relationName(c.boats)
                   )}
                 </td>
-                <td>
-  {Array.isArray(c.species)
-    ? c.species[0]?.name
-    : c.species?.name}
-</td>
+                <td>{relationName(c.species)}</td>
                 <td>{c.weight ? `${c.weight} lbs` : "Released"}</td>
                 <td>{c.released ? "Yes" : "No"}</td>
                 <td>{c.tagged ? "Yes" : "No"}</td>
@@ -223,6 +214,3 @@ const blueMarlinCount =
     </main>
   );
 }
-  
-
-
