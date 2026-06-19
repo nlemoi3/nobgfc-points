@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import Nav from "./components/nav";
+import nav from "./components/nav";
 
 export const metadata = {
   title: "NOBGFC Points",
@@ -14,7 +14,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body style={{ margin: 0 }}>
-        <Nav />
+        <nav />
         {children}
       </body>
     </html>
