@@ -30,7 +30,9 @@ export default async function ChampionsPage() {
     .eq("rank", 1)
     .order("season_year", { ascending: false });
 
-  const { data: boats } = await supabase.from("boats").select("id,name");
+  const { data: boats } = await supabase
+    .from("boats")
+    .select("id,name,photo_url,logo_url");
 
   const { data: anglers } = await supabase
     .from("anglers")
@@ -114,17 +116,36 @@ export default async function ChampionsPage() {
                 ? boatByNormalizedName[normalizeBoatName(boatName)]
                 : null;
 
+              const boatImage =
+                matchedBoat?.logo_url || matchedBoat?.photo_url || null;
+
               return (
                 <tr key={year}>
                   <td>{year}</td>
 
                   <td>
                     {boatName ? (
-                      matchedBoat ? (
-                        <Link href={`/boats/${matchedBoat.id}`}>{boatName}</Link>
-                      ) : (
-                        boatName
-                      )
+                      <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                        {boatImage && (
+                          <img
+                            src={boatImage}
+                            alt={boatName}
+                            style={{
+                              width: "70px",
+                              height: "70px",
+                              objectFit: "contain",
+                              border: "1px solid #ccc",
+                              backgroundColor: "white",
+                            }}
+                          />
+                        )}
+
+                        {matchedBoat ? (
+                          <Link href={`/boats/${matchedBoat.id}`}>{boatName}</Link>
+                        ) : (
+                          boatName
+                        )}
+                      </div>
                     ) : (
                       "-"
                     )}
