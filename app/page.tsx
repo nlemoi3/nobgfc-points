@@ -38,6 +38,8 @@ export default function HomePage() {
 <li><Link href="/historical-standings">Historical Boat Standings</Link></li>
 <li><Link href="/records">Club Records</Link></li>
 <li><Link href="/record-progressions">Record Progressions</Link></li>
+<li><Link href="/stats">Club Statistics</Link></li>
+
       </ul>
     </main>
   );
