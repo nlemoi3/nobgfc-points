@@ -57,20 +57,28 @@ function calculateExpectedPoints(c: any) {
 async function recalculateScores() {
   "use server";
 
-  const { data: catches, error } = await supabase
-    .from("catches")
-    .select(`
-      id,
-      weight,
-      line_class,
-      released,
-      tagged,
-      species(name)
-    `);
+const { data: catches, error } = await supabase
+  .from("catches")
+  .select(`
+    id,
+    weight,
+    line_class,
+    released,
+    tagged,
+    species(name),
+    events(status)
+  `);
 
   if (error) throw new Error(error.message);
 
   for (const catchRecord of catches || []) {
+    const eventStatus = Array.isArray(catchRecord.events)
+  ? catchRecord.events[0]?.status
+  : catchRecord.events?.status;
+
+if (eventStatus === "locked") {
+  continue;
+}
     const points = calculateExpectedPoints(catchRecord);
 
     const { error: updateError } = await supabase
