@@ -1,4 +1,4 @@
-import SiteNav from "./components/SiteNav";
+import Nav from "./components/Nav";
 
 export const metadata = {
   title: "NOBGFC Points",
