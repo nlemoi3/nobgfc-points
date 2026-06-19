@@ -27,6 +27,9 @@ export default function HomePage() {
   </Link>
 </li>
 <li><Link href="/admin">Admin</Link></li>
+<li><Link href="/historical-standings">Historical Boat Standings</Link></li>
+<li><Link href="/champions">Hall of Champions</Link></li>
+<li><Link href="/anglers">Anglers</Link></li>
       </ul>
     </main>
   );
