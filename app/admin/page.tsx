@@ -59,6 +59,12 @@ export default function AdminPage() {
     Manage Boat Awards
   </Link>
 </p>
+
+<p>
+  <Link href="/admin/season-champions/generate">
+    Generate Season Awards
+  </Link>
+</p>
     </main>
   );
 }
