@@ -53,8 +53,14 @@ export default async function AnglerProfilePage({
       0
     ) || 0;
 
-  const blueMarlinCount =
-    catches?.filter((c: any) => c.species?.name === "Blue Marlin").length || 0;
+const blueMarlinCount =
+  catches?.filter((c: any) => {
+    const speciesName = Array.isArray(c.species)
+      ? c.species[0]?.name
+      : c.species?.name;
+
+    return speciesName === "Blue Marlin";
+  }).length || 0;
 
   const largestFish = [...(catches || [])]
     .filter((c: any) => c.weight)
@@ -123,7 +129,11 @@ export default async function AnglerProfilePage({
           )}
 
           <p>
-            <strong>{largestFish.species?.name}</strong>
+            <strong>
+  {Array.isArray(largestFish.species)
+    ? largestFish.species[0]?.name
+    : largestFish.species?.name}
+</strong>
             <br />
             {largestFish.weight} lbs
             <br />
@@ -195,7 +205,11 @@ export default async function AnglerProfilePage({
                     c.boats?.name
                   )}
                 </td>
-                <td>{c.species?.name}</td>
+                <td>
+  {Array.isArray(c.species)
+    ? c.species[0]?.name
+    : c.species?.name}
+</td>
                 <td>{c.weight ? `${c.weight} lbs` : "Released"}</td>
                 <td>{c.released ? "Yes" : "No"}</td>
                 <td>{c.tagged ? "Yes" : "No"}</td>
