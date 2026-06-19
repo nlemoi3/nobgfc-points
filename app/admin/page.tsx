@@ -42,6 +42,23 @@ export default function AdminPage() {
   </Link>
 </li>
 </ul>
+<p>
+  <Link href="/admin/season-champions/generate">
+    Generate Season Awards
+  </Link>
+</p>
+
+<p>
+  <Link href="/admin/awards">
+    Manage Angler Awards
+  </Link>
+</p>
+
+<p>
+  <Link href="/admin/boat-awards">
+    Manage Boat Awards
+  </Link>
+</p>
     </main>
   );
 }
