@@ -1,6 +1,16 @@
 import Link from "next/link";
 import { supabase } from "../../lib/supabase";
 
+function normalizeBoatName(name: string) {
+  return name
+    .toLowerCase()
+    .replace(/['’]/g, "")
+    .replace(/&/g, "and")
+    .replace(/-/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 export default async function ChampionsPage() {
   const { data: boatAwards } = await supabase
     .from("boat_awards")
@@ -11,15 +21,16 @@ export default async function ChampionsPage() {
   const { data: anglerAwards } = await supabase
     .from("angler_awards")
     .select("*")
-    .in("award_name", [
-      "Angling Champion",
-      "Dutch Prager Youth Champion",
-    ])
+    .in("award_name", ["Angling Champion", "Dutch Prager Youth Champion"])
     .order("award_year", { ascending: false });
 
-  const { data: boats } = await supabase
-    .from("boats")
-    .select("id,name");
+  const { data: historicalStandings } = await supabase
+    .from("historical_boat_standings")
+    .select("*")
+    .eq("rank", 1)
+    .order("season_year", { ascending: false });
+
+  const { data: boats } = await supabase.from("boats").select("id,name");
 
   const { data: anglers } = await supabase
     .from("anglers")
@@ -27,9 +38,11 @@ export default async function ChampionsPage() {
 
   const boatNameById: Record<number, string> = {};
   const anglerNameById: Record<number, string> = {};
+  const boatByNormalizedName: Record<string, any> = {};
 
   boats?.forEach((boat: any) => {
     boatNameById[boat.id] = boat.name;
+    boatByNormalizedName[normalizeBoatName(boat.name)] = boat;
   });
 
   anglers?.forEach((angler: any) => {
@@ -39,6 +52,7 @@ export default async function ChampionsPage() {
 
   const years = Array.from(
     new Set([
+      ...(historicalStandings || []).map((row: any) => row.season_year),
       ...(boatAwards || []).map((award: any) => award.award_year),
       ...(anglerAwards || []).map((award: any) => award.award_year),
     ])
@@ -48,11 +62,14 @@ export default async function ChampionsPage() {
     return boatAwards?.find((award: any) => award.award_year === year);
   }
 
+  function historicalBoatChampionForYear(year: number) {
+    return historicalStandings?.find((row: any) => row.season_year === year);
+  }
+
   function anglerChampionForYear(year: number) {
     return anglerAwards?.find(
       (award: any) =>
-        award.award_year === year &&
-        award.award_name === "Angling Champion"
+        award.award_year === year && award.award_name === "Angling Champion"
     );
   }
 
@@ -84,18 +101,30 @@ export default async function ChampionsPage() {
           <tbody>
             {years.map((year: number) => {
               const boatChampion = boatChampionForYear(year);
+              const historicalBoatChampion =
+                historicalBoatChampionForYear(year);
               const anglerChampion = anglerChampionForYear(year);
               const youthChampion = youthChampionForYear(year);
+
+              const boatName = boatChampion
+                ? boatNameById[boatChampion.boat_id]
+                : historicalBoatChampion?.boat_name;
+
+              const matchedBoat = boatName
+                ? boatByNormalizedName[normalizeBoatName(boatName)]
+                : null;
 
               return (
                 <tr key={year}>
                   <td>{year}</td>
 
                   <td>
-                    {boatChampion ? (
-                      <Link href={`/boats/${boatChampion.boat_id}`}>
-                        {boatNameById[boatChampion.boat_id] || "Unknown Boat"}
-                      </Link>
+                    {boatName ? (
+                      matchedBoat ? (
+                        <Link href={`/boats/${matchedBoat.id}`}>{boatName}</Link>
+                      ) : (
+                        boatName
+                      )
                     ) : (
                       "-"
                     )}
