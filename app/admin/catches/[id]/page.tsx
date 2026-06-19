@@ -85,10 +85,35 @@ async function uploadCatchPhoto(file: File | null, catchId: number) {
   return data.publicUrl;
 }
 
+async function getCatchEventStatus(catchId: number) {
+  const { data: catchRecord } = await supabase
+    .from("catches")
+    .select("event_id")
+    .eq("id", catchId)
+    .single();
+
+  if (!catchRecord?.event_id) return null;
+
+  const { data: event } = await supabase
+    .from("events")
+    .select("status")
+    .eq("id", catchRecord.event_id)
+    .single();
+
+  return event?.status || null;
+}
+
 async function updateCatch(formData: FormData) {
   "use server";
 
   const id = Number(formData.get("id"));
+
+  const currentEventStatus = await getCatchEventStatus(id);
+
+  if (currentEventStatus === "locked") {
+    throw new Error("This catch belongs to a locked event and cannot be edited.");
+  }
+
   const species_id = Number(formData.get("species_id"));
   const weightValue = formData.get("weight");
   const weight = weightValue ? Number(weightValue) : null;
@@ -140,6 +165,12 @@ async function deleteCatch(formData: FormData) {
 
   const id = Number(formData.get("id"));
 
+  const currentEventStatus = await getCatchEventStatus(id);
+
+  if (currentEventStatus === "locked") {
+    throw new Error("This catch belongs to a locked event and cannot be deleted.");
+  }
+
   const { error } = await supabase.from("catches").delete().eq("id", id);
 
   if (error) throw new Error(error.message);
@@ -155,19 +186,19 @@ export default async function EditCatchPage({
   const { id } = await params;
   const catchId = Number(id);
 
-const [
-  { data: catchRecord },
-  { data: events },
-  { data: boats },
-  { data: anglers },
-  { data: species },
-] = await Promise.all([
-  supabase.from("catches").select("*").eq("id", catchId).single(),
-  supabase.from("events").select("*").order("start_date"),
-  supabase.from("boats").select("*").order("name"),
-  supabase.from("anglers").select("*").order("last_name"),
-  supabase.from("species").select("*").order("name"),
-]);
+  const [
+    { data: catchRecord },
+    { data: events },
+    { data: boats },
+    { data: anglers },
+    { data: species },
+  ] = await Promise.all([
+    supabase.from("catches").select("*").eq("id", catchId).single(),
+    supabase.from("events").select("*").order("start_date"),
+    supabase.from("boats").select("*").order("name"),
+    supabase.from("anglers").select("*").order("last_name"),
+    supabase.from("species").select("*").order("name"),
+  ]);
 
   if (!catchRecord) {
     return (
@@ -178,6 +209,12 @@ const [
     );
   }
 
+  const currentEvent = events?.find(
+    (event: any) => event.id === catchRecord.event_id
+  );
+
+  const isLocked = currentEvent?.status === "locked";
+
   const defaultDateTime = catchRecord.catch_datetime
     ? new Date(catchRecord.catch_datetime).toISOString().slice(0, 16)
     : "";
@@ -186,16 +223,27 @@ const [
     <main style={{ padding: "40px", fontFamily: "Arial, sans-serif" }}>
       <h1>Edit Catch</h1>
 
+      {isLocked && (
+        <p style={{ color: "red", fontWeight: "bold" }}>
+          This catch belongs to a locked event. Editing and deleting are blocked.
+        </p>
+      )}
+
       <form action={updateCatch}>
         <input type="hidden" name="id" value={catchRecord.id} />
 
         <p>
           <label>Event</label>
           <br />
-          <select name="event_id" defaultValue={catchRecord.event_id} required>
+          <select
+            name="event_id"
+            defaultValue={catchRecord.event_id}
+            required
+            disabled={isLocked}
+          >
             {events?.map((event: any) => (
               <option key={event.id} value={event.id}>
-                {event.name}
+                {event.name} {event.status === "locked" ? "(locked)" : ""}
               </option>
             ))}
           </select>
@@ -208,13 +256,19 @@ const [
             name="catch_datetime"
             type="datetime-local"
             defaultValue={defaultDateTime}
+            disabled={isLocked}
           />
         </p>
 
         <p>
           <label>Boat</label>
           <br />
-          <select name="boat_id" defaultValue={catchRecord.boat_id} required>
+          <select
+            name="boat_id"
+            defaultValue={catchRecord.boat_id}
+            required
+            disabled={isLocked}
+          >
             {boats?.map((boat: any) => (
               <option key={boat.id} value={boat.id}>
                 {boat.name}
@@ -226,7 +280,12 @@ const [
         <p>
           <label>Angler</label>
           <br />
-          <select name="angler_id" defaultValue={catchRecord.angler_id} required>
+          <select
+            name="angler_id"
+            defaultValue={catchRecord.angler_id}
+            required
+            disabled={isLocked}
+          >
             {anglers?.map((angler: any) => (
               <option key={angler.id} value={angler.id}>
                 {angler.first_name} {angler.last_name}
@@ -238,7 +297,12 @@ const [
         <p>
           <label>Species</label>
           <br />
-          <select name="species_id" defaultValue={catchRecord.species_id} required>
+          <select
+            name="species_id"
+            defaultValue={catchRecord.species_id}
+            required
+            disabled={isLocked}
+          >
             {species?.map((fish: any) => (
               <option key={fish.id} value={fish.id}>
                 {fish.name}
@@ -255,13 +319,19 @@ const [
             type="number"
             step="0.1"
             defaultValue={catchRecord.weight || ""}
+            disabled={isLocked}
           />
         </p>
 
         <p>
           <label>Line Class</label>
           <br />
-          <select name="line_class" defaultValue={catchRecord.line_class} required>
+          <select
+            name="line_class"
+            defaultValue={catchRecord.line_class}
+            required
+            disabled={isLocked}
+          >
             <option value="130">130</option>
             <option value="80">80</option>
             <option value="50">50</option>
@@ -281,6 +351,7 @@ const [
               name="released"
               type="checkbox"
               defaultChecked={catchRecord.released}
+              disabled={isLocked}
             />{" "}
             Released
           </label>
@@ -292,6 +363,7 @@ const [
               name="tagged"
               type="checkbox"
               defaultChecked={catchRecord.tagged}
+              disabled={isLocked}
             />{" "}
             Tagged
           </label>
@@ -300,7 +372,11 @@ const [
         <p>
           <label>Status</label>
           <br />
-          <select name="status" defaultValue={catchRecord.status || "approved"}>
+          <select
+            name="status"
+            defaultValue={catchRecord.status || "approved"}
+            disabled={isLocked}
+          >
             <option value="pending">Pending</option>
             <option value="approved">Approved</option>
             <option value="rejected">Rejected</option>
@@ -326,7 +402,12 @@ const [
         <p>
           <label>Upload New Catch Photo</label>
           <br />
-          <input name="photo_file" type="file" accept="image/*" />
+          <input
+            name="photo_file"
+            type="file"
+            accept="image/*"
+            disabled={isLocked}
+          />
         </p>
 
         <p>
@@ -336,20 +417,23 @@ const [
             name="photo_url"
             defaultValue={catchRecord.photo_url || ""}
             style={{ width: "500px" }}
+            disabled={isLocked}
           />
         </p>
 
-        <button type="submit">Save Catch</button>
+        {!isLocked && <button type="submit">Save Catch</button>}
       </form>
 
       <hr style={{ margin: "30px 0" }} />
 
-      <form action={deleteCatch}>
-        <input type="hidden" name="id" value={catchRecord.id} />
-        <button type="submit" style={{ color: "red" }}>
-          Delete Catch
-        </button>
-      </form>
+      {!isLocked && (
+        <form action={deleteCatch}>
+          <input type="hidden" name="id" value={catchRecord.id} />
+          <button type="submit" style={{ color: "red" }}>
+            Delete Catch
+          </button>
+        </form>
+      )}
     </main>
   );
 }
