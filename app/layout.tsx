@@ -6,7 +6,7 @@ export const metadata = {
 };
 
 export default function RootLayout({
-  <SiteNav />
+  <Nav />
   children,
 }: {
   children: React.ReactNode;
