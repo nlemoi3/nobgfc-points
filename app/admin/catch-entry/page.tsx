@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { supabase } from "../../../lib/supabase";
+import SearchableSelect from "../../components/searchable-select";
 
 async function saveCatch(formData: FormData) {
   "use server";
@@ -111,29 +112,23 @@ export default async function CatchEntryPage() {
           <input name="catch_datetime" type="datetime-local" />
         </p>
 
-        <p>
-          <label>Boat</label>
-          <br />
-          <select name="boat_id" required>
-            {boats?.map((boat: any) => (
-              <option key={boat.id} value={boat.id}>
-                {boat.name}
-              </option>
-            ))}
-          </select>
-        </p>
+        <SearchableSelect
+          label="Boat"
+          name="boat_id"
+          options={(boats || []).map((boat: any) => ({
+            label: boat.name,
+            value: String(boat.id),
+          }))}
+        />
 
-        <p>
-          <label>Angler</label>
-          <br />
-          <select name="angler_id" required>
-            {anglers?.map((angler: any) => (
-              <option key={angler.id} value={angler.id}>
-                {angler.first_name} {angler.last_name}
-              </option>
-            ))}
-          </select>
-        </p>
+        <SearchableSelect
+          label="Angler"
+          name="angler_id"
+          options={(anglers || []).map((angler: any) => ({
+            label: `${angler.first_name} ${angler.last_name}`.trim(),
+            value: String(angler.id),
+          }))}
+        />
 
         <p>
           <label>Species</label>
