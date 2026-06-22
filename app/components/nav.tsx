@@ -1,46 +1,114 @@
+"use client";
+
 import type { ReactNode } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 function NavGroup({
   title,
   children,
+  isOpen,
+  onToggle,
 }: {
   title: string;
   children: ReactNode;
+  isOpen: boolean;
+  onToggle: () => void;
 }) {
+  const menuId = useId();
+
   return (
-    <details style={{ display: "inline-block", marginRight: "18px" }}>
-      <summary
+    <div
+      style={{
+        display: "inline-block",
+        marginRight: "18px",
+        position: "relative",
+      }}
+    >
+      <button
+        type="button"
+        aria-expanded={isOpen}
+        aria-controls={menuId}
+        aria-haspopup="menu"
+        onClick={onToggle}
         style={{
           cursor: "pointer",
+          background: "none",
+          border: 0,
+          padding: 0,
+          font: "inherit",
           fontWeight: "bold",
-          display: "inline",
         }}
       >
         {title}
-      </summary>
+      </button>
 
-      <div
-        style={{
-          position: "absolute",
-          background: "white",
-          border: "1px solid #ccc",
-          padding: "10px",
-          zIndex: 1000,
-          minWidth: "220px",
-          lineHeight: "1.8",
-        }}
-      >
-        {children}
-      </div>
-    </details>
+      {isOpen && (
+        <div
+          id={menuId}
+          role="menu"
+          style={{
+            position: "absolute",
+            background: "white",
+            border: "1px solid #ccc",
+            padding: "10px",
+            zIndex: 1000,
+            minWidth: "220px",
+            lineHeight: "1.8",
+          }}
+        >
+          {children}
+        </div>
+      )}
+    </div>
   );
 }
 
 export default function Nav() {
-  
+  const [openGroup, setOpenGroup] = useState<string | null>(null);
+  const pathname = usePathname();
+  const navRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    setOpenGroup(null);
+  }, [pathname]);
+
+  useEffect(() => {
+    const closeMenu = (event: MouseEvent | KeyboardEvent) => {
+      if (event instanceof KeyboardEvent) {
+        if (event.key === "Escape") {
+          setOpenGroup(null);
+        }
+        return;
+      }
+
+      if (
+        navRef.current &&
+        event.target instanceof Node &&
+        !navRef.current.contains(event.target)
+      ) {
+        setOpenGroup(null);
+      }
+    };
+
+    document.addEventListener("mousedown", closeMenu);
+    document.addEventListener("keydown", closeMenu);
+
+    return () => {
+      document.removeEventListener("mousedown", closeMenu);
+      document.removeEventListener("keydown", closeMenu);
+    };
+  }, []);
+
+  const toggleGroup = (title: string) => {
+    setOpenGroup((current) => (current === title ? null : title));
+  };
+
   return (
     <nav
+      ref={navRef}
+      aria-label="Main navigation"
       style={{
         padding: "15px 40px",
         borderBottom: "1px solid #ddd",
@@ -53,7 +121,7 @@ export default function Nav() {
         Dashboard
       </Link>
 
-      <NavGroup title="Competition">
+      <NavGroup title="Competition" isOpen={openGroup === "Competition"} onToggle={() => toggleGroup("Competition")}>
         <div><Link href="/standings">Raw Standings</Link></div>
         <div><Link href="/official-standings">Official Boats</Link></div>
         <div><Link href="/official-angler-standings">Official Anglers</Link></div>
@@ -61,29 +129,29 @@ export default function Nav() {
         <div><Link href="/tournament-standings">Tournaments</Link></div>
       </NavGroup>
 
-      <NavGroup title="Directory">
+      <NavGroup title="Directory" isOpen={openGroup === "Directory"} onToggle={() => toggleGroup("Directory")}>
         <div><Link href="/boats">Boats</Link></div>
         <div><Link href="/anglers">Anglers</Link></div>
       </NavGroup>
 
-      <NavGroup title="History">
+      <NavGroup title="History" isOpen={openGroup === "History"} onToggle={() => toggleGroup("History")}>
         <div><Link href="/hall-of-fame">Hall of Fame</Link></div>
         <div><Link href="/champions">Hall of Champions</Link></div>
         <div><Link href="/historical-standings">Historical Standings</Link></div>
         <div><Link href="/awards">Awards</Link></div>
       </NavGroup>
 
-      <NavGroup title="Records">
+      <NavGroup title="Records" isOpen={openGroup === "Records"} onToggle={() => toggleGroup("Records")}>
         <div><Link href="/records">Club Records</Link></div>
         <div><Link href="/record-progressions">Record Progressions</Link></div>
         <div><Link href="/stats">Club Statistics</Link></div>
       </NavGroup>
 
-      <NavGroup title="Media">
+      <NavGroup title="Media" isOpen={openGroup === "Media"} onToggle={() => toggleGroup("Media")}>
         <div><Link href="/gallery">Photo Gallery</Link></div>
       </NavGroup>
 
-      <NavGroup title="Admin">
+      <NavGroup title="Admin" isOpen={openGroup === "Admin"} onToggle={() => toggleGroup("Admin")}>
         <div><Link href="/admin/catch-entry">Enter Catch</Link></div>
         <div><Link href="/admin/boats">Manage Boats</Link></div>
         <div><Link href="/admin/anglers">Manage Anglers</Link></div>
