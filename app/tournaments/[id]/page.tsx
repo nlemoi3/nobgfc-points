@@ -37,14 +37,14 @@ export default async function TournamentPage({
       catch_datetime,
       photo_url,
       boats(id,name),
-      anglers(first_name,last_name),
+      anglers(id,first_name,last_name),
       species(name)
     `)
     .eq("event_id", eventId)
     .eq("status", "approved");
 
   const boatScores: Record<string, { points: number; id?: number }> = {};
-  const anglerScores: Record<string, number> = {};
+  const anglerScores: Record<string, { id?: number; points: number }> = {};
 
   catches?.forEach((c: any) => {
     const boat = c.boats?.name || "Unknown Boat";
@@ -57,15 +57,17 @@ export default async function TournamentPage({
 }
 
 boatScores[boat].points += Number(c.points_awarded || 0);
-    anglerScores[angler] =
-      (anglerScores[angler] || 0) + Number(c.points_awarded || 0);
+    if (!anglerScores[angler]) {
+      anglerScores[angler] = { id: c.anglers?.id, points: 0 };
+    }
+    anglerScores[angler].points += Number(c.points_awarded || 0);
   });
 
   const boatStandings = Object.entries(boatScores).sort(
   (a, b) => b[1].points - a[1].points
 );
   const anglerStandings = Object.entries(anglerScores).sort(
-    (a, b) => b[1] - a[1]
+    (a, b) => b[1].points - a[1].points
   );
 
   const firstPlaceBoat = boatStandings[0];
@@ -119,7 +121,15 @@ boatScores[boat].points += Number(c.points_awarded || 0);
           <h3>1st Place Boat</h3>
           {firstPlaceBoat ? (
             <>
-              <strong>{firstPlaceBoat[0]}</strong>
+              <strong>
+                {firstPlaceBoat[1].id ? (
+                  <Link href={`/boats/${firstPlaceBoat[1].id}`}>
+                    {firstPlaceBoat[0]}
+                  </Link>
+                ) : (
+                  firstPlaceBoat[0]
+                )}
+              </strong>
               <br />
               {firstPlaceBoat[1].points.toFixed(1)} points
             </>
@@ -132,7 +142,15 @@ boatScores[boat].points += Number(c.points_awarded || 0);
           <h3>2nd Place Boat</h3>
           {secondPlaceBoat ? (
             <>
-              <strong>{secondPlaceBoat[0]}</strong>
+              <strong>
+                {secondPlaceBoat[1].id ? (
+                  <Link href={`/boats/${secondPlaceBoat[1].id}`}>
+                    {secondPlaceBoat[0]}
+                  </Link>
+                ) : (
+                  secondPlaceBoat[0]
+                )}
+              </strong>
               <br />
               {secondPlaceBoat[1].points.toFixed(1)} points
             </>
@@ -145,7 +163,15 @@ boatScores[boat].points += Number(c.points_awarded || 0);
           <h3>3rd Place Boat</h3>
           {thirdPlaceBoat ? (
             <>
-              <strong>{thirdPlaceBoat[0]}</strong>
+              <strong>
+                {thirdPlaceBoat[1].id ? (
+                  <Link href={`/boats/${thirdPlaceBoat[1].id}`}>
+                    {thirdPlaceBoat[0]}
+                  </Link>
+                ) : (
+                  thirdPlaceBoat[0]
+                )}
+              </strong>
               <br />
               {thirdPlaceBoat[1].points.toFixed(1)} points
             </>
@@ -158,9 +184,17 @@ boatScores[boat].points += Number(c.points_awarded || 0);
           <h3>Top Angler</h3>
           {topAngler ? (
             <>
-              <strong>{topAngler[0]}</strong>
+              <strong>
+                {topAngler[1].id ? (
+                  <Link href={`/anglers/${topAngler[1].id}`}>
+                    {topAngler[0]}
+                  </Link>
+                ) : (
+                  topAngler[0]
+                )}
+              </strong>
               <br />
-              {Number(topAngler[1]).toFixed(1)} points
+              {topAngler[1].points.toFixed(1)} points
             </>
           ) : (
             "No Results"
@@ -213,11 +247,17 @@ boatScores[boat].points += Number(c.points_awarded || 0);
             </tr>
           </thead>
           <tbody>
-            {anglerStandings.map(([angler, points], index) => (
+            {anglerStandings.map(([angler, result], index) => (
               <tr key={angler}>
                 <td>{index + 1}</td>
-                <td>{angler}</td>
-                <td>{points.toFixed(1)}</td>
+                <td>
+                  {result.id ? (
+                    <Link href={`/anglers/${result.id}`}>{angler}</Link>
+                  ) : (
+                    angler
+                  )}
+                </td>
+                <td>{result.points.toFixed(1)}</td>
               </tr>
             ))}
           </tbody>
@@ -227,10 +267,46 @@ boatScores[boat].points += Number(c.points_awarded || 0);
       <h2 style={{ marginTop: "30px" }}>Largest Fish</h2>
 
       <ul>
-        <li>Blue Marlin: {largestBlueMarlin ? `${largestBlueMarlin.weight} lbs` : "No catch"}</li>
-        <li>Tuna: {largestTuna ? `${largestTuna.weight} lbs` : "No catch"}</li>
-        <li>Wahoo: {largestWahoo ? `${largestWahoo.weight} lbs` : "No catch"}</li>
-        <li>Dolphin: {largestDolphin ? `${largestDolphin.weight} lbs` : "No catch"}</li>
+        <li>
+          Blue Marlin:{" "}
+          {largestBlueMarlin ? (
+            <Link href={`/catches/${largestBlueMarlin.id}`}>
+              {largestBlueMarlin.weight} lbs
+            </Link>
+          ) : (
+            "No catch"
+          )}
+        </li>
+        <li>
+          Tuna:{" "}
+          {largestTuna ? (
+            <Link href={`/catches/${largestTuna.id}`}>
+              {largestTuna.weight} lbs
+            </Link>
+          ) : (
+            "No catch"
+          )}
+        </li>
+        <li>
+          Wahoo:{" "}
+          {largestWahoo ? (
+            <Link href={`/catches/${largestWahoo.id}`}>
+              {largestWahoo.weight} lbs
+            </Link>
+          ) : (
+            "No catch"
+          )}
+        </li>
+        <li>
+          Dolphin:{" "}
+          {largestDolphin ? (
+            <Link href={`/catches/${largestDolphin.id}`}>
+              {largestDolphin.weight} lbs
+            </Link>
+          ) : (
+            "No catch"
+          )}
+        </li>
       </ul>
 
       <h2>All Tournament Catches</h2>
@@ -279,7 +355,15 @@ boatScores[boat].points += Number(c.points_awarded || 0);
                 </td>
 
                 <td>
-                  {c.anglers?.first_name} {c.anglers?.last_name}
+                  {c.anglers?.id ? (
+                    <Link href={`/anglers/${c.anglers.id}`}>
+                      {c.anglers?.first_name} {c.anglers?.last_name}
+                    </Link>
+                  ) : (
+                    <>
+                      {c.anglers?.first_name} {c.anglers?.last_name}
+                    </>
+                  )}
                 </td>
                 <td>
   <Link href={`/catches/${c.id}`}>

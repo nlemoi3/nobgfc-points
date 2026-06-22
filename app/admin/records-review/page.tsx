@@ -14,9 +14,9 @@ export default async function RecordsReviewPage() {
       catch_datetime,
       photo_url,
       boats(id,name),
-      anglers(first_name,last_name),
+      anglers(id,first_name,last_name),
       species(name),
-      events(name)
+      events(id,name)
     `)
     .eq("status", "approved");
 
@@ -83,13 +83,29 @@ export default async function RecordsReviewPage() {
                   </Link>
                 </td>
 
-                <td>{c.boats?.name}</td>
-
                 <td>
-                  {c.anglers?.first_name} {c.anglers?.last_name}
+                  {c.boats?.id ? (
+                    <Link href={`/boats/${c.boats.id}`}>{c.boats?.name}</Link>
+                  ) : (
+                    c.boats?.name
+                  )}
                 </td>
 
-                <td>{c.species?.name}</td>
+                <td>
+                  {c.anglers?.id ? (
+                    <Link href={`/anglers/${c.anglers.id}`}>
+                      {c.anglers?.first_name} {c.anglers?.last_name}
+                    </Link>
+                  ) : (
+                    <>
+                      {c.anglers?.first_name} {c.anglers?.last_name}
+                    </>
+                  )}
+                </td>
+
+                <td>
+                  <Link href={`/catches/${c.id}`}>{c.species?.name}</Link>
+                </td>
 
                 <td>{problems.join(", ")}</td>
               </tr>

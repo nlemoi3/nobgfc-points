@@ -70,7 +70,15 @@ function RecordCard({
             )}
           </p>
 
-          <p>{catchRecord.events?.name}</p>
+          <p>
+            {catchRecord.events?.id ? (
+              <Link href={`/tournaments/${catchRecord.events.id}`}>
+                {catchRecord.events?.name}
+              </Link>
+            ) : (
+              catchRecord.events?.name
+            )}
+          </p>
           <p>{formatDate(catchRecord.catch_datetime)}</p>
         </>
       ) : (
@@ -130,7 +138,7 @@ export default async function RecordsPage() {
       boats(id,name),
       anglers(id,first_name,last_name),
       species(name),
-      events(name)
+      events(id,name)
     `)
     .eq("status", "approved");
 

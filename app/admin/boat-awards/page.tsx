@@ -51,7 +51,15 @@ export default async function AdminBoatAwardsPage() {
             <tr key={award.id}>
               <td>{award.award_year}</td>
               <td>{award.award_name}</td>
-              <td>{boatNameById[award.boat_id] || "Unknown Boat"}</td>
+              <td>
+                {award.boat_id ? (
+                  <Link href={`/boats/${award.boat_id}`}>
+                    {boatNameById[award.boat_id] || "Unknown Boat"}
+                  </Link>
+                ) : (
+                  "Unknown Boat"
+                )}
+              </td>
               <td>{award.notes || "-"}</td>
               <td>
                 <Link href={`/admin/boat-awards/${award.id}`}>

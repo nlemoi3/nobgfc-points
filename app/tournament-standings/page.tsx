@@ -19,11 +19,14 @@ const { data: catches, error } = await supabase
     points_awarded,
     status,
     events(id,name,start_date,end_date,status),
-    boats(name)
+    boats(id,name)
   `)
   .eq("status", "approved");
 
-  const eventStandings: Record<string, Record<string, number>> = {};
+  const eventStandings: Record<
+    string,
+    Record<string, { id?: number; points: number }>
+  > = {};
   const eventInfo: Record<string, any> = {};
 
   catches?.forEach((c: any) => {
@@ -40,8 +43,13 @@ const { data: catches, error } = await supabase
       eventStandings[eventId] = {};
     }
 
-    eventStandings[eventId][boatName] =
-      (eventStandings[eventId][boatName] || 0) + points;
+    if (!eventStandings[eventId][boatName]) {
+      eventStandings[eventId][boatName] = {
+        id: c.boats?.id,
+        points: 0,
+      };
+    }
+    eventStandings[eventId][boatName].points += points;
   });
 
   const eventEntries = Object.entries(eventStandings);
@@ -56,7 +64,9 @@ const { data: catches, error } = await supabase
 
       {eventEntries.map(([eventId, boatScores]) => {
         const event = eventInfo[eventId];
-        const standings = Object.entries(boatScores).sort((a, b) => b[1] - a[1]);
+        const standings = Object.entries(boatScores).sort(
+          (a, b) => b[1].points - a[1].points,
+        );
 
         return (
           <section key={eventId} style={{ marginBottom: "40px" }}>
@@ -80,11 +90,17 @@ const { data: catches, error } = await supabase
               </thead>
 
               <tbody>
-                {standings.map(([boat, points], index) => (
+                {standings.map(([boat, result], index) => (
                   <tr key={boat}>
                     <td>{index + 1}</td>
-                    <td>{boat}</td>
-                    <td>{points.toFixed(1)}</td>
+                    <td>
+                      {result.id ? (
+                        <Link href={`/boats/${result.id}`}>{boat}</Link>
+                      ) : (
+                        boat
+                      )}
+                    </td>
+                    <td>{result.points.toFixed(1)}</td>
                   </tr>
                 ))}
               </tbody>

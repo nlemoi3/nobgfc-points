@@ -61,10 +61,24 @@ function LargestFishCard({
           )}
 
           <p>
-            <strong>{catchRecord.weight} lbs</strong>
+            <strong>
+              <Link href={`/catches/${catchRecord.id}`}>
+                {catchRecord.weight} lbs
+              </Link>
+            </strong>
           </p>
           <p>
-            {catchRecord.anglers?.first_name} {catchRecord.anglers?.last_name}
+            {catchRecord.anglers?.id ? (
+              <Link href={`/anglers/${catchRecord.anglers.id}`}>
+                {catchRecord.anglers?.first_name}{" "}
+                {catchRecord.anglers?.last_name}
+              </Link>
+            ) : (
+              <>
+                {catchRecord.anglers?.first_name}{" "}
+                {catchRecord.anglers?.last_name}
+              </>
+            )}
           </p>
           <p>{formatDateTime(catchRecord.catch_datetime)}</p>
         </>

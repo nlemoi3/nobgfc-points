@@ -94,7 +94,9 @@ export default async function BoatsPage() {
                 )}
               </td>
 
-              <td>{boat.name}</td>
+              <td>
+                <Link href={`/boats/${boat.id}`}>{boat.name}</Link>
+              </td>
 
               <td>
                 {rankByBoatId[boat.id]

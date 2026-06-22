@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { supabase } from "../../lib/supabase";
 import { getOfficialEligiblePoints } from "../../lib/scoring";
 
@@ -11,7 +12,7 @@ const { data, error } = await supabase
     tagged,
     status,
     weight,
-    boats(name),
+    boats(id,name),
     species(name)
   `)
   .eq("status", "approved");
@@ -31,6 +32,7 @@ const { data, error } = await supabase
   const standings = Object.entries(boatCatches)
     .map(([boatName, catches]) => ({
       boatName,
+      boatId: catches[0]?.boats?.id,
       points: getOfficialEligiblePoints(catches),
     }))
     .sort((a, b) => b.points - a.points);
@@ -54,7 +56,13 @@ const { data, error } = await supabase
           {standings.map((row, index) => (
             <tr key={row.boatName}>
               <td>{index + 1}</td>
-              <td>{row.boatName}</td>
+              <td>
+                {row.boatId ? (
+                  <Link href={`/boats/${row.boatId}`}>{row.boatName}</Link>
+                ) : (
+                  row.boatName
+                )}
+              </td>
               <td>{row.points.toFixed(1)}</td>
             </tr>
           ))}

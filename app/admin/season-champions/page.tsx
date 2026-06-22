@@ -54,6 +54,7 @@ const { data: catches, error } = await supabase
   const boatStandings = Object.entries(boatCatches)
     .map(([boatName, catches]) => ({
       boatName,
+      boatId: catches[0]?.boats?.id,
       points: getOfficialEligiblePoints(catches),
       catches,
     }))
@@ -62,6 +63,7 @@ const { data: catches, error } = await supabase
   const anglerStandings = Object.entries(anglerCatches)
     .map(([anglerName, catches]) => ({
       anglerName,
+      anglerId: catches[0]?.anglers?.id,
       points: getOfficialEligiblePoints(catches),
       catches,
     }))
@@ -70,6 +72,7 @@ const { data: catches, error } = await supabase
   const youthStandings = Object.entries(youthCatches)
     .map(([anglerName, catches]) => ({
       anglerName,
+      anglerId: catches[0]?.anglers?.id,
       points: getOfficialEligiblePoints(catches),
       catches,
     }))
@@ -109,7 +112,15 @@ const { data: catches, error } = await supabase
           {boatChampion ? (
             <>
               <p>
-                <strong>{boatChampion.boatName}</strong>
+                <strong>
+                  {boatChampion.boatId ? (
+                    <Link href={`/boats/${boatChampion.boatId}`}>
+                      {boatChampion.boatName}
+                    </Link>
+                  ) : (
+                    boatChampion.boatName
+                  )}
+                </strong>
               </p>
 
               <p>
@@ -133,7 +144,15 @@ const { data: catches, error } = await supabase
           {anglingChampion ? (
             <>
               <p>
-                <strong>{anglingChampion.anglerName}</strong>
+                <strong>
+                  {anglingChampion.anglerId ? (
+                    <Link href={`/anglers/${anglingChampion.anglerId}`}>
+                      {anglingChampion.anglerName}
+                    </Link>
+                  ) : (
+                    anglingChampion.anglerName
+                  )}
+                </strong>
               </p>
 
               <p>
@@ -157,7 +176,15 @@ const { data: catches, error } = await supabase
           {youthChampion ? (
             <>
               <p>
-                <strong>{youthChampion.anglerName}</strong>
+                <strong>
+                  {youthChampion.anglerId ? (
+                    <Link href={`/anglers/${youthChampion.anglerId}`}>
+                      {youthChampion.anglerName}
+                    </Link>
+                  ) : (
+                    youthChampion.anglerName
+                  )}
+                </strong>
               </p>
 
               <p>

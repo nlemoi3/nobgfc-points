@@ -80,10 +80,10 @@ export default async function ScoringAuditPage() {
       tagged,
       points_awarded,
       catch_datetime,
-      boats(name),
-      anglers(first_name,last_name),
+      boats(id,name),
+      anglers(id,first_name,last_name),
       species(name),
-      events(name,status)
+      events(id,name,status)
     `)
     .order("catch_datetime", { ascending: false });
 
@@ -159,14 +159,42 @@ export default async function ScoringAuditPage() {
               }}
             >
               <td>{c.matches ? "OK" : "CHECK"}</td>
-              <td>{formatDateTime(c.catch_datetime)}</td>
-              <td>{c.events?.name}</td>
-              <td>{c.events?.status || "-"}</td>
-              <td>{c.boats?.name}</td>
               <td>
-                {c.anglers?.first_name} {c.anglers?.last_name}
+                <Link href={`/catches/${c.id}`}>
+                  {formatDateTime(c.catch_datetime)}
+                </Link>
               </td>
-              <td>{c.species?.name}</td>
+              <td>
+                {c.events?.id ? (
+                  <Link href={`/tournaments/${c.events.id}`}>
+                    {c.events?.name}
+                  </Link>
+                ) : (
+                  c.events?.name
+                )}
+              </td>
+              <td>{c.events?.status || "-"}</td>
+              <td>
+                {c.boats?.id ? (
+                  <Link href={`/boats/${c.boats.id}`}>{c.boats?.name}</Link>
+                ) : (
+                  c.boats?.name
+                )}
+              </td>
+              <td>
+                {c.anglers?.id ? (
+                  <Link href={`/anglers/${c.anglers.id}`}>
+                    {c.anglers?.first_name} {c.anglers?.last_name}
+                  </Link>
+                ) : (
+                  <>
+                    {c.anglers?.first_name} {c.anglers?.last_name}
+                  </>
+                )}
+              </td>
+              <td>
+                <Link href={`/catches/${c.id}`}>{c.species?.name}</Link>
+              </td>
               <td>{c.weight ? `${c.weight} lbs` : "Released"}</td>
               <td>{c.line_class || "-"}</td>
               <td>{c.released ? "Yes" : "No"}</td>

@@ -30,7 +30,9 @@ export default async function AdminAnglersPage() {
           {anglers?.map((angler: any) => (
             <tr key={angler.id}>
               <td>
-                {angler.first_name} {angler.last_name}
+                <Link href={`/anglers/${angler.id}`}>
+                  {angler.first_name} {angler.last_name}
+                </Link>
               </td>
               <td>{angler.is_member ? "Yes" : "No"}</td>
               <td>{angler.is_youth ? "Yes" : "No"}</td>

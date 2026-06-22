@@ -31,7 +31,9 @@ export default async function AdminBoatsPage() {
         <tbody>
           {boats?.map((boat: any) => (
             <tr key={boat.id}>
-              <td>{boat.name}</td>
+              <td>
+                <Link href={`/boats/${boat.id}`}>{boat.name}</Link>
+              </td>
               <td>{boat.make || "-"}</td>
               <td>{boat.model || "-"}</td>
               <td>{boat.length_feet ? `${boat.length_feet} ft` : "-"}</td>

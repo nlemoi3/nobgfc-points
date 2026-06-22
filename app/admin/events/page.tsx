@@ -32,7 +32,9 @@ export default async function AdminEventsPage() {
         <tbody>
           {events?.map((event: any) => (
             <tr key={event.id}>
-              <td>{event.name}</td>
+              <td>
+                <Link href={`/tournaments/${event.id}`}>{event.name}</Link>
+              </td>
               <td>{event.start_date}</td>
               <td>{event.end_date}</td>
               <td>{event.status || "scheduled"}</td>

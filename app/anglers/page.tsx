@@ -114,7 +114,9 @@ export default async function AnglersPage() {
                 </td>
 
                 <td>
-                  {angler.first_name} {angler.last_name}
+                  <Link href={`/anglers/${angler.id}`}>
+                    {angler.first_name} {angler.last_name}
+                  </Link>
                 </td>
 
                 <td>

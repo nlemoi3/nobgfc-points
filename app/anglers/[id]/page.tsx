@@ -73,7 +73,14 @@ export default async function AnglerProfilePage({
     .sort((a: any, b: any) => b.weight - a.weight)[0];
 
   const boatsFished = Array.from(
-    new Set((catches || []).map((c: any) => relationName(c.boats)).filter(Boolean))
+    new Map(
+      (catches || [])
+        .filter((c: any) => relationName(c.boats))
+        .map((c: any) => [
+          c.boats?.id || relationName(c.boats),
+          { id: c.boats?.id, name: relationName(c.boats) },
+        ]),
+    ).values(),
   );
 
   return (
@@ -135,7 +142,11 @@ export default async function AnglerProfilePage({
           )}
 
           <p>
-            <strong>{relationName(largestFish.species)}</strong>
+            <strong>
+              <Link href={`/catches/${largestFish.id}`}>
+                {relationName(largestFish.species)}
+              </Link>
+            </strong>
             <br />
             {largestFish.weight} lbs
             <br />
@@ -181,7 +192,13 @@ export default async function AnglerProfilePage({
       {boatsFished.length > 0 ? (
         <ul>
           {boatsFished.map((boat: any) => (
-            <li key={boat}>{boat}</li>
+            <li key={boat.id || boat.name}>
+              {boat.id ? (
+                <Link href={`/boats/${boat.id}`}>{boat.name}</Link>
+              ) : (
+                boat.name
+              )}
+            </li>
           ))}
         </ul>
       ) : (

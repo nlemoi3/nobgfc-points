@@ -24,8 +24,26 @@ function RecordCard({
 
       {catchRecord ? (
         <>
-          <p><strong>{catchRecord.weight} lbs</strong></p>
-          <p>{catchRecord.anglers?.first_name} {catchRecord.anglers?.last_name}</p>
+          <p>
+            <strong>
+              <Link href={`/catches/${catchRecord.id}`}>
+                {catchRecord.weight} lbs
+              </Link>
+            </strong>
+          </p>
+          <p>
+            {catchRecord.anglers?.id ? (
+              <Link href={`/anglers/${catchRecord.anglers.id}`}>
+                {catchRecord.anglers?.first_name}{" "}
+                {catchRecord.anglers?.last_name}
+              </Link>
+            ) : (
+              <>
+                {catchRecord.anglers?.first_name}{" "}
+                {catchRecord.anglers?.last_name}
+              </>
+            )}
+          </p>
           <p>
             {catchRecord.boats?.id ? (
               <Link href={`/boats/${catchRecord.boats.id}`}>
@@ -35,7 +53,15 @@ function RecordCard({
               catchRecord.boats?.name
             )}
           </p>
-          <p>{catchRecord.events?.name}</p>
+          <p>
+            {catchRecord.events?.id ? (
+              <Link href={`/tournaments/${catchRecord.events.id}`}>
+                {catchRecord.events?.name}
+              </Link>
+            ) : (
+              catchRecord.events?.name
+            )}
+          </p>
           <p>{formatDate(catchRecord.catch_datetime)}</p>
         </>
       ) : (
@@ -51,12 +77,14 @@ function LeaderCard({
   value,
   suffix,
   boatId,
+  anglerId,
 }: {
   title: string;
   name: string | undefined;
   value: number | undefined;
   suffix: string;
   boatId?: number;
+  anglerId?: number;
 }) {
   return (
     <div style={{ border: "1px solid #ccc", padding: "15px", minWidth: "260px" }}>
@@ -66,7 +94,13 @@ function LeaderCard({
         <>
           <p>
             <strong>
-              {boatId ? <Link href={`/boats/${boatId}`}>{name}</Link> : name}
+              {boatId ? (
+                <Link href={`/boats/${boatId}`}>{name}</Link>
+              ) : anglerId ? (
+                <Link href={`/anglers/${anglerId}`}>{name}</Link>
+              ) : (
+                name
+              )}
             </strong>
           </p>
           <p>
@@ -92,9 +126,9 @@ const { data: catches } = await supabase
     status,
     catch_datetime,
     boats(id,name),
-    anglers(first_name,last_name),
+    anglers(id,first_name,last_name),
     species(name),
-    events(name)
+    events(id,name)
   `)
   .eq("status", "approved");
 
@@ -106,11 +140,14 @@ const { data: catches } = await supabase
   const blueMarlinCatches =
     catches?.filter((c: any) => c.species?.name === "Blue Marlin") || [];
 
-  const anglerBlueMarlinCounts: Record<string, number> = {};
+  const anglerBlueMarlinCounts: Record<
+    string,
+    { count: number; id?: number }
+  > = {};
   const boatBlueMarlinCounts: Record<string, { count: number; id?: number }> = {};
 
   const boatPoints: Record<string, { points: number; id?: number }> = {};
-  const anglerPoints: Record<string, number> = {};
+  const anglerPoints: Record<string, { points: number; id?: number }> = {};
 
   const boatReleaseCounts: Record<string, { count: number; id?: number }> = {};
   const boatTaggedCounts: Record<string, { count: number; id?: number }> = {};
@@ -128,7 +165,10 @@ const { data: catches } = await supabase
     if (!boatPoints[boatName]) boatPoints[boatName] = { points: 0, id: boatId };
     boatPoints[boatName].points += points;
 
-    anglerPoints[anglerName] = (anglerPoints[anglerName] || 0) + points;
+    if (!anglerPoints[anglerName]) {
+      anglerPoints[anglerName] = { points: 0, id: c.anglers?.id };
+    }
+    anglerPoints[anglerName].points += points;
 
     if (c.released) {
       if (!boatReleaseCounts[boatName]) boatReleaseCounts[boatName] = { count: 0, id: boatId };
@@ -149,8 +189,13 @@ const { data: catches } = await supabase
     const boatName = c.boats?.name || "Unknown Boat";
     const boatId = c.boats?.id;
 
-    anglerBlueMarlinCounts[anglerName] =
-      (anglerBlueMarlinCounts[anglerName] || 0) + 1;
+    if (!anglerBlueMarlinCounts[anglerName]) {
+      anglerBlueMarlinCounts[anglerName] = {
+        count: 0,
+        id: c.anglers?.id,
+      };
+    }
+    anglerBlueMarlinCounts[anglerName].count += 1;
 
     if (!boatBlueMarlinCounts[boatName]) {
       boatBlueMarlinCounts[boatName] = { count: 0, id: boatId };
@@ -160,7 +205,7 @@ const { data: catches } = await supabase
   });
 
   const topBlueMarlinAngler = Object.entries(anglerBlueMarlinCounts).sort(
-    (a, b) => b[1] - a[1]
+    (a, b) => b[1].count - a[1].count
   )[0];
 
   const topBlueMarlinBoat = Object.entries(boatBlueMarlinCounts).sort(
@@ -172,7 +217,7 @@ const { data: catches } = await supabase
   )[0];
 
   const topAnglerPoints = Object.entries(anglerPoints).sort(
-    (a, b) => b[1] - a[1]
+    (a, b) => b[1].points - a[1].points
   )[0];
 
   const topReleaseBoat = Object.entries(boatReleaseCounts).sort(
@@ -210,8 +255,9 @@ const { data: catches } = await supabase
         <LeaderCard
           title="Most Blue Marlin Angler"
           name={topBlueMarlinAngler?.[0]}
-          value={topBlueMarlinAngler?.[1]}
+          value={topBlueMarlinAngler?.[1].count}
           suffix="Blue Marlin"
+          anglerId={topBlueMarlinAngler?.[1].id}
         />
 
         <LeaderCard
@@ -233,8 +279,9 @@ const { data: catches } = await supabase
         <LeaderCard
           title="Most Points by Angler"
           name={topAnglerPoints?.[0]}
-          value={topAnglerPoints?.[1]}
+          value={topAnglerPoints?.[1].points}
           suffix="points"
+          anglerId={topAnglerPoints?.[1].id}
         />
 
         <LeaderCard

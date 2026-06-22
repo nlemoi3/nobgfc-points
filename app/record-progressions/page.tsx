@@ -70,7 +70,11 @@ function ProgressionTable({
             {rows.map(({ year, catchRecord }) => (
               <tr key={`${title}-${year}`}>
                 <td>{year}</td>
-                <td>{catchRecord.weight} lbs</td>
+                <td>
+                  <Link href={`/catches/${catchRecord.id}`}>
+                    {catchRecord.weight} lbs
+                  </Link>
+                </td>
                 <td>
                   {catchRecord.anglers?.id ? (
                     <Link href={`/anglers/${catchRecord.anglers.id}`}>
@@ -93,7 +97,15 @@ function ProgressionTable({
                     catchRecord.boats?.name
                   )}
                 </td>
-                <td>{catchRecord.events?.name}</td>
+                <td>
+                  {catchRecord.events?.id ? (
+                    <Link href={`/tournaments/${catchRecord.events.id}`}>
+                      {catchRecord.events?.name}
+                    </Link>
+                  ) : (
+                    catchRecord.events?.name
+                  )}
+                </td>
                 <td>{formatDate(catchRecord.catch_datetime)}</td>
                 <td>
                   {catchRecord.photo_url ? (
@@ -124,7 +136,7 @@ export default async function RecordProgressionsPage() {
       boats(id,name),
       anglers(id,first_name,last_name),
       species(name),
-      events(name)
+      events(id,name)
     `)
     .eq("status", "approved");
 

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { unstable_noStore as noStore } from "next/cache";
 import { supabase } from "../../lib/supabase";
 
@@ -28,10 +29,10 @@ const { data: catches, error } = await supabase
     line_class,
     catch_datetime,
     photo_url,
-    boats(name),
-    anglers(first_name,last_name),
+    boats(id,name),
+    anglers(id,first_name,last_name),
     species(name),
-    events(name)
+    events(id,name)
   `)
   .eq("status", "approved")
   .order("catch_datetime", { ascending: false });
@@ -79,13 +80,41 @@ const { data: catches, error } = await supabase
                   "-"
                 )}
               </td>
-              <td>{formatDateTime(c.catch_datetime)}</td>
-              <td>{c.events?.name}</td>
-              <td>{c.boats?.name}</td>
               <td>
-                {c.anglers?.first_name} {c.anglers?.last_name}
+                <Link href={`/catches/${c.id}`}>
+                  {formatDateTime(c.catch_datetime)}
+                </Link>
               </td>
-              <td>{c.species?.name}</td>
+              <td>
+                {c.events?.id ? (
+                  <Link href={`/tournaments/${c.events.id}`}>
+                    {c.events?.name}
+                  </Link>
+                ) : (
+                  c.events?.name
+                )}
+              </td>
+              <td>
+                {c.boats?.id ? (
+                  <Link href={`/boats/${c.boats.id}`}>{c.boats?.name}</Link>
+                ) : (
+                  c.boats?.name
+                )}
+              </td>
+              <td>
+                {c.anglers?.id ? (
+                  <Link href={`/anglers/${c.anglers.id}`}>
+                    {c.anglers?.first_name} {c.anglers?.last_name}
+                  </Link>
+                ) : (
+                  <>
+                    {c.anglers?.first_name} {c.anglers?.last_name}
+                  </>
+                )}
+              </td>
+              <td>
+                <Link href={`/catches/${c.id}`}>{c.species?.name}</Link>
+              </td>
               <td>{c.weight ? `${c.weight} lbs` : "Released"}</td>
               <td>{c.line_class || "-"}</td>
               <td>{c.released ? "Yes" : "No"}</td>

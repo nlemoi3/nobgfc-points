@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { supabase } from "../../lib/supabase";
 
 export default async function RostersPage() {
@@ -6,9 +7,9 @@ export default async function RostersPage() {
     .select(`
       id,
       is_guest,
-      events(name),
-      boats(name),
-      anglers(first_name,last_name)
+      events(id,name),
+      boats(id,name),
+      anglers(id,first_name,last_name)
     `);
 
   return (
@@ -28,8 +29,27 @@ export default async function RostersPage() {
       <ul>
         {rosters?.map((r: any) => (
           <li key={r.id}>
-            {r.events?.name} | {r.boats?.name} |{" "}
-            {r.anglers?.first_name} {r.anglers?.last_name}
+            {r.events?.id ? (
+              <Link href={`/tournaments/${r.events.id}`}>{r.events?.name}</Link>
+            ) : (
+              r.events?.name
+            )}{" "}
+            |{" "}
+            {r.boats?.id ? (
+              <Link href={`/boats/${r.boats.id}`}>{r.boats?.name}</Link>
+            ) : (
+              r.boats?.name
+            )}{" "}
+            |{" "}
+            {r.anglers?.id ? (
+              <Link href={`/anglers/${r.anglers.id}`}>
+                {r.anglers?.first_name} {r.anglers?.last_name}
+              </Link>
+            ) : (
+              <>
+                {r.anglers?.first_name} {r.anglers?.last_name}
+              </>
+            )}
             {r.is_guest ? " (Guest)" : ""}
           </li>
         ))}

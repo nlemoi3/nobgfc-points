@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { supabase } from "../../lib/supabase";
 
 export default async function EventsPage() {
@@ -15,7 +16,10 @@ export default async function EventsPage() {
       <ul>
         {events?.map((event) => (
           <li key={event.id}>
-            <strong>{event.name}</strong> — {event.start_date} to {event.end_date}
+            <strong>
+              <Link href={`/tournaments/${event.id}`}>{event.name}</Link>
+            </strong>{" "}
+            — {event.start_date} to {event.end_date}
           </li>
         ))}
       </ul>

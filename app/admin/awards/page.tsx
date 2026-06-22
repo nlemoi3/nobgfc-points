@@ -52,7 +52,15 @@ export default async function AdminAwardsPage() {
             <tr key={award.id}>
               <td>{award.award_year}</td>
               <td>{award.award_name}</td>
-              <td>{anglerNameById[award.angler_id] || "Unknown Angler"}</td>
+              <td>
+                {award.angler_id ? (
+                  <Link href={`/anglers/${award.angler_id}`}>
+                    {anglerNameById[award.angler_id] || "Unknown Angler"}
+                  </Link>
+                ) : (
+                  "Unknown Angler"
+                )}
+              </td>
               <td>{award.notes || "-"}</td>
               <td>
                 <Link href={`/admin/awards/${award.id}`}>

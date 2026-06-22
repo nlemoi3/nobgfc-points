@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { supabase } from "../../lib/supabase";
 
 const AWARD_SPECIES = [
@@ -16,20 +17,21 @@ export default async function AwardsPage() {
 const { data: catches, error } = await supabase
   .from("catches")
   .select(`
+    id,
     weight,
     status,
     species(name),
-    anglers(first_name,last_name),
-    boats(name),
-    events(name)
+    anglers(id,first_name,last_name),
+    boats(id,name),
+    events(id,name)
   `)
   .eq("status", "approved");
 
   const blueMarlinCatches =
     catches?.filter((c: any) => c.species?.name === "Blue Marlin") || [];
 
-  const anglerCounts: Record<string, number> = {};
-  const boatCounts: Record<string, number> = {};
+  const anglerCounts: Record<string, { count: number; id?: number }> = {};
+  const boatCounts: Record<string, { count: number; id?: number }> = {};
 
   blueMarlinCatches.forEach((c: any) => {
     const angler = `${c.anglers?.first_name || ""} ${
@@ -38,12 +40,22 @@ const { data: catches, error } = await supabase
 
     const boat = c.boats?.name || "Unknown Boat";
 
-    anglerCounts[angler] = (anglerCounts[angler] || 0) + 1;
-    boatCounts[boat] = (boatCounts[boat] || 0) + 1;
+    if (!anglerCounts[angler]) {
+      anglerCounts[angler] = { count: 0, id: c.anglers?.id };
+    }
+    if (!boatCounts[boat]) {
+      boatCounts[boat] = { count: 0, id: c.boats?.id };
+    }
+    anglerCounts[angler].count += 1;
+    boatCounts[boat].count += 1;
   });
 
-  const topAngler = Object.entries(anglerCounts).sort((a, b) => b[1] - a[1])[0];
-  const topBoat = Object.entries(boatCounts).sort((a, b) => b[1] - a[1])[0];
+  const topAngler = Object.entries(anglerCounts).sort(
+    (a, b) => b[1].count - a[1].count,
+  )[0];
+  const topBoat = Object.entries(boatCounts).sort(
+    (a, b) => b[1].count - a[1].count,
+  )[0];
 
   const speciesAwards: Record<string, any> = {};
 
@@ -66,8 +78,18 @@ const { data: catches, error } = await supabase
           <h2>Most Blue Marlin - Angler</h2>
           {topAngler ? (
             <>
-              <p><strong>{topAngler[0]}</strong></p>
-              <p>{topAngler[1]} Blue Marlin</p>
+              <p>
+                <strong>
+                  {topAngler[1].id ? (
+                    <Link href={`/anglers/${topAngler[1].id}`}>
+                      {topAngler[0]}
+                    </Link>
+                  ) : (
+                    topAngler[0]
+                  )}
+                </strong>
+              </p>
+              <p>{topAngler[1].count} Blue Marlin</p>
             </>
           ) : (
             <p>No Blue Marlin entered</p>
@@ -78,8 +100,16 @@ const { data: catches, error } = await supabase
           <h2>Most Blue Marlin - Boat</h2>
           {topBoat ? (
             <>
-              <p><strong>{topBoat[0]}</strong></p>
-              <p>{topBoat[1]} Blue Marlin</p>
+              <p>
+                <strong>
+                  {topBoat[1].id ? (
+                    <Link href={`/boats/${topBoat[1].id}`}>{topBoat[0]}</Link>
+                  ) : (
+                    topBoat[0]
+                  )}
+                </strong>
+              </p>
+              <p>{topBoat[1].count} Blue Marlin</p>
             </>
           ) : (
             <p>No Blue Marlin entered</p>
@@ -109,13 +139,42 @@ const { data: catches, error } = await supabase
                 <td>{species}</td>
                 {catchRecord ? (
                   <>
-                    <td>{catchRecord.weight} lbs</td>
                     <td>
-                      {catchRecord.anglers?.first_name}{" "}
-                      {catchRecord.anglers?.last_name}
+                      <Link href={`/catches/${catchRecord.id}`}>
+                        {catchRecord.weight} lbs
+                      </Link>
                     </td>
-                    <td>{catchRecord.boats?.name}</td>
-                    <td>{catchRecord.events?.name}</td>
+                    <td>
+                      {catchRecord.anglers?.id ? (
+                        <Link href={`/anglers/${catchRecord.anglers.id}`}>
+                          {catchRecord.anglers?.first_name}{" "}
+                          {catchRecord.anglers?.last_name}
+                        </Link>
+                      ) : (
+                        <>
+                          {catchRecord.anglers?.first_name}{" "}
+                          {catchRecord.anglers?.last_name}
+                        </>
+                      )}
+                    </td>
+                    <td>
+                      {catchRecord.boats?.id ? (
+                        <Link href={`/boats/${catchRecord.boats.id}`}>
+                          {catchRecord.boats?.name}
+                        </Link>
+                      ) : (
+                        catchRecord.boats?.name
+                      )}
+                    </td>
+                    <td>
+                      {catchRecord.events?.id ? (
+                        <Link href={`/tournaments/${catchRecord.events.id}`}>
+                          {catchRecord.events?.name}
+                        </Link>
+                      ) : (
+                        catchRecord.events?.name
+                      )}
+                    </td>
                   </>
                 ) : (
                   <>

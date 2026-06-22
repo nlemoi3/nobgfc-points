@@ -27,10 +27,10 @@ export default async function AdminCatchesPage() {
       tagged,
       status,
       catch_datetime,
-      boats(name),
-      anglers(first_name,last_name),
+      boats(id,name),
+      anglers(id,first_name,last_name),
       species(name),
-      events(name)
+      events(id,name)
     `)
     .order("id", { ascending: false });
 
@@ -60,11 +60,41 @@ export default async function AdminCatchesPage() {
         <tbody>
           {catches?.map((c: any) => (
             <tr key={c.id}>
-              <td>{formatDateTime(c.catch_datetime)}</td>
-              <td>{c.events?.name}</td>
-              <td>{c.boats?.name}</td>
-              <td>{c.anglers?.first_name} {c.anglers?.last_name}</td>
-              <td>{c.species?.name}</td>
+              <td>
+                <Link href={`/catches/${c.id}`}>
+                  {formatDateTime(c.catch_datetime)}
+                </Link>
+              </td>
+              <td>
+                {c.events?.id ? (
+                  <Link href={`/tournaments/${c.events.id}`}>
+                    {c.events?.name}
+                  </Link>
+                ) : (
+                  c.events?.name
+                )}
+              </td>
+              <td>
+                {c.boats?.id ? (
+                  <Link href={`/boats/${c.boats.id}`}>{c.boats?.name}</Link>
+                ) : (
+                  c.boats?.name
+                )}
+              </td>
+              <td>
+                {c.anglers?.id ? (
+                  <Link href={`/anglers/${c.anglers.id}`}>
+                    {c.anglers?.first_name} {c.anglers?.last_name}
+                  </Link>
+                ) : (
+                  <>
+                    {c.anglers?.first_name} {c.anglers?.last_name}
+                  </>
+                )}
+              </td>
+              <td>
+                <Link href={`/catches/${c.id}`}>{c.species?.name}</Link>
+              </td>
               <td>{c.weight ? `${c.weight} lbs` : "Released"}</td>
               <td>{c.released ? "Yes" : "No"}</td>
               <td>{c.tagged ? "Yes" : "No"}</td>
