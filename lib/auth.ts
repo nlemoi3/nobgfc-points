@@ -6,13 +6,21 @@ export type AppRole = "member" | "boat" | "weighmaster" | "admin";
 
 export const getCurrentUser = cache(async () => {
   const supabase = await createClient();
-  const { data, error } = await supabase.auth.getUser();
+  try {
+    const { data, error } = await supabase.auth.getUser();
 
-  if (error || !data.user) {
+    if (error || !data.user) {
+      console.log("[auth] getCurrentUser: no user", error ? { message: error.message } : undefined);
+      return null;
+    }
+
+    // Log presence of a user id (no secrets)
+    console.log("[auth] getCurrentUser: user present", { id: data.user.id });
+    return data.user;
+  } catch (e) {
+    console.error("[auth] getCurrentUser error", e);
     return null;
   }
-
-  return data.user;
 });
 
 export const getCurrentUserRole = cache(async (): Promise<AppRole | null> => {
@@ -28,6 +36,8 @@ export const getCurrentUserRole = cache(async (): Promise<AppRole | null> => {
     .select("role")
     .eq("user_id", user.id)
     .maybeSingle();
+  // Log the resolved role for the current user (no secrets)
+  console.log("[auth] getCurrentUserRole", { userId: user.id, role: data?.role });
 
   return ["member", "boat", "weighmaster", "admin"].includes(data?.role)
     ? data.role
