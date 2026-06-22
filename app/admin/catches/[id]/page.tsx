@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { supabase } from "../../../../lib/supabase";
+import { createClient } from "../../../../lib/supabase/server";
 
 async function calculatePoints(
   species_id: number,
@@ -8,7 +9,8 @@ async function calculatePoints(
   released: boolean,
   tagged: boolean
 ) {
-  const { data: speciesRow } = await supabase
+  const authenticatedSupabase = await createClient();
+  const { data: speciesRow } = await authenticatedSupabase
     .from("species")
     .select("name")
     .eq("id", species_id)
@@ -67,10 +69,11 @@ async function calculatePoints(
 async function uploadCatchPhoto(file: File | null, catchId: number) {
   if (!file || file.size === 0) return null;
 
+  const authenticatedSupabase = await createClient();
   const extension = file.name.split(".").pop() || "jpg";
   const filePath = `catches/${catchId}/photo-${Date.now()}.${extension}`;
 
-  const { error } = await supabase.storage
+  const { error } = await authenticatedSupabase.storage
     .from("catch-media")
     .upload(filePath, file, {
       upsert: true,
@@ -80,13 +83,16 @@ async function uploadCatchPhoto(file: File | null, catchId: number) {
     throw new Error(`Catch photo upload failed: ${error.message}`);
   }
 
-  const { data } = supabase.storage.from("catch-media").getPublicUrl(filePath);
+  const { data } = authenticatedSupabase.storage
+    .from("catch-media")
+    .getPublicUrl(filePath);
 
   return data.publicUrl;
 }
 
 async function getCatchEventStatus(catchId: number) {
-  const { data: catchRecord } = await supabase
+  const authenticatedSupabase = await createClient();
+  const { data: catchRecord } = await authenticatedSupabase
     .from("catches")
     .select("event_id")
     .eq("id", catchId)
@@ -94,7 +100,7 @@ async function getCatchEventStatus(catchId: number) {
 
   if (!catchRecord?.event_id) return null;
 
-  const { data: event } = await supabase
+  const { data: event } = await authenticatedSupabase
     .from("events")
     .select("status")
     .eq("id", catchRecord.event_id)
@@ -106,6 +112,7 @@ async function getCatchEventStatus(catchId: number) {
 async function updateCatch(formData: FormData) {
   "use server";
 
+  const authenticatedSupabase = await createClient();
   const id = Number(formData.get("id"));
 
   const currentEventStatus = await getCatchEventStatus(id);
@@ -135,7 +142,7 @@ async function updateCatch(formData: FormData) {
     tagged
   );
 
-  const { error } = await supabase
+  const { error } = await authenticatedSupabase
     .from("catches")
     .update({
       event_id: Number(formData.get("event_id")),
@@ -163,6 +170,7 @@ async function updateCatch(formData: FormData) {
 async function deleteCatch(formData: FormData) {
   "use server";
 
+  const authenticatedSupabase = await createClient();
   const id = Number(formData.get("id"));
 
   const currentEventStatus = await getCatchEventStatus(id);
@@ -171,7 +179,10 @@ async function deleteCatch(formData: FormData) {
     throw new Error("This catch belongs to a locked event and cannot be deleted.");
   }
 
-  const { error } = await supabase.from("catches").delete().eq("id", id);
+  const { error } = await authenticatedSupabase
+    .from("catches")
+    .delete()
+    .eq("id", id);
 
   if (error) throw new Error(error.message);
 

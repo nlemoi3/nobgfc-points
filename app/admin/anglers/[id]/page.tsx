@@ -1,9 +1,10 @@
 import { redirect } from "next/navigation";
-import { supabase } from "../../../../lib/supabase";
+import { createClient } from "../../../../lib/supabase/server";
 
 async function updateAngler(formData: FormData) {
   "use server";
 
+  const supabase = await createClient();
   const id = Number(formData.get("id"));
 
   const { error } = await supabase
@@ -30,6 +31,7 @@ export default async function EditAnglerPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  const supabase = await createClient();
 
   const { data: angler } = await supabase
     .from("anglers")

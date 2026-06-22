@@ -1,9 +1,10 @@
 import { redirect } from "next/navigation";
-import { supabase } from "../../../../lib/supabase";
+import { createClient } from "../../../../lib/supabase/server";
 
 async function createHistoricalStanding(formData: FormData) {
   "use server";
 
+  const supabase = await createClient();
   const { error } = await supabase
     .from("historical_boat_standings")
     .insert({

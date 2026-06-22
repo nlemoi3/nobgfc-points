@@ -5,6 +5,7 @@ import { useEffect, useId, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import type { AppRole } from "../../lib/auth";
 
 function NavGroup({
   title,
@@ -66,7 +67,13 @@ function NavGroup({
   );
 }
 
-export default function Nav() {
+export default function Nav({
+  authControls,
+  role,
+}: {
+  authControls: ReactNode;
+  role: AppRole | null;
+}) {
   const [openGroup, setOpenGroup] = useState<string | null>(null);
   const pathname = usePathname();
   const navRef = useRef<HTMLElement>(null);
@@ -174,18 +181,30 @@ export default function Nav() {
         <div><Link href="/gallery">Photo Gallery</Link></div>
       </NavGroup>
 
-      <NavGroup title="Admin" isOpen={openGroup === "Admin"} onToggle={() => toggleGroup("Admin")}>
-        <div><Link href="/admin/catch-entry">Enter Catch</Link></div>
-        <div><Link href="/admin/boats">Manage Boats</Link></div>
-        <div><Link href="/admin/anglers">Manage Anglers</Link></div>
-        <div><Link href="/admin/events">Manage Events</Link></div>
-        <div><Link href="/admin/catches">Manage Catches</Link></div>
-        <div><Link href="/admin/scoring-audit">Scoring Audit</Link></div>
-        <div><Link href="/admin/recalculate-scores">Recalculate Scores</Link></div>
-        <div><Link href="/admin/records-review">Records Review</Link></div>
-        <div><Link href="/admin/historical-standings">Historical Standings Admin</Link></div>
-        <div><Link href="/admin/season-champions">Season Champions</Link></div>
-      </NavGroup>
+      {(role === "weighmaster" || role === "admin") && (
+        <NavGroup
+          title={role === "admin" ? "Admin" : "Weighmaster"}
+          isOpen={openGroup === "Admin"}
+          onToggle={() => toggleGroup("Admin")}
+        >
+          <div><Link href="/admin/catch-entry">Enter Catch</Link></div>
+          <div><Link href="/admin/catches">Manage Catches</Link></div>
+          {role === "admin" && (
+            <>
+              <div><Link href="/admin/boats">Manage Boats</Link></div>
+              <div><Link href="/admin/anglers">Manage Anglers</Link></div>
+              <div><Link href="/admin/events">Manage Events</Link></div>
+              <div><Link href="/admin/scoring-audit">Scoring Audit</Link></div>
+              <div><Link href="/admin/recalculate-scores">Recalculate Scores</Link></div>
+              <div><Link href="/admin/records-review">Records Review</Link></div>
+              <div><Link href="/admin/historical-standings">Historical Standings Admin</Link></div>
+              <div><Link href="/admin/season-champions">Season Champions</Link></div>
+            </>
+          )}
+        </NavGroup>
+      )}
+
+      {authControls}
     </nav>
   );
 }

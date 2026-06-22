@@ -1,9 +1,10 @@
 import { redirect } from "next/navigation";
-import { supabase } from "../../../../lib/supabase";
+import { createClient } from "../../../../lib/supabase/server";
 
 async function applyToExistingBoat(formData: FormData) {
   "use server";
 
+  const supabase = await createClient();
   const requestId = Number(formData.get("request_id"));
   const boatId = Number(formData.get("boat_id"));
   const status = String(formData.get("status") || "applied");
@@ -54,6 +55,7 @@ async function applyToExistingBoat(formData: FormData) {
 async function createNewBoatFromRequest(formData: FormData) {
   "use server";
 
+  const supabase = await createClient();
   const requestId = Number(formData.get("request_id"));
 
   const { data: request } = await supabase
@@ -103,6 +105,7 @@ async function createNewBoatFromRequest(formData: FormData) {
 async function updateRequestStatus(formData: FormData) {
   "use server";
 
+  const supabase = await createClient();
   const requestId = Number(formData.get("request_id"));
   const status = String(formData.get("status") || "new");
 
@@ -122,6 +125,7 @@ export default async function BoatProfileRequestDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  const supabase = await createClient();
 
   const { data: request } = await supabase
     .from("boat_profile_requests")

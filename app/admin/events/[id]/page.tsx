@@ -1,9 +1,10 @@
 import { redirect } from "next/navigation";
-import { supabase } from "../../../../lib/supabase";
+import { createClient } from "../../../../lib/supabase/server";
 
 async function updateEvent(formData: FormData) {
   "use server";
 
+  const supabase = await createClient();
   const id = Number(formData.get("id"));
 
   const { error } = await supabase
@@ -31,6 +32,7 @@ export default async function EditEventPage({
 }) {
   const { id } = await params;
   const eventId = Number(id);
+  const supabase = await createClient();
 
   const { data: event, error } = await supabase
     .from("events")

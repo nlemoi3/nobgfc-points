@@ -1,10 +1,11 @@
 import { redirect } from "next/navigation";
-import { supabase } from "../../../../lib/supabase";
+import { createClient } from "../../../../lib/supabase/server";
 import { getOfficialEligiblePoints } from "../../../../lib/scoring";
 
 async function generateAwards(formData: FormData) {
   "use server";
 
+  const supabase = await createClient();
   const year = Number(formData.get("year"));
 
   await supabase

@@ -1,9 +1,10 @@
 import { redirect } from "next/navigation";
-import { supabase } from "../../../../lib/supabase";
+import { createClient } from "../../../../lib/supabase/server";
 
 async function uploadBoatMedia(file: File | null, boatId: number, type: "photo" | "logo") {
   if (!file || file.size === 0) return null;
 
+  const supabase = await createClient();
   const extension = file.name.split(".").pop();
   const filePath = `boats/${boatId}/${type}-${Date.now()}.${extension}`;
 
@@ -25,6 +26,7 @@ async function uploadBoatMedia(file: File | null, boatId: number, type: "photo" 
 async function updateBoat(formData: FormData) {
   "use server";
 
+  const supabase = await createClient();
   const id = Number(formData.get("id"));
 
   const photoFile = formData.get("photo_file") as File | null;
@@ -72,6 +74,7 @@ export default async function EditBoatPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  const supabase = await createClient();
 
   const { data: boat } = await supabase
     .from("boats")

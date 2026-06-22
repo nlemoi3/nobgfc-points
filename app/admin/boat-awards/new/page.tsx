@@ -1,9 +1,10 @@
 import { redirect } from "next/navigation";
-import { supabase } from "../../../../lib/supabase";
+import { createClient } from "../../../../lib/supabase/server";
 
 async function createBoatAward(formData: FormData) {
   "use server";
 
+  const supabase = await createClient();
   const { error } = await supabase
     .from("boat_awards")
     .insert({
@@ -19,6 +20,7 @@ async function createBoatAward(formData: FormData) {
 }
 
 export default async function NewBoatAwardPage() {
+  const supabase = await createClient();
   const { data: boats } = await supabase
     .from("boats")
     .select("id,name")

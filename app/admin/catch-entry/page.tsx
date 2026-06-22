@@ -1,10 +1,12 @@
 import { redirect } from "next/navigation";
 import { supabase } from "../../../lib/supabase";
+import { createClient } from "../../../lib/supabase/server";
 import SearchableSelect from "../../components/searchable-select";
 
 async function saveCatch(formData: FormData) {
   "use server";
 
+  const authenticatedSupabase = await createClient();
   const event_id = Number(formData.get("event_id"));
   const boat_id = Number(formData.get("boat_id"));
   const angler_id = Number(formData.get("angler_id"));
@@ -16,13 +18,13 @@ async function saveCatch(formData: FormData) {
   const tagged = formData.get("tagged") === "on";
   const catch_datetime = formData.get("catch_datetime") || null;
 
-  const { data: speciesRow } = await supabase
+  const { data: speciesRow } = await authenticatedSupabase
     .from("species")
     .select("name")
     .eq("id", species_id)
     .single();
 
-  const { data: multiplierRow } = await supabase
+  const { data: multiplierRow } = await authenticatedSupabase
     .from("line_class_multipliers")
     .select("multiplier")
     .eq("line_class", line_class)
@@ -64,7 +66,7 @@ async function saveCatch(formData: FormData) {
       ? basePoints
       : basePoints * multiplier + tagBonus;
 
-  await supabase.from("catches").insert({
+  const { error } = await authenticatedSupabase.from("catches").insert({
     event_id,
     boat_id,
     angler_id,
@@ -76,6 +78,10 @@ async function saveCatch(formData: FormData) {
     catch_datetime,
     points_awarded,
   });
+
+  if (error) {
+    throw new Error(error.message);
+  }
 
   redirect("/catches");
 }

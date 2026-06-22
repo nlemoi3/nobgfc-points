@@ -1,9 +1,10 @@
 import { redirect } from "next/navigation";
-import { supabase } from "../../../../lib/supabase";
+import { createClient } from "../../../../lib/supabase/server";
 
 async function updateHistoricalStanding(formData: FormData) {
   "use server";
 
+  const supabase = await createClient();
   const id = Number(formData.get("id"));
 
   const { error } = await supabase
@@ -25,6 +26,7 @@ async function updateHistoricalStanding(formData: FormData) {
 async function deleteHistoricalStanding(formData: FormData) {
   "use server";
 
+  const supabase = await createClient();
   const id = Number(formData.get("id"));
 
   const { error } = await supabase
@@ -43,6 +45,7 @@ export default async function EditHistoricalStandingPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  const supabase = await createClient();
 
   const { data: row } = await supabase
     .from("historical_boat_standings")

@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { supabase } from "../../../lib/supabase";
+import { createClient } from "../../../lib/supabase/server";
 
 function calculateExpectedPoints(c: any) {
   const speciesName = c.species?.name || "";
@@ -57,6 +57,7 @@ function calculateExpectedPoints(c: any) {
 async function recalculateScores() {
   "use server";
 
+  const supabase = await createClient();
 const { data: catches, error } = await supabase
   .from("catches")
   .select(`

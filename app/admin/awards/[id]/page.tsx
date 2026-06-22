@@ -1,9 +1,10 @@
 import { redirect } from "next/navigation";
-import { supabase } from "../../../../lib/supabase";
+import { createClient } from "../../../../lib/supabase/server";
 
 async function updateAward(formData: FormData) {
   "use server";
 
+  const supabase = await createClient();
   const id = Number(formData.get("id"));
 
   const { error } = await supabase
@@ -24,6 +25,7 @@ async function updateAward(formData: FormData) {
 async function deleteAward(formData: FormData) {
   "use server";
 
+  const supabase = await createClient();
   const id = Number(formData.get("id"));
 
   const { error } = await supabase
@@ -42,6 +44,7 @@ export default async function EditAwardPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  const supabase = await createClient();
 
   const { data: award } = await supabase
     .from("angler_awards")
