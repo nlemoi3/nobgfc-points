@@ -37,7 +37,7 @@ export const getCurrentUserRole = cache(async (): Promise<AppRole | null> => {
     .eq("user_id", user.id)
     .maybeSingle();
   // Log the resolved role for the current user (no secrets)
-  console.log("[auth] getCurrentUserRole", { userId: user.id, role: data?.role, error: error ? { message: error.message, status: error.status } : null });
+  console.log("[auth] getCurrentUserRole", { userId: user.id, role: data?.role, error: error ? { message: error.message } : null });
 
   return ["member", "boat", "weighmaster", "admin"].includes(data?.role)
     ? data.role
