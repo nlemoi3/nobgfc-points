@@ -31,13 +31,13 @@ export const getCurrentUserRole = cache(async (): Promise<AppRole | null> => {
   }
 
   const supabase = await createClient();
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("user_roles")
     .select("role")
     .eq("user_id", user.id)
     .maybeSingle();
   // Log the resolved role for the current user (no secrets)
-  console.log("[auth] getCurrentUserRole", { userId: user.id, role: data?.role });
+  console.log("[auth] getCurrentUserRole", { userId: user.id, role: data?.role, error: error ? { message: error.message, status: error.status } : null });
 
   return ["member", "boat", "weighmaster", "admin"].includes(data?.role)
     ? data.role
