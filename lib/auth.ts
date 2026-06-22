@@ -1,10 +1,9 @@
-import { cache } from "react";
 import { redirect } from "next/navigation";
 import { createClient } from "./supabase/server";
 
 export type AppRole = "member" | "boat" | "weighmaster" | "admin";
 
-export const getCurrentUser = cache(async () => {
+export async function getCurrentUser() {
   const supabase = await createClient();
   try {
     const { data, error } = await supabase.auth.getUser();
@@ -14,16 +13,15 @@ export const getCurrentUser = cache(async () => {
       return null;
     }
 
-    // Log presence of a user id (no secrets)
     console.log("[auth] getCurrentUser: user present", { id: data.user.id });
     return data.user;
   } catch (e) {
     console.error("[auth] getCurrentUser error", e);
     return null;
   }
-});
+}
 
-export const getCurrentUserRole = cache(async (): Promise<AppRole | null> => {
+export async function getCurrentUserRole(): Promise<AppRole | null> {
   const supabase = await createClient();
   const { data: authData, error: authError } = await supabase.auth.getUser();
 
@@ -42,7 +40,6 @@ export const getCurrentUserRole = cache(async (): Promise<AppRole | null> => {
     .eq("user_id", user.id)
     .maybeSingle();
 
-  // Log the resolved role for the current user (no secrets)
   console.log("[auth] getCurrentUserRole", {
     userId: user.id,
     role: data?.role,
@@ -52,7 +49,7 @@ export const getCurrentUserRole = cache(async (): Promise<AppRole | null> => {
   return ["member", "boat", "weighmaster", "admin"].includes(data?.role)
     ? data.role
     : null;
-});
+}
 
 export async function requireRole(requiredRole: AppRole) {
   const user = await getCurrentUser();
