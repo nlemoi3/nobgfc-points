@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import { useEffect, useId, useRef, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -113,9 +114,31 @@ export default function Nav() {
         padding: "15px 40px",
         borderBottom: "1px solid #ddd",
         fontFamily: "Arial, sans-serif",
+        display: "flex",
+        alignItems: "center",
       }}
     >
-      <strong style={{ marginRight: "25px" }}>NOBGFC</strong>
+      <Link
+        href="/dashboard"
+        aria-label="NOBGFC dashboard"
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          gap: "10px",
+          marginRight: "25px",
+          color: "inherit",
+          textDecoration: "none",
+        }}
+      >
+        <Image
+          src="/nobgfc-logo.png"
+          alt="NOBGFC club logo"
+          width={48}
+          height={48}
+          priority
+        />
+        <strong>NOBGFC</strong>
+      </Link>
 
       <Link href="/dashboard" style={{ marginRight: "20px" }}>
         Dashboard
