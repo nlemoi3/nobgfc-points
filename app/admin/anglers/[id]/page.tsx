@@ -40,11 +40,20 @@ export default async function EditAnglerPage({
   const { id } = await params;
   const supabase = await createClient();
 
-  const { data: angler } = await supabase
+  const { data: angler, error } = await supabase
     .from("anglers")
     .select("*")
     .eq("id", Number(id))
     .single();
+
+  if (error) {
+    return (
+      <main style={{ padding: "40px", fontFamily: "Arial, sans-serif" }}>
+        <h1>Edit Angler</h1>
+        <p style={{ color: "red" }}>Error loading angler: {error.message}</p>
+      </main>
+    );
+  }
 
   if (!angler) {
     return (
