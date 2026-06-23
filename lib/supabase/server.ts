@@ -18,6 +18,5 @@ export async function createClient() {
         );
       },
     },
-    headers: headerStore,
   });
 }

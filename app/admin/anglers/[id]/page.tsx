@@ -7,6 +7,8 @@ async function updateAngler(formData: FormData) {
   const supabase = await createClient();
   const id = Number(formData.get("id"));
 
+  const userId = String(formData.get("user_id") || "").trim() || null;
+
   const { error } = await supabase
     .from("anglers")
     .update({
@@ -17,6 +19,7 @@ async function updateAngler(formData: FormData) {
       photo_url: String(formData.get("photo_url") || ""),
       date_of_birth: formData.get("date_of_birth") || null,
       biography: String(formData.get("biography") || ""),
+      user_id: userId,
     })
     .eq("id", id);
 
@@ -122,6 +125,17 @@ export default async function EditAnglerPage({
             name="photo_url"
             defaultValue={angler.photo_url || ""}
             style={{ width: "500px" }}
+          />
+        </p>
+
+        <p>
+          <label>User ID</label>
+          <br />
+          <input
+            name="user_id"
+            defaultValue={angler.user_id || ""}
+            placeholder="auth.users UUID"
+            style={{ boxSizing: "border-box", padding: "8px", width: "100%" }}
           />
         </p>
 

@@ -12,6 +12,9 @@ create table if not exists public.user_roles (
 
 alter table public.user_roles enable row level security;
 
+alter table if exists public.anglers
+  add column if not exists user_id uuid unique references auth.users(id) on delete set null;
+
 create or replace function public.has_app_role(required_role text)
 returns boolean
 language sql

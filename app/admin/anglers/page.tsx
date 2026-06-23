@@ -22,6 +22,7 @@ export default async function AdminAnglersPage() {
             <th>Angler</th>
             <th>Member</th>
             <th>Youth</th>
+            <th>User ID</th>
             <th>Action</th>
           </tr>
         </thead>
@@ -36,6 +37,9 @@ export default async function AdminAnglersPage() {
               </td>
               <td>{angler.is_member ? "Yes" : "No"}</td>
               <td>{angler.is_youth ? "Yes" : "No"}</td>
+              <td style={{ fontFamily: "monospace", fontSize: "0.9em" }}>
+                {angler.user_id || "—"}
+              </td>
               <td>
                 <Link href={`/admin/anglers/${angler.id}`}>Edit</Link>
               </td>

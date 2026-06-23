@@ -45,6 +45,84 @@ export async function getCurrentUserRole(): Promise<AppRole | null> {
     : null;
 }
 
+export async function getCurrentUserAngler() {
+  const supabase = await createClient();
+  const { data: authData, error: authError } = await supabase.auth.getUser();
+
+  if (authError || !authData.user) {
+    return null;
+  }
+
+  const user = authData.user;
+  // Try finding angler by linked user_id first
+  const { data, error } = await supabase
+    .from("anglers")
+    .select("*")
+    .eq("user_id", user.id)
+    .maybeSingle();
+
+  if (error) {
+    return null;
+  }
+
+  if (data) {
+    return data;
+  }
+
+  // If no angler linked by user_id, attempt to match by email and link it
+  if (user.email) {
+    const { data: byEmail, error: emailError } = await supabase
+      .from("anglers")
+      .select("*")
+      .eq("email", user.email)
+      .maybeSingle();
+
+    if (emailError || !byEmail) {
+      return null;
+    }
+
+    // Try to associate the angler record with this authenticated user
+    const { data: updated, error: updateError } = await supabase
+      .from("anglers")
+      .update({ user_id: user.id })
+      .eq("id", byEmail.id)
+      .select()
+      .maybeSingle();
+
+    if (!updateError && updated) {
+      return updated;
+    }
+
+    // If update failed due to RLS or other reasons, still return the matched angler
+    return byEmail;
+  }
+
+  return null;
+}
+
+export async function linkCurrentUserToAngler(anglerId: number) {
+  const supabase = await createClient();
+  const { data: authData, error: authError } = await supabase.auth.getUser();
+
+  if (authError || !authData.user) {
+    return null;
+  }
+
+  const user = authData.user;
+  const { data, error } = await supabase
+    .from("anglers")
+    .update({ user_id: user.id })
+    .eq("id", anglerId)
+    .select()
+    .maybeSingle();
+
+  if (error || !data) {
+    return null;
+  }
+
+  return data;
+}
+
 export async function requireRole(requiredRole: AppRole) {
   const user = await getCurrentUser();
 
