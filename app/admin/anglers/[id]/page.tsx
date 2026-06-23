@@ -8,6 +8,8 @@ async function updateAngler(formData: FormData) {
   const id = Number(formData.get("id"));
 
   const userId = String(formData.get("user_id") || "").trim() || null;
+  const email = String(formData.get("email") || "").trim() || null;
+  const phoneNumber = String(formData.get("phone_number") || "").trim() || null;
 
   const { error } = await supabase
     .from("anglers")
@@ -19,6 +21,8 @@ async function updateAngler(formData: FormData) {
       photo_url: String(formData.get("photo_url") || ""),
       date_of_birth: formData.get("date_of_birth") || null,
       biography: String(formData.get("biography") || ""),
+      email: email,
+      phone_number: phoneNumber,
       user_id: userId,
     })
     .eq("id", id);
@@ -135,6 +139,30 @@ export default async function EditAnglerPage({
             name="user_id"
             defaultValue={angler.user_id || ""}
             placeholder="auth.users UUID"
+            style={{ boxSizing: "border-box", padding: "8px", width: "100%" }}
+          />
+        </p>
+
+        <p>
+          <label>Email</label>
+          <br />
+          <input
+            name="email"
+            type="email"
+            defaultValue={angler.email || ""}
+            placeholder="angler email (used to link accounts)"
+            style={{ boxSizing: "border-box", padding: "8px", width: "100%" }}
+          />
+        </p>
+
+        <p>
+          <label>Phone Number</label>
+          <br />
+          <input
+            name="phone_number"
+            type="tel"
+            defaultValue={angler.phone_number || ""}
+            placeholder="angler phone number"
             style={{ boxSizing: "border-box", padding: "8px", width: "100%" }}
           />
         </p>

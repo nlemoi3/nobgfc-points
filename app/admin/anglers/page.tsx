@@ -23,6 +23,8 @@ export default async function AdminAnglersPage() {
             <th>Angler</th>
             <th>Member</th>
             <th>Youth</th>
+            <th>Email</th>
+            <th>Phone</th>
             <th>User ID</th>
             <th>Action</th>
           </tr>
@@ -38,6 +40,8 @@ export default async function AdminAnglersPage() {
               </td>
               <td>{angler.is_member ? "Yes" : "No"}</td>
               <td>{angler.is_youth ? "Yes" : "No"}</td>
+              <td>{angler.email || "—"}</td>
+              <td>{angler.phone_number || "—"}</td>
               <td style={{ fontFamily: "monospace", fontSize: "0.9em" }}>
                 {angler.user_id || "—"}
               </td>
