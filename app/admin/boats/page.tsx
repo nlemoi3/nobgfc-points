@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { unstable_noStore as noStore } from "next/cache";
-import { supabase } from "../../../lib/supabase";
+import { createClient } from "../../../lib/supabase/server";
 
 export default async function AdminBoatsPage() {
   noStore();
 
+  const supabase = await createClient();
   const { data: boats, error } = await supabase
     .from("boats")
     .select("*")
