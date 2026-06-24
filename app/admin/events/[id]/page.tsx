@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { supabase } from "../../../../lib/supabase";
 import { createClient } from "../../../../lib/supabase/server";
 
 async function updateEvent(formData: FormData) {
@@ -38,19 +39,20 @@ export default async function EditEventPage({
   const { id } = await params;
   const { error: pageError, saved } = await searchParams;
   const eventId = Number(id);
-  const supabase = await createClient();
 
   const { data: event, error } = await supabase
     .from("events")
     .select("*")
     .eq("id", eventId)
-    .single();
+    .maybeSingle();
 
   if (error || !event) {
     return (
       <main className="panel">
         <h1>Edit Tournament Schedule</h1>
-        <p className="alert alert-danger">Event not found.</p>
+        <p className="alert alert-danger">
+          {error ? `Unable to load event: ${error.message}` : "Event not found."}
+        </p>
       </main>
     );
   }
