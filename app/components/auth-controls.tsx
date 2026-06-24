@@ -24,6 +24,9 @@ export default function AuthControls({
       <span className="auth-email">
         {email} {role ? `(${role})` : "(pending approval)"}
       </span>
+      <Link href="/account" className="nav-link" style={{ marginLeft: "8px" }}>
+        Account
+      </Link>
       {anglerId && (
         <Link href={`/anglers/${anglerId}`} className="nav-link" style={{ marginLeft: "8px" }}>My Profile</Link>
       )}

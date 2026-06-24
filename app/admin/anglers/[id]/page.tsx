@@ -10,6 +10,7 @@ async function updateAngler(formData: FormData) {
   const userId = String(formData.get("user_id") || "").trim() || null;
   const email = String(formData.get("email") || "").trim() || null;
   const phoneNumber = String(formData.get("phone_number") || "").trim() || null;
+  const address = String(formData.get("address") || "").trim() || null;
 
   const role = String(formData.get("role") || "").trim();
 
@@ -25,6 +26,7 @@ async function updateAngler(formData: FormData) {
       biography: String(formData.get("biography") || ""),
       email: email,
       phone_number: phoneNumber,
+      address: address,
       user_id: userId,
     })
     .eq("id", id);
@@ -195,6 +197,15 @@ export default async function EditAnglerPage({
             type="tel"
             defaultValue={angler.phone_number || ""}
             placeholder="angler phone number"
+          />
+        </p>
+
+        <p className="field field-full">
+          <label>Address</label>
+          <input
+            name="address"
+            defaultValue={angler.address || ""}
+            placeholder="street address"
           />
         </p>
 
