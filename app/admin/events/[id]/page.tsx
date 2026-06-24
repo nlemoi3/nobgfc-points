@@ -6,6 +6,7 @@ async function updateEvent(formData: FormData) {
 
   const supabase = await createClient();
   const id = Number(formData.get("id"));
+  const returnUrl = `/admin/events/${id}`;
 
   const { error } = await supabase
     .from("events")
@@ -19,18 +20,23 @@ async function updateEvent(formData: FormData) {
     .eq("id", id);
 
   if (error) {
-    throw new Error(error.message);
+    redirect(
+      `${returnUrl}?error=${encodeURIComponent(`Save failed: ${error.message}`)}`,
+    );
   }
 
-  redirect("/admin/events");
+  redirect(`${returnUrl}?saved=1`);
 }
 
 export default async function EditEventPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ error?: string; saved?: string }>;
 }) {
   const { id } = await params;
+  const { error: pageError, saved } = await searchParams;
   const eventId = Number(id);
   const supabase = await createClient();
 
@@ -43,33 +49,38 @@ export default async function EditEventPage({
   if (error || !event) {
     return (
       <main className="panel">
-        <h1>Edit Event</h1>
-        <p style={{ color: "red" }}>Event not found.</p>
+        <h1>Edit Tournament Schedule</h1>
+        <p className="alert alert-danger">Event not found.</p>
       </main>
     );
   }
 
   return (
     <main className="panel">
-      <h1>Edit Event</h1>
+      <div className="toolbar">
+        <h1>Edit Tournament Schedule</h1>
+        <a href="/admin/events" className="btn btn-ghost">Back to Events</a>
+      </div>
+
+      {pageError && <p className="alert alert-danger">{pageError}</p>}
+      {saved === "1" && <p className="alert">Schedule saved.</p>}
 
       <form action={updateEvent}>
         <input type="hidden" name="id" value={event.id} />
 
-        <p>
+        <div className="form-grid">
+
+        <p className="field field-full">
           <label>Tournament Name</label>
-          <br />
           <input
             name="name"
             defaultValue={event.name}
-            style={{ width: "500px" }}
             required
           />
         </p>
 
-        <p>
+        <p className="field">
           <label>Start Date</label>
-          <br />
           <input
             name="start_date"
             type="date"
@@ -78,9 +89,8 @@ export default async function EditEventPage({
           />
         </p>
 
-        <p>
+        <p className="field">
           <label>End Date</label>
-          <br />
           <input
             name="end_date"
             type="date"
@@ -89,9 +99,8 @@ export default async function EditEventPage({
           />
         </p>
 
-        <p>
-          <label>Status</label>
-          <br />
+        <p className="field">
+          <label>Schedule Status</label>
           <select name="status" defaultValue={event.status || "scheduled"}>
             <option value="scheduled">scheduled</option>
             <option value="rescheduled">rescheduled</option>
@@ -101,18 +110,20 @@ export default async function EditEventPage({
           </select>
         </p>
 
-        <p>
-          <label>Notes</label>
-          <br />
+        <p className="field field-full">
+          <label>Scheduling Notes / Public Notice</label>
           <textarea
             name="notes"
             defaultValue={event.notes || ""}
             rows={5}
-            style={{ width: "500px" }}
+            placeholder="Example: Moved due to weather. New dates June 24-25."
           />
         </p>
 
-        <button type="submit">Save Event</button>
+        <p className="field-full">
+          <button type="submit" className="btn">Save Schedule</button>
+        </p>
+        </div>
       </form>
     </main>
   );

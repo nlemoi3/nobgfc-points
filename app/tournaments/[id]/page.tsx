@@ -94,6 +94,21 @@ boatScores[boat].points += Number(c.points_awarded || 0);
     ?.filter((c: any) => c.species?.name === "Dolphin" && c.weight)
     .sort((a: any, b: any) => b.weight - a.weight)[0];
 
+  const statusClass = (status: string | null) => {
+    switch ((status || "scheduled").toLowerCase()) {
+      case "cancelled":
+        return "status-chip status-cancelled";
+      case "rescheduled":
+        return "status-chip status-rescheduled";
+      case "locked":
+        return "status-chip status-locked";
+      case "completed":
+        return "status-chip status-completed";
+      default:
+        return "status-chip status-scheduled";
+    }
+  };
+
   return (
     <main className="panel">
       <p>
@@ -105,10 +120,16 @@ boatScores[boat].points += Number(c.points_awarded || 0);
       <p>
         {formatDate(event?.start_date)} – {formatDate(event?.end_date)}
         <br />
-        Status: {event?.status || "scheduled"}
+        Status: <span className={statusClass(event?.status)}>{event?.status || "scheduled"}</span>
       </p>
 
-      {event?.notes && (
+      {(event?.status === "cancelled" || event?.status === "rescheduled") && (
+        <p className="schedule-notice">
+          <strong>Scheduling Update:</strong> {event.notes || "Tournament schedule was updated."}
+        </p>
+      )}
+
+      {event?.notes && event?.status !== "cancelled" && event?.status !== "rescheduled" && (
         <p>
           <strong>Notes:</strong> {event.notes}
         </p>

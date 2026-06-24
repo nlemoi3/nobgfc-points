@@ -176,6 +176,57 @@ hr {
   border-color: #f5cdcd;
 }
 
+.status-chip {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 0.2rem 0.56rem;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.status-scheduled {
+  background: color-mix(in srgb, #2d6c9f 18%, transparent);
+  border-color: color-mix(in srgb, #2d6c9f 45%, transparent);
+  color: color-mix(in srgb, #2d6c9f 70%, #0a0f14);
+}
+
+.status-rescheduled {
+  background: color-mix(in srgb, #c67a15 20%, transparent);
+  border-color: color-mix(in srgb, #c67a15 55%, transparent);
+  color: color-mix(in srgb, #c67a15 80%, #3b2106);
+}
+
+.status-cancelled {
+  background: color-mix(in srgb, #b42f36 18%, transparent);
+  border-color: color-mix(in srgb, #b42f36 55%, transparent);
+  color: color-mix(in srgb, #b42f36 85%, #30090c);
+}
+
+.status-locked {
+  background: color-mix(in srgb, #5d4ca6 18%, transparent);
+  border-color: color-mix(in srgb, #5d4ca6 50%, transparent);
+  color: color-mix(in srgb, #5d4ca6 82%, #1b1534);
+}
+
+.status-completed {
+  background: color-mix(in srgb, #2e8f5f 18%, transparent);
+  border-color: color-mix(in srgb, #2e8f5f 50%, transparent);
+  color: color-mix(in srgb, #2e8f5f 80%, #0d2519);
+}
+
+.schedule-notice {
+  border-left: 4px solid color-mix(in srgb, #c67a15 70%, transparent);
+  border-radius: 0 10px 10px 0;
+  background: color-mix(in srgb, #c67a15 10%, transparent);
+  margin: 0.5rem 0 1rem;
+  padding: 0.75rem 0.9rem;
+}
+
 .toolbar {
   display: flex;
   align-items: center;
