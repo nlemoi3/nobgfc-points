@@ -237,57 +237,49 @@ const careerPoints = boatCatches.reduce(
   ).length;
 
   return (
-    <main className="panel">
-      <p>
+    <>
+      <p style={{ marginBottom: "16px" }}>
         <Link href="/boats">← Back to Boats</Link>
       </p>
-
-      {boat.photo_url && (
-        <div
-          className="boat-hero"
-          style={{
-            backgroundImage: `url('${boat.photo_url}')`,
-          }}
-        >
-          <div className="boat-hero-content">
-            <div className="boat-hero-text">
-              <h1>{boat.name}</h1>
-              <p style={{ margin: "8px 0 4px", color: "#ffffff", fontSize: "0.95rem" }}>
-                {[boat.year, boat.make, boat.model].filter(Boolean).join(" ")}
-                {boat.length_feet ? ` — ${boat.length_feet} ft` : ""}
-              </p>
-              {boat.home_port && (
-                <p style={{ margin: "4px 0 0", color: "#e0e8f0", fontSize: "0.9rem" }}>
-                  {boat.home_port}
-                </p>
+      <main className="panel">
+        {boat.photo_url && (
+          <div
+            className="boat-hero"
+            style={{
+              backgroundImage: `url('${boat.photo_url}')`,
+            }}
+          >
+            <div className="boat-hero-content">
+              <div className="boat-hero-text">
+                <h1>{boat.name}</h1>
+                {boat.home_port && (
+                  <p style={{ margin: "8px 0 0", color: "#e0e8f0", fontSize: "0.9rem", textAlign: "center" }}>
+                    {boat.home_port}
+                  </p>
+                )}
+              </div>
+              {boat.logo_url && (
+                <div className="boat-hero-logo">
+                  <img src={boat.logo_url} alt={`${boat.name} logo`} />
+                </div>
               )}
             </div>
-            {boat.logo_url && (
-              <div className="boat-hero-logo">
-                <img src={boat.logo_url} alt={`${boat.name} logo`} />
-              </div>
-            )}
           </div>
-        </div>
-      )}
+        )}
 
-      {!boat.photo_url && (
-        <>
-          <h1>{boat.name}</h1>
-          <p style={{ margin: "8px 0 4px", fontSize: "0.95rem", color: "#2e4f67" }}>
-            {[boat.year, boat.make, boat.model].filter(Boolean).join(" ")}
-            {boat.length_feet ? ` — ${boat.length_feet} ft` : ""}
-          </p>
-          {boat.home_port && (
-            <p style={{ margin: "4px 0 16px", fontSize: "0.9rem", color: "#5a7387" }}>
-              {boat.home_port}
-            </p>
-          )}
-          {boat.logo_url && (
-            <img
-              src={boat.logo_url}
-              alt={`${boat.name} logo`}
-              style={{ maxWidth: "160px", display: "block", marginBottom: "16px" }}
+        {!boat.photo_url && (
+          <>
+            <h1>{boat.name}</h1>
+            {boat.home_port && (
+              <p style={{ margin: "8px 0 16px", fontSize: "0.9rem", color: "#5a7387", textAlign: "center" }}>
+                {boat.home_port}
+              </p>
+            )}
+            {boat.logo_url && (
+              <img
+                src={boat.logo_url}
+                alt={`${boat.name} logo`}
+                style={{ maxWidth: "160px", display: "block", margin: "0 auto 16px" }}
             />
           )}
         </>
@@ -303,6 +295,13 @@ const careerPoints = boatCatches.reduce(
       </div>
 
       <h2>Boat Details</h2>
+
+      {[boat.year, boat.make, boat.model].filter(Boolean).join(" ") && (
+        <p>
+          <strong>Specifications:</strong> {[boat.year, boat.make, boat.model].filter(Boolean).join(" ")}
+          {boat.length_feet ? ` — ${boat.length_feet} ft` : ""}
+        </p>
+      )}
 
       {boat.captain_name && (
         <p>
@@ -523,6 +522,7 @@ const careerPoints = boatCatches.reduce(
           </tbody>
         </table>
       )}
-    </main>
+      </main>
+    </>
   );
 }
