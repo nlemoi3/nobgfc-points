@@ -176,6 +176,12 @@ hr {
   border-color: #f5cdcd;
 }
 
+.alert-warning {
+  color: #7a5614;
+  background: #fff8e8;
+  border-color: #f0d9a4;
+}
+
 .status-chip {
   display: inline-flex;
   align-items: center;
