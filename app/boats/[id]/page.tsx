@@ -253,7 +253,7 @@ const careerPoints = boatCatches.reduce(
               <div className="boat-hero-text">
                 <h1 style={{ margin: "0 0 2px" }}>{boat.name}</h1>
                 {boat.home_port && (
-                  <p style={{ margin: "0 0 4px", color: "#e0e8f0", fontSize: "0.9rem", textAlign: "center" }}>
+                  <p style={{ margin: "-2px 0 2px", color: "#e0e8f0", fontSize: "1rem", fontWeight: 600, textAlign: "center" }}>
                     {boat.home_port}
                   </p>
                 )}
@@ -277,7 +277,7 @@ const careerPoints = boatCatches.reduce(
           <>
             <h1 style={{ margin: "0 0 2px" }}>{boat.name}</h1>
             {boat.home_port && (
-              <p style={{ margin: "0 0 4px", fontSize: "0.9rem", color: "#5a7387", textAlign: "center" }}>
+              <p style={{ margin: "-2px 0 2px", fontSize: "1rem", fontWeight: 600, color: "#5a7387", textAlign: "center" }}>
                 {boat.home_port}
               </p>
             )}
