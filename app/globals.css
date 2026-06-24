@@ -628,11 +628,7 @@ hr {
 }
 
 .dashboard-hero::after {
-  width: 320px;
-  height: 130px;
-  left: 34%;
-  bottom: -78px;
-  background: radial-gradient(ellipse at center, rgba(39, 126, 182, 0.15), rgba(39, 126, 182, 0));
+  display: none;
 }
 
 .dashboard-hero > * {
@@ -647,7 +643,7 @@ hr {
 .dashboard-logo-strip {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 16px;
 }
 
 .dashboard-logo {
@@ -662,15 +658,15 @@ hr {
 }
 
 .dashboard-logo-primary {
-  height: 138px;
+  height: 132px;
 }
 
 .dashboard-logo-secondary {
-  height: 76px;
+  height: 70px;
 }
 
 .dashboard-flag-logo {
-  height: 76px;
+  height: 70px;
 }
 
 .dashboard-flag-wrap {
