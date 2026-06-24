@@ -11,6 +11,8 @@ async function updateAngler(formData: FormData) {
   const email = String(formData.get("email") || "").trim() || null;
   const phoneNumber = String(formData.get("phone_number") || "").trim() || null;
 
+  const role = String(formData.get("role") || "").trim();
+
   const { error } = await supabase
     .from("anglers")
     .update({
@@ -29,6 +31,20 @@ async function updateAngler(formData: FormData) {
 
   if (error) {
     redirect(`/admin/anglers/${id}?error=${encodeURIComponent(error.message)}`);
+  }
+
+  // Sync role in user_roles table
+  if (userId) {
+    if (role) {
+      const { error: roleError } = await supabase
+        .from("user_roles")
+        .upsert({ user_id: userId, role }, { onConflict: "user_id" });
+      if (roleError) {
+        redirect(`/admin/anglers/${id}?error=${encodeURIComponent(roleError.message)}`);
+      }
+    } else {
+      await supabase.from("user_roles").delete().eq("user_id", userId);
+    }
   }
 
   redirect("/admin/anglers");
@@ -50,6 +66,15 @@ export default async function EditAnglerPage({
     .select("*")
     .eq("id", Number(id))
     .single();
+
+  const currentRole = angler?.user_id
+    ? (await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", angler.user_id)
+        .maybeSingle()
+      ).data?.role ?? ""
+    : "";
 
   if (error) {
     return (
@@ -185,6 +210,27 @@ export default async function EditAnglerPage({
             placeholder="angler phone number"
             style={{ boxSizing: "border-box", padding: "8px", width: "100%" }}
           />
+        </p>
+
+        <p>
+          <label>Permission Level</label>
+          <br />
+          <select
+            name="role"
+            defaultValue={currentRole}
+            style={{ padding: "8px", minWidth: "200px" }}
+          >
+            <option value="">None (read-only)</option>
+            <option value="member">Member</option>
+            <option value="boat">Boat</option>
+            <option value="weighmaster">Weighmaster</option>
+            <option value="admin">Admin</option>
+          </select>
+          {!angler.user_id && (
+            <span style={{ marginLeft: "8px", color: "#888", fontSize: "0.85em" }}>
+              Requires a User ID to take effect
+            </span>
+          )}
         </p>
 
         <p>
