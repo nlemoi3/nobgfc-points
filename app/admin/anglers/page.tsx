@@ -15,6 +15,12 @@ export default async function AdminAnglersPage() {
     <main style={{ padding: "40px", fontFamily: "Arial, sans-serif" }}>
       <h1>Manage Anglers</h1>
 
+      <p>
+        <Link href="/admin/anglers/new" style={{ padding: "8px 16px", background: "#0070f3", color: "#fff", borderRadius: "4px", textDecoration: "none" }}>
+          + Add Angler
+        </Link>
+      </p>
+
       {error && <p style={{ color: "red" }}>Error: {error.message}</p>}
 
       <table border={1} cellPadding={8} style={{ borderCollapse: "collapse" }}>
