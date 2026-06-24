@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import ScheduleNotePresets from "../../../components/schedule-note-presets";
 import { requireRole } from "../../../../lib/auth";
 import { supabase } from "../../../../lib/supabase";
 import { createClient } from "../../../../lib/supabase/server";
@@ -119,12 +120,7 @@ export default async function EditEventPage({
 
         <p className="field field-full">
           <label>Scheduling Notes / Public Notice</label>
-          <textarea
-            name="notes"
-            defaultValue={event.notes || ""}
-            rows={5}
-            placeholder="Example: Moved due to weather. New dates June 24-25."
-          />
+          <ScheduleNotePresets defaultValue={event.notes || ""} />
         </p>
 
         <p className="field-full">

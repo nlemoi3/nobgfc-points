@@ -361,6 +361,39 @@ hr {
   resize: vertical;
 }
 
+.schedule-presets {
+  display: grid;
+  gap: 10px;
+}
+
+.schedule-preset-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.schedule-preset-btn {
+  appearance: none;
+  border: 1px solid #c9d9e8;
+  border-radius: 999px;
+  background: #f5f9fd;
+  color: #234c69;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 0.42rem 0.72rem;
+}
+
+.schedule-preset-btn:hover {
+  background: #ecf4fb;
+}
+
+.schedule-preset-clear {
+  border-color: #e4c9c9;
+  background: #fff4f4;
+  color: #8d3c3c;
+}
+
 .checkbox-row {
   display: flex;
   align-items: center;
