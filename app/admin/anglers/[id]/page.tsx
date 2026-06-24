@@ -27,17 +27,22 @@ async function updateAngler(formData: FormData) {
     })
     .eq("id", id);
 
-  if (error) throw new Error(error.message);
+  if (error) {
+    redirect(`/admin/anglers/${id}?error=${encodeURIComponent(error.message)}`);
+  }
 
   redirect("/admin/anglers");
 }
 
 export default async function EditAnglerPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ error?: string }>;
 }) {
   const { id } = await params;
+  const { error: saveError } = await searchParams;
   const supabase = await createClient();
 
   const { data: angler, error } = await supabase
@@ -67,6 +72,12 @@ export default async function EditAnglerPage({
   return (
     <main style={{ padding: "40px", fontFamily: "Arial, sans-serif" }}>
       <h1>Edit Angler</h1>
+
+      {saveError && (
+        <p style={{ color: "red", background: "#fff0f0", padding: "10px", borderRadius: "4px" }}>
+          Save failed: {saveError}
+        </p>
+      )}
 
       <form action={updateAngler}>
         <input type="hidden" name="id" value={angler.id} />
