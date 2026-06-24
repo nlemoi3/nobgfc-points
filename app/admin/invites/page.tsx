@@ -22,11 +22,15 @@ export default async function AdminInvitesPage({
   const { error, sent } = await searchParams;
 
   const supabase = createAdminClient();
-  const [{ data: usersData, error: usersError }, { data: rolesData, error: rolesError }] =
-    await Promise.all([
-      supabase.auth.admin.listUsers({ page: 1, perPage: 100 }),
-      supabase.from("user_roles").select("user_id, role"),
-    ]);
+  const [usersResult, rolesResult] = await Promise.allSettled([
+    supabase.auth.admin.listUsers({ page: 1, perPage: 100 }),
+    supabase.from("user_roles").select("user_id, role"),
+  ]);
+
+  const usersData = usersResult.status === "fulfilled" ? usersResult.value.data : null;
+  const usersError = usersResult.status === "fulfilled" ? usersResult.value.error : usersResult.reason;
+  const rolesData = rolesResult.status === "fulfilled" ? rolesResult.value.data : [];
+  const rolesError = rolesResult.status === "fulfilled" ? rolesResult.value.error : null;
 
   const rolesByUserId = new Map<string, string>();
   (rolesData || []).forEach((row: { user_id: string; role: string }) => {
@@ -57,7 +61,6 @@ export default async function AdminInvitesPage({
       {sent === "email" && <p className="alert alert-success">Email invite sent.</p>}
       {sent === "sms" && <p className="alert alert-success">Text invite sent.</p>}
       {usersError && <p className="alert alert-danger">Auth user error: {usersError.message}</p>}
-      {rolesError && rolesData === null && <p className="alert alert-danger">Role error: {rolesError.message}</p>}
 
       <form action={sendInvite} className="form-grid">
         <p className="field">
