@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "../../../../lib/supabase/server";
+import SearchableMultiSelect from "../../../components/searchable-multi-select";
 
 async function uploadBoatMedia(file: File | null, boatId: number, type: "photo" | "logo") {
   if (!file || file.size === 0) return null;
@@ -197,27 +198,15 @@ export default async function EditBoatPage({
           <input name="owner_email" type="email" defaultValue={boat.owner_email || ""} />
         </p>
 
-        <p>
-          <label>Linked Owner Accounts (multiple)</label>
-          <br />
-          <select
-            name="owner_angler_ids"
-            multiple
-            size={10}
-            style={{ minWidth: "360px" }}
-            defaultValue={Array.from(currentOwnerIds).map((value) => String(value))}
-          >
-            {anglers?.map((angler: any) => (
-              <option key={angler.id} value={angler.id}>
-                {angler.last_name}, {angler.first_name}
-              </option>
-            ))}
-          </select>
-          <br />
-          <small style={{ color: "#555" }}>
-            Hold Ctrl (Windows) or Cmd (Mac) to select multiple owners.
-          </small>
-        </p>
+        <SearchableMultiSelect
+          label="Linked Owner Accounts (multiple)"
+          name="owner_angler_ids"
+          options={(anglers || []).map((angler: any) => ({
+            value: String(angler.id),
+            label: `${angler.last_name}, ${angler.first_name}`,
+          }))}
+          defaultSelectedValues={Array.from(currentOwnerIds).map((value) => String(value))}
+        />
 
         <hr />
 
