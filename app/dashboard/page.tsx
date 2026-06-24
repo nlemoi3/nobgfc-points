@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { unstable_noStore as noStore } from "next/cache";
+import { existsSync } from "fs";
+import { join } from "path";
 import { supabase } from "../../lib/supabase";
 import { getOfficialEligiblePoints } from "../../lib/scoring";
 
@@ -23,7 +25,7 @@ function LargestFishCard({
   catchRecord: any;
 }) {
   return (
-    <div style={{ border: "1px solid #ccc", padding: "15px", minWidth: "240px" }}>
+    <div className="feature-card fish-card">
       <h3>{title}</h3>
 
       {catchRecord ? (
@@ -32,7 +34,7 @@ function LargestFishCard({
             <img
               src={catchRecord.photo_url}
               alt={title}
-              style={{ maxWidth: "220px", display: "block", marginBottom: "10px" }}
+              className="fish-card-photo"
             />
           )}
 
@@ -79,24 +81,27 @@ function LargestFishCard({
 
 export default async function DashboardPage() {
   noStore();
+  const hasBillfishFlag = existsSync(
+    join(process.cwd(), "public", "billfish-foundation-flag.png"),
+  );
 
-const { data: catches } = await supabase
-  .from("catches")
-  .select(`
-    id,
-    points_awarded,
-    weight,
-    released,
-    tagged,
-    status,
-    catch_datetime,
-    created_at,
-    photo_url,
-    boats(id,name),
-    anglers(id,first_name,last_name),
-    species(name)
-  `)
-  .eq("status", "approved");
+  const { data: catches } = await supabase
+    .from("catches")
+    .select(`
+      id,
+      points_awarded,
+      weight,
+      released,
+      tagged,
+      status,
+      catch_datetime,
+      created_at,
+      photo_url,
+      boats(id,name),
+      anglers(id,first_name,last_name),
+      species(name)
+    `)
+    .eq("status", "approved");
 
   const boatCatches: Record<string, any[]> = {};
   const anglerCatches: Record<string, any[]> = {};
@@ -197,61 +202,106 @@ const { data: catches } = await supabase
     (a, b) => b[1].count - a[1].count
   )[0];
 
+  const totalApprovedCatches = catches?.length || 0;
+  const totalBlueMarlin = blueMarlinCatches.length;
+
   return (
-    <main className="panel">
-      <h1>NOBGFC Dashboard</h1>
+    <main className="panel dashboard-page">
+      <section className="dashboard-hero">
+        <div>
+          <h1>NOBGFC Dashboard</h1>
+          <p className="hint">
+            Live pulse of the season across catches, leaders, and standings.
+          </p>
+        </div>
 
-      <div style={{ display: "flex", gap: "20px", flexWrap: "wrap", marginBottom: "30px" }}>
-        <div style={{ border: "1px solid #ccc", padding: "15px", minWidth: "250px" }}>
-          <h2>Boat Champion Leader</h2>
+        <div className="dashboard-logo-strip">
+          <img src="/nobgfc-logo.png" alt="NOBGFC logo" className="dashboard-logo" />
+
+          {hasBillfishFlag ? (
+            <a
+              href="https://www.billfish.org/"
+              target="_blank"
+              rel="noreferrer"
+              className="dashboard-flag-wrap"
+            >
+              <img
+                src="/billfish-foundation-flag.png"
+                alt="The Billfish Foundation flag"
+                className="dashboard-logo dashboard-flag-logo"
+              />
+            </a>
+          ) : (
+            <a
+              href="https://www.captharry.com/products/the-billfish-foundation-tag-flag?srsltid=AfmBOoqXN7wjDKG-TGASeo_TbZmf-YEcks8viuY19637AG9nyY9_4j54"
+              target="_blank"
+              rel="noreferrer"
+              className="dashboard-flag-link"
+            >
+              Add Billfish Flag Logo
+            </a>
+          )}
+        </div>
+      </section>
+
+      <section className="kpi-grid">
+        <div className="stat-card">
+          <h3>Boat Champion Leader</h3>
           {boatLeader ? (
-            <>
-              <strong>
-                {boatLeader.id ? (
-                  <Link href={`/boats/${boatLeader.id}`}>{boatLeader.name}</Link>
-                ) : (
-                  boatLeader.name
-                )}
-              </strong>
-              <br />
-              {boatLeader.points.toFixed(1)} pts
-            </>
+            <div className="stat-card-value" style={{ fontSize: "1.2rem" }}>
+              {boatLeader.id ? (
+                <Link href={`/boats/${boatLeader.id}`}>{boatLeader.name}</Link>
+              ) : (
+                boatLeader.name
+              )}
+              <div className="hint">{boatLeader.points.toFixed(1)} pts</div>
+            </div>
           ) : (
             <p>No catches</p>
           )}
         </div>
 
-        <div style={{ border: "1px solid #ccc", padding: "15px", minWidth: "250px" }}>
-          <h2>Angling Champion Leader</h2>
+        <div className="stat-card">
+          <h3>Angling Champion Leader</h3>
           {anglerLeader ? (
-            <>
-              <strong>
-                {anglerLeader.id ? (
-                  <Link href={`/anglers/${anglerLeader.id}`}>
-                    {anglerLeader.name}
-                  </Link>
-                ) : (
-                  anglerLeader.name
-                )}
-              </strong>
-              <br />
-              {anglerLeader.points.toFixed(1)} pts
-            </>
+            <div className="stat-card-value" style={{ fontSize: "1.2rem" }}>
+              {anglerLeader.id ? (
+                <Link href={`/anglers/${anglerLeader.id}`}>
+                  {anglerLeader.name}
+                </Link>
+              ) : (
+                anglerLeader.name
+              )}
+              <div className="hint">{anglerLeader.points.toFixed(1)} pts</div>
+            </div>
           ) : (
             <p>No catches</p>
           )}
         </div>
-      </div>
 
-      <div style={{ display: "flex", gap: "20px", flexWrap: "wrap", marginBottom: "30px" }}>
-        <LargestFishCard title="Largest Blue Marlin" catchRecord={largestBlueMarlin} />
-        <LargestFishCard title="Largest Tuna" catchRecord={largestTuna} />
-        <LargestFishCard title="Largest Wahoo" catchRecord={largestWahoo} />
-        <LargestFishCard title="Largest Dolphin" catchRecord={largestDolphin} />
-      </div>
+        <div className="stat-card">
+          <h3>Total Approved Catches</h3>
+          <div className="stat-card-value">{totalApprovedCatches}</div>
+        </div>
 
-      <div style={{ display: "flex", gap: "20px", flexWrap: "wrap", marginBottom: "30px" }}>
-        <div style={{ border: "1px solid #ccc", padding: "15px", minWidth: "250px" }}>
+        <div className="stat-card">
+          <h3>Total Blue Marlin</h3>
+          <div className="stat-card-value">{totalBlueMarlin}</div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Largest Fish</h2>
+        <div className="dashboard-cards-grid">
+          <LargestFishCard title="Largest Blue Marlin" catchRecord={largestBlueMarlin} />
+          <LargestFishCard title="Largest Tuna" catchRecord={largestTuna} />
+          <LargestFishCard title="Largest Wahoo" catchRecord={largestWahoo} />
+          <LargestFishCard title="Largest Dolphin" catchRecord={largestDolphin} />
+        </div>
+      </section>
+
+      <section className="dashboard-cards-grid dashboard-tight-grid">
+        <div className="feature-card">
           <h3>Most Blue Marlin Angler</h3>
           {topBlueMarlinAngler ? (
             <>
@@ -264,15 +314,14 @@ const { data: catches } = await supabase
                   topBlueMarlinAngler[0]
                 )}
               </strong>
-              <br />
-              {topBlueMarlinAngler[1].count} Blue Marlin
+              <p className="hint">{topBlueMarlinAngler[1].count} Blue Marlin</p>
             </>
           ) : (
             <p>No Blue Marlin</p>
           )}
         </div>
 
-        <div style={{ border: "1px solid #ccc", padding: "15px", minWidth: "250px" }}>
+        <div className="feature-card">
           <h3>Most Blue Marlin Boat</h3>
           {topBlueMarlinBoat ? (
             <>
@@ -285,90 +334,95 @@ const { data: catches } = await supabase
                   topBlueMarlinBoat[0]
                 )}
               </strong>
-              <br />
-              {topBlueMarlinBoat[1].count} Blue Marlin
+              <p className="hint">{topBlueMarlinBoat[1].count} Blue Marlin</p>
             </>
           ) : (
             <p>No Blue Marlin</p>
           )}
         </div>
-      </div>
+      </section>
 
-      <h2>Recent Catches</h2>
+      <section>
+        <h2>Recent Catches</h2>
+        <div className="table-wrap">
+          <table className="admin-table">
+            <thead>
+              <tr>
+                <th>Date/Time</th>
+                <th>Boat</th>
+                <th>Angler</th>
+                <th>Species</th>
+                <th>Weight</th>
+                <th>Points</th>
+              </tr>
+            </thead>
+            <tbody>
+              {recentCatches.map((c: any) => (
+                <tr key={c.id}>
+                  <td>
+                    <Link href={`/catches/${c.id}`}>
+                      {formatDateTime(c.catch_datetime)}
+                    </Link>
+                  </td>
+                  <td>
+                    {c.boats?.id ? (
+                      <Link href={`/boats/${c.boats.id}`}>{c.boats?.name}</Link>
+                    ) : (
+                      c.boats?.name
+                    )}
+                  </td>
+                  <td>
+                    {c.anglers?.id ? (
+                      <Link href={`/anglers/${c.anglers.id}`}>
+                        {c.anglers?.first_name} {c.anglers?.last_name}
+                      </Link>
+                    ) : (
+                      <>
+                        {c.anglers?.first_name} {c.anglers?.last_name}
+                      </>
+                    )}
+                  </td>
+                  <td>
+                    <Link href={`/catches/${c.id}`}>{c.species?.name}</Link>
+                  </td>
+                  <td>{c.weight ? `${c.weight} lbs` : "Released"}</td>
+                  <td>{c.points_awarded}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
 
-      <table border={1} cellPadding={8} style={{ borderCollapse: "collapse" }}>
-        <thead>
-          <tr>
-            <th>Date/Time</th>
-            <th>Boat</th>
-            <th>Angler</th>
-            <th>Species</th>
-            <th>Weight</th>
-            <th>Points</th>
-          </tr>
-        </thead>
-        <tbody>
-          {recentCatches.map((c: any) => (
-            <tr key={c.id}>
-              <td>
-                <Link href={`/catches/${c.id}`}>
-                  {formatDateTime(c.catch_datetime)}
-                </Link>
-              </td>
-              <td>
-                {c.boats?.id ? (
-                  <Link href={`/boats/${c.boats.id}`}>{c.boats?.name}</Link>
-                ) : (
-                  c.boats?.name
-                )}
-              </td>
-              <td>
-                {c.anglers?.id ? (
-                  <Link href={`/anglers/${c.anglers.id}`}>
-                    {c.anglers?.first_name} {c.anglers?.last_name}
-                  </Link>
-                ) : (
-                  <>
-                    {c.anglers?.first_name} {c.anglers?.last_name}
-                  </>
-                )}
-              </td>
-              <td>
-                <Link href={`/catches/${c.id}`}>{c.species?.name}</Link>
-              </td>
-              <td>{c.weight ? `${c.weight} lbs` : "Released"}</td>
-              <td>{c.points_awarded}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-
-      <h2 style={{ marginTop: "40px" }}>Boat Standings</h2>
-
-      <table border={1} cellPadding={8} style={{ borderCollapse: "collapse" }}>
-        <thead>
-          <tr>
-            <th>Rank</th>
-            <th>Boat</th>
-            <th>Official Points</th>
-          </tr>
-        </thead>
-        <tbody>
-          {boatStandings.map((boat, index) => (
-            <tr key={boat.name}>
-              <td>{index + 1}</td>
-              <td>
-                {boat.id ? (
-                  <Link href={`/boats/${boat.id}`}>{boat.name}</Link>
-                ) : (
-                  boat.name
-                )}
-              </td>
-              <td>{boat.points.toFixed(1)}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <section>
+        <h2>Boat Standings</h2>
+        <div className="table-wrap">
+          <table className="admin-table">
+            <thead>
+              <tr>
+                <th>Rank</th>
+                <th>Boat</th>
+                <th>Official Points</th>
+              </tr>
+            </thead>
+            <tbody>
+              {boatStandings.map((boat, index) => (
+                <tr key={boat.name}>
+                  <td>{index + 1}</td>
+                  <td>
+                    {boat.id ? (
+                      <Link href={`/boats/${boat.id}`}>{boat.name}</Link>
+                    ) : (
+                      boat.name
+                    )}
+                  </td>
+                  <td>{boat.points.toFixed(1)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
     </main>
   );
 }
