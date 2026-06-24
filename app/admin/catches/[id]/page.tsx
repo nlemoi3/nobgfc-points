@@ -114,11 +114,14 @@ async function updateCatch(formData: FormData) {
 
   const authenticatedSupabase = await createClient();
   const id = Number(formData.get("id"));
+  const returnUrl = `/admin/catches/${id}`;
 
   const currentEventStatus = await getCatchEventStatus(id);
 
   if (currentEventStatus === "locked") {
-    throw new Error("This catch belongs to a locked event and cannot be edited.");
+    redirect(
+      `${returnUrl}?error=${encodeURIComponent("This catch belongs to a locked event and cannot be edited.")}`,
+    );
   }
 
   const species_id = Number(formData.get("species_id"));
@@ -129,8 +132,19 @@ async function updateCatch(formData: FormData) {
   const tagged = formData.get("tagged") === "on";
 
   const photoFile = formData.get("photo_file");
-  const uploadedPhotoUrl =
-    photoFile instanceof File ? await uploadCatchPhoto(photoFile, id) : null;
+  let uploadedPhotoUrl: string | null = null;
+
+  if (photoFile instanceof File) {
+    try {
+      uploadedPhotoUrl = await uploadCatchPhoto(photoFile, id);
+    } catch (error: any) {
+      redirect(
+        `${returnUrl}?error=${encodeURIComponent(
+          error?.message || "Catch photo upload failed.",
+        )}`,
+      );
+    }
+  }
 
   const currentPhotoUrl = String(formData.get("photo_url") || "");
 
@@ -161,7 +175,9 @@ async function updateCatch(formData: FormData) {
     .eq("id", id);
 
   if (error) {
-    throw new Error(`Catch update failed: ${error.message}`);
+    redirect(
+      `${returnUrl}?error=${encodeURIComponent(`Catch update failed: ${error.message}`)}`,
+    );
   }
 
   redirect("/admin/catches");
@@ -172,11 +188,14 @@ async function deleteCatch(formData: FormData) {
 
   const authenticatedSupabase = await createClient();
   const id = Number(formData.get("id"));
+  const returnUrl = `/admin/catches/${id}`;
 
   const currentEventStatus = await getCatchEventStatus(id);
 
   if (currentEventStatus === "locked") {
-    throw new Error("This catch belongs to a locked event and cannot be deleted.");
+    redirect(
+      `${returnUrl}?error=${encodeURIComponent("This catch belongs to a locked event and cannot be deleted.")}`,
+    );
   }
 
   const { error } = await authenticatedSupabase
@@ -184,17 +203,24 @@ async function deleteCatch(formData: FormData) {
     .delete()
     .eq("id", id);
 
-  if (error) throw new Error(error.message);
+  if (error) {
+    redirect(
+      `${returnUrl}?error=${encodeURIComponent(`Delete failed: ${error.message}`)}`,
+    );
+  }
 
   redirect("/admin/catches");
 }
 
 export default async function EditCatchPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ error?: string }>;
 }) {
   const { id } = await params;
+  const { error } = await searchParams;
   const catchId = Number(id);
 
   const [
@@ -233,6 +259,8 @@ export default async function EditCatchPage({
   return (
     <main className="panel">
       <h1>Edit Catch</h1>
+
+      {error && <p className="alert alert-danger">{error}</p>}
 
       {isLocked && (
         <p style={{ color: "red", fontWeight: "bold" }}>
