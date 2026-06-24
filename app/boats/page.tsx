@@ -115,7 +115,7 @@ export default async function BoatsPage({
                   <img
                     src={boat.logo_url}
                     alt={boat.name}
-                    className={`boat-list-logo${String(boat.name || "").toLowerCase().includes("tenacious") ? " logo-oval-cut" : ""}`}
+                    className="boat-list-logo"
                   />
                 )}
                 <span className="boat-rank-chip">#{rankByBoatId[boat.id] || "-"}</span>

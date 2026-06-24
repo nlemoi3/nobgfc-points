@@ -131,9 +131,6 @@ export default async function BoatProfilePage({
   if (!boat) {
     return <main className="panel">Boat not found.</main>;
   }
-  const logoClassName = String(boat.name || "").toLowerCase().includes("tenacious")
-    ? "logo-oval-cut"
-    : "";
 const { data: boatAwards } = await supabase
   .from("boat_awards")
   .select("*")
@@ -269,7 +266,7 @@ const careerPoints = boatCatches.reduce(
               </div>
               {boat.logo_url && (
                 <div className="boat-hero-logo">
-                  <img src={boat.logo_url} alt={`${boat.name} logo`} className={logoClassName} />
+                  <img src={boat.logo_url} alt={`${boat.name} logo`} />
                 </div>
               )}
             </div>
@@ -294,7 +291,6 @@ const careerPoints = boatCatches.reduce(
               <img
                 src={boat.logo_url}
                 alt={`${boat.name} logo`}
-                className={logoClassName}
                 style={{ maxWidth: "160px", display: "block", margin: "0 auto 16px" }}
             />
           )}

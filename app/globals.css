@@ -543,24 +543,6 @@ hr {
   display: block;
 }
 
-.boat-list-logo.logo-oval-cut {
-  width: 112px;
-  height: 78px;
-  object-fit: contain;
-  object-position: center;
-  clip-path: ellipse(46% 38% at 50% 50%);
-}
-
-.boat-hero-logo img.logo-oval-cut {
-  width: 170px;
-  height: 118px;
-  max-width: none;
-  max-height: none;
-  object-fit: contain;
-  object-position: center;
-  clip-path: ellipse(46% 38% at 50% 50%);
-}
-
 .boat-rank-chip {
   position: relative;
   z-index: 2;
