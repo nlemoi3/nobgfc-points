@@ -596,6 +596,8 @@ hr {
 }
 
 .dashboard-hero {
+  position: relative;
+  overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -603,7 +605,39 @@ hr {
   border: 1px solid #d5e1ec;
   border-radius: 14px;
   padding: 16px 18px;
-  background: linear-gradient(140deg, rgba(240, 248, 255, 0.95), rgba(231, 243, 252, 0.9));
+  background:
+    radial-gradient(680px 220px at -8% -25%, rgba(109, 170, 214, 0.35), transparent 60%),
+    radial-gradient(520px 180px at 110% -20%, rgba(34, 105, 155, 0.2), transparent 62%),
+    linear-gradient(140deg, rgba(240, 248, 255, 0.96), rgba(225, 239, 251, 0.93));
+}
+
+.dashboard-hero::before,
+.dashboard-hero::after {
+  content: "";
+  position: absolute;
+  border-radius: 999px;
+  pointer-events: none;
+}
+
+.dashboard-hero::before {
+  width: 240px;
+  height: 240px;
+  right: -88px;
+  top: -110px;
+  background: radial-gradient(circle at 30% 30%, rgba(28, 102, 151, 0.18), rgba(28, 102, 151, 0));
+}
+
+.dashboard-hero::after {
+  width: 320px;
+  height: 130px;
+  left: 34%;
+  bottom: -78px;
+  background: radial-gradient(ellipse at center, rgba(39, 126, 182, 0.15), rgba(39, 126, 182, 0));
+}
+
+.dashboard-hero > * {
+  position: relative;
+  z-index: 1;
 }
 
 .dashboard-hero-copy h1 {
@@ -613,7 +647,7 @@ hr {
 .dashboard-logo-strip {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 20px;
 }
 
 .dashboard-logo {
@@ -628,15 +662,15 @@ hr {
 }
 
 .dashboard-logo-primary {
-  height: 96px;
+  height: 138px;
 }
 
 .dashboard-logo-secondary {
-  height: 64px;
+  height: 76px;
 }
 
 .dashboard-flag-logo {
-  height: 64px;
+  height: 76px;
 }
 
 .dashboard-flag-wrap {
@@ -758,11 +792,11 @@ hr {
   }
 
   .dashboard-logo-primary {
-    height: 72px;
+    height: 96px;
   }
 
   .dashboard-logo-secondary {
-    height: 50px;
+    height: 58px;
   }
 
   .boat-hero-logo {
