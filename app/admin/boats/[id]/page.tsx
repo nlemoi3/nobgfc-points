@@ -102,6 +102,17 @@ async function updateBoat(formData: FormData) {
 
     redirect(`/boats/${id}`);
   } catch (error) {
+    // Next.js redirect() throws an internal redirect error; do not treat it as a save failure.
+    if (
+      error &&
+      typeof error === "object" &&
+      "digest" in error &&
+      typeof (error as { digest?: string }).digest === "string" &&
+      (error as { digest?: string }).digest?.startsWith("NEXT_REDIRECT")
+    ) {
+      throw error;
+    }
+
     const message = error instanceof Error ? error.message : "Unexpected error";
     redirect(`/admin/boats/${id}?error=${encodeURIComponent(message)}`);
   }
