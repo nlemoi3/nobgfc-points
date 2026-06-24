@@ -3,16 +3,6 @@ import { supabase } from "../../lib/supabase";
 
 export const dynamic = "force-dynamic";
 
-function normalizeBoatName(name: string) {
-  return name
-    .toLowerCase()
-    .replace(/['’]/g, "")
-    .replace(/&/g, "and")
-    .replace(/-/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
 export default async function BoatsPage() {
   const { data: boats, error } = await supabase
     .from("boats")
@@ -50,73 +40,71 @@ export default async function BoatsPage() {
     rankByBoatId[boat.id] = index + 1;
   });
 
+  const totalBoats = boats?.length || 0;
+  const topPoints = rankedBoats[0] ? (boatPoints[rankedBoats[0].id] || 0) : 0;
+
   return (
-    <main className="panel">
-      <h1>Boats</h1>
+    <main className="panel boats-list-page">
+      <div className="toolbar">
+        <h1>Boats</h1>
+        <p className="hint">
+          {totalBoats} boats, top career total {topPoints.toFixed(1)} points
+        </p>
+      </div>
 
       {error && (
-        <p style={{ color: "red" }}>
+        <p className="alert alert-danger">
           Error loading boats: {error.message}
         </p>
       )}
 
-      <table
-        border={1}
-        cellPadding={8}
-        style={{ borderCollapse: "collapse", width: "100%" }}
-      >
-        <thead>
-          <tr>
-            <th>Logo</th>
-            <th>Boat</th>
-            <th>Rank</th>
-            <th>Career Points</th>
-            <th>Profile</th>
-          </tr>
-        </thead>
-
-        <tbody>
-          {boats?.map((boat: any) => (
-            <tr key={boat.id}>
-              <td>
-                {boat.logo_url ? (
+      {rankedBoats.length === 0 ? (
+        <p>No boats found.</p>
+      ) : (
+        <div className="boats-grid">
+          {rankedBoats.map((boat: any) => (
+            <Link key={boat.id} href={`/boats/${boat.id}`} className="boat-list-card">
+              <div
+                className="boat-list-media"
+                style={
+                  boat.photo_url
+                    ? { backgroundImage: `url('${boat.photo_url}')` }
+                    : undefined
+                }
+              >
+                {boat.logo_url && (
                   <img
                     src={boat.logo_url}
                     alt={boat.name}
-                    style={{
-                      width: "70px",
-                      height: "70px",
-                      objectFit: "contain",
-                    }}
+                    className="boat-list-logo"
                   />
-                ) : (
-                  "-"
                 )}
-              </td>
+                <span className="boat-rank-chip">#{rankByBoatId[boat.id] || "-"}</span>
+              </div>
 
-              <td>
-                <Link href={`/boats/${boat.id}`}>{boat.name}</Link>
-              </td>
+              <div className="boat-list-body">
+                <h3>{boat.name}</h3>
 
-              <td>
-                {rankByBoatId[boat.id]
-                  ? `#${rankByBoatId[boat.id]}`
-                  : "-"}
-              </td>
+                <p className="boat-list-meta">
+                  {[boat.year, boat.make, boat.model].filter(Boolean).join(" ") || "Details coming soon"}
+                  {boat.length_feet ? ` - ${boat.length_feet} ft` : ""}
+                </p>
 
-              <td>
-                {(boatPoints[boat.id] || 0).toFixed(1)}
-              </td>
+                {boat.home_port && (
+                  <p className="boat-list-port">{boat.home_port}</p>
+                )}
 
-              <td>
-                <Link href={`/boats/${boat.id}`}>
-                  View Profile
-                </Link>
-              </td>
-            </tr>
+                <div className="boat-list-stats">
+                  <span>
+                    <strong>{(boatPoints[boat.id] || 0).toFixed(1)}</strong> career points
+                  </span>
+                  <span>View profile</span>
+                </div>
+              </div>
+            </Link>
           ))}
-        </tbody>
-      </table>
+        </div>
+      )}
     </main>
   );
 }

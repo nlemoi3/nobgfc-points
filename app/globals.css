@@ -448,6 +448,109 @@ hr {
   margin: 28px 0;
 }
 
+.boats-list-page .toolbar {
+  margin-bottom: 18px;
+}
+
+.boats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(255px, 1fr));
+  gap: 16px;
+}
+
+.boat-list-card {
+  border: 1px solid #d5e1ec;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: var(--shadow-sm);
+  color: inherit;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.boat-list-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.boat-list-media {
+  position: relative;
+  height: 145px;
+  background:
+    linear-gradient(160deg, #d2e8f8, #9ec7e4),
+    radial-gradient(700px 140px at 50% 110%, rgba(255, 255, 255, 0.85), transparent 60%);
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: 10px;
+}
+
+.boat-list-media::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.06), rgba(15, 33, 48, 0.42));
+}
+
+.boat-list-logo {
+  position: relative;
+  z-index: 2;
+  width: 62px;
+  height: 62px;
+  border-radius: 10px;
+  object-fit: contain;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  padding: 4px;
+}
+
+.boat-rank-chip {
+  position: relative;
+  z-index: 2;
+  border-radius: 999px;
+  background: rgba(20, 49, 72, 0.86);
+  color: #f1f7fc;
+  font-weight: 700;
+  font-size: 0.86rem;
+  padding: 4px 10px;
+}
+
+.boat-list-body {
+  padding: 14px;
+}
+
+.boat-list-body h3 {
+  margin: 0 0 6px;
+  font-size: 1.08rem;
+}
+
+.boat-list-meta {
+  margin: 0;
+  color: #567287;
+  font-size: 0.88rem;
+}
+
+.boat-list-port {
+  margin: 6px 0 0;
+  color: #2d566f;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.boat-list-stats {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  border-top: 1px solid #e5edf5;
+  padding-top: 10px;
+  color: #325b75;
+  font-size: 0.86rem;
+}
+
 .stat-card {
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(245, 250, 255, 0.95));
   border: 1px solid #d5e1ec;
