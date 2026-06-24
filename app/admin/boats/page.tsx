@@ -15,6 +15,21 @@ export default async function AdminBoatsPage() {
     <main style={{ padding: "40px", fontFamily: "Arial, sans-serif" }}>
       <h1>Manage Boats</h1>
 
+      <p>
+        <Link
+          href="/admin/boats/new"
+          style={{
+            padding: "8px 16px",
+            background: "#0070f3",
+            color: "#fff",
+            borderRadius: "4px",
+            textDecoration: "none",
+          }}
+        >
+          + Add Boat
+        </Link>
+      </p>
+
       {error && <p style={{ color: "red" }}>Error: {error.message}</p>}
 
       <table border={1} cellPadding={8} style={{ borderCollapse: "collapse" }}>
