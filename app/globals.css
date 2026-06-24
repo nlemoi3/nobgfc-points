@@ -613,21 +613,6 @@ hr {
 
 .dashboard-hero::before,
 .dashboard-hero::after {
-  content: "";
-  position: absolute;
-  border-radius: 999px;
-  pointer-events: none;
-}
-
-.dashboard-hero::before {
-  width: 240px;
-  height: 240px;
-  right: -88px;
-  top: -110px;
-  background: radial-gradient(circle at 30% 30%, rgba(28, 102, 151, 0.18), rgba(28, 102, 151, 0));
-}
-
-.dashboard-hero::after {
   display: none;
 }
 
