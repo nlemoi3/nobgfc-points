@@ -1,12 +1,14 @@
 import Link from "next/link";
 import { requestPasswordReset } from "./actions";
 
-export default function ForgotPasswordPage({
+export default async function ForgotPasswordPage({
   searchParams,
 }: {
   searchParams: Promise<{ error?: string; sent?: string }>;
 }) {
-  return searchParams.then(({ error, sent }) => (
+  const { error, sent } = await searchParams;
+
+  return (
     <main className="panel" style={{ margin: "60px auto", maxWidth: "460px" }}>
       <h1>Reset Password</h1>
       <p>We’ll email you a link to set a new password.</p>
@@ -31,7 +33,7 @@ export default function ForgotPasswordPage({
 
       <div style={{ marginTop: "18px" }}>
         <Link href="/login">Back to sign in</Link>
-    const { error, sent } = await searchParams;
+      </div>
     </main>
-  ));
+  );
 }
