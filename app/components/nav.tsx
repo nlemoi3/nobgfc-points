@@ -34,14 +34,7 @@ function NavGroup({
         aria-controls={menuId}
         aria-haspopup="menu"
         onClick={onToggle}
-        style={{
-          cursor: "pointer",
-          background: "none",
-          border: 0,
-          padding: 0,
-          font: "inherit",
-          fontWeight: "bold",
-        }}
+        className="nav-group-btn"
       >
         {title}
       </button>
@@ -50,15 +43,7 @@ function NavGroup({
         <div
           id={menuId}
           role="menu"
-          style={{
-            position: "absolute",
-            background: "white",
-            border: "1px solid #ccc",
-            padding: "10px",
-            zIndex: 1000,
-            minWidth: "220px",
-            lineHeight: "1.8",
-          }}
+          className="nav-menu"
         >
           {children}
         </div>
@@ -117,25 +102,13 @@ export default function Nav({
     <nav
       ref={navRef}
       aria-label="Main navigation"
-      style={{
-        padding: "15px 40px",
-        borderBottom: "1px solid #ddd",
-        fontFamily: "Arial, sans-serif",
-        display: "flex",
-        alignItems: "center",
-      }}
+      className="top-nav"
     >
+      <div className="top-nav-inner">
       <Link
         href="/dashboard"
         aria-label="NOBGFC dashboard"
-        style={{
-          display: "inline-flex",
-          alignItems: "center",
-          gap: "10px",
-          marginRight: "25px",
-          color: "inherit",
-          textDecoration: "none",
-        }}
+        className="brand-link"
       >
         <Image
           src="/nobgfc-logo.png"
@@ -147,7 +120,7 @@ export default function Nav({
         <strong>NOBGFC</strong>
       </Link>
 
-      <Link href="/dashboard" style={{ marginRight: "20px" }}>
+      <Link href="/dashboard" className="nav-link" style={{ marginRight: "20px" }}>
         Dashboard
       </Link>
 
@@ -205,6 +178,7 @@ export default function Nav({
       )}
 
       {authControls}
+      </div>
     </nav>
   );
 }

@@ -44,18 +44,16 @@ export default function SearchableMultiSelect({
   const selectedCount = selectedValues.size;
 
   return (
-    <p>
+    <div>
       <label>{label}</label>
-      <br />
       <input
         type="search"
         value={query}
         onChange={(event) => setQuery(event.target.value)}
         placeholder={`Search ${label.toLocaleLowerCase()}`}
         aria-label={`Search ${label.toLocaleLowerCase()}`}
-        style={{ marginBottom: "8px", minWidth: "280px" }}
+        style={{ marginBottom: "8px", minWidth: "280px", marginTop: "6px" }}
       />
-      <br />
 
       <span style={{ display: "inline-block", marginBottom: "8px", color: "#555" }}>
         {selectedCount} selected
@@ -111,6 +109,6 @@ export default function SearchableMultiSelect({
           <span style={{ color: "#666" }}>No matching options</span>
         )}
       </div>
-    </p>
+    </div>
   );
 }

@@ -78,16 +78,16 @@ export default async function EditAnglerPage({
 
   if (error) {
     return (
-      <main style={{ padding: "40px", fontFamily: "Arial, sans-serif" }}>
+      <main className="panel">
         <h1>Edit Angler</h1>
-        <p style={{ color: "red" }}>Error loading angler: {error.message}</p>
+        <p className="alert alert-danger">Error loading angler: {error.message}</p>
       </main>
     );
   }
 
   if (!angler) {
     return (
-      <main style={{ padding: "40px", fontFamily: "Arial, sans-serif" }}>
+      <main className="panel">
         <h1>Edit Angler</h1>
         <p>Angler not found.</p>
       </main>
@@ -95,11 +95,11 @@ export default async function EditAnglerPage({
   }
 
   return (
-    <main style={{ padding: "40px", fontFamily: "Arial, sans-serif" }}>
+    <main className="panel">
       <h1>Edit Angler</h1>
 
       {saveError && (
-        <p style={{ color: "red", background: "#fff0f0", padding: "10px", borderRadius: "4px" }}>
+        <p className="alert alert-danger">
           Save failed: {saveError}
         </p>
       )}
@@ -107,21 +107,19 @@ export default async function EditAnglerPage({
       <form action={updateAngler}>
         <input type="hidden" name="id" value={angler.id} />
 
-        <p>
+        <div className="form-grid">
+        <p className="field">
           <label>First Name</label>
-          <br />
           <input name="first_name" defaultValue={angler.first_name} required />
         </p>
 
-        <p>
+        <p className="field">
           <label>Last Name</label>
-          <br />
           <input name="last_name" defaultValue={angler.last_name} required />
         </p>
 
-        <p>
+        <p className="field">
           <label>Date of Birth</label>
-          <br />
           <input
             name="date_of_birth"
             type="date"
@@ -129,97 +127,80 @@ export default async function EditAnglerPage({
           />
         </p>
 
-        <p>
-          <label>
+        <p className="checkbox-row field-full">
+          <label className="checkbox-item">
             <input
               name="is_member"
               type="checkbox"
               defaultChecked={angler.is_member}
-            />{" "}
+            />
             Member
           </label>
-        </p>
 
-        <p>
-          <label>
+          <label className="checkbox-item">
             <input
               name="is_youth"
               type="checkbox"
               defaultChecked={angler.is_youth}
-            />{" "}
+            />
             Youth
           </label>
         </p>
 
-        <hr />
+        <hr className="field-full" />
 
-        <h2>Profile</h2>
+        <h2 className="field-full">Profile</h2>
 
         {angler.photo_url && (
-          <p>
+          <p className="field field-full">
             <strong>Current Photo:</strong>
             <br />
             <img
               src={angler.photo_url}
               alt={`${angler.first_name} ${angler.last_name}`}
+              className="media-preview"
               style={{ maxWidth: "250px" }}
             />
           </p>
         )}
 
-        <p>
+        <p className="field field-full">
           <label>Photo URL</label>
-          <br />
-          <input
-            name="photo_url"
-            defaultValue={angler.photo_url || ""}
-            style={{ width: "500px" }}
-          />
+          <input name="photo_url" defaultValue={angler.photo_url || ""} />
         </p>
 
-        <p>
+        <p className="field field-full">
           <label>User ID</label>
-          <br />
           <input
             name="user_id"
             defaultValue={angler.user_id || ""}
             placeholder="auth.users UUID"
-            style={{ boxSizing: "border-box", padding: "8px", width: "100%" }}
           />
         </p>
 
-        <p>
+        <p className="field field-full">
           <label>Email</label>
-          <br />
           <input
             name="email"
             type="email"
             defaultValue={angler.email || ""}
             placeholder="angler email (used to link accounts)"
-            style={{ boxSizing: "border-box", padding: "8px", width: "100%" }}
           />
         </p>
 
-        <p>
+        <p className="field field-full">
           <label>Phone Number</label>
-          <br />
           <input
             name="phone_number"
             type="tel"
             defaultValue={angler.phone_number || ""}
             placeholder="angler phone number"
-            style={{ boxSizing: "border-box", padding: "8px", width: "100%" }}
           />
         </p>
 
-        <p>
+        <p className="field field-full">
           <label>Permission Level</label>
-          <br />
-          <select
-            name="role"
-            defaultValue={currentRole}
-            style={{ padding: "8px", minWidth: "200px" }}
-          >
+          <select name="role" defaultValue={currentRole}>
             <option value="">None (read-only)</option>
             <option value="member">Member</option>
             <option value="boat">Boat</option>
@@ -227,24 +208,25 @@ export default async function EditAnglerPage({
             <option value="admin">Admin</option>
           </select>
           {!angler.user_id && (
-            <span style={{ marginLeft: "8px", color: "#888", fontSize: "0.85em" }}>
+            <span className="hint" style={{ marginLeft: "8px" }}>
               Requires a User ID to take effect
             </span>
           )}
         </p>
 
-        <p>
+        <p className="field field-full">
           <label>Biography</label>
-          <br />
           <textarea
             name="biography"
             defaultValue={angler.biography || ""}
             rows={5}
-            style={{ width: "500px" }}
           />
         </p>
 
-        <button type="submit">Save Angler</button>
+        <p className="field-full">
+          <button type="submit" className="btn">Save Angler</button>
+        </p>
+        </div>
       </form>
     </main>
   );

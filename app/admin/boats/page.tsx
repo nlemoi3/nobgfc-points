@@ -12,27 +12,18 @@ export default async function AdminBoatsPage() {
     .order("name");
 
   return (
-    <main style={{ padding: "40px", fontFamily: "Arial, sans-serif" }}>
-      <h1>Manage Boats</h1>
-
-      <p>
-        <Link
-          href="/admin/boats/new"
-          style={{
-            padding: "8px 16px",
-            background: "#0070f3",
-            color: "#fff",
-            borderRadius: "4px",
-            textDecoration: "none",
-          }}
-        >
+    <main className="panel">
+      <div className="toolbar">
+        <h1>Manage Boats</h1>
+        <Link href="/admin/boats/new" className="btn">
           + Add Boat
         </Link>
-      </p>
+      </div>
 
-      {error && <p style={{ color: "red" }}>Error: {error.message}</p>}
+      {error && <p className="alert alert-danger">Error: {error.message}</p>}
 
-      <table border={1} cellPadding={8} style={{ borderCollapse: "collapse" }}>
+      <div className="table-wrap">
+      <table className="admin-table">
         <thead>
           <tr>
             <th>Boat</th>
@@ -61,6 +52,7 @@ export default async function AdminBoatsPage() {
           ))}
         </tbody>
       </table>
+      </div>
     </main>
   );
 }

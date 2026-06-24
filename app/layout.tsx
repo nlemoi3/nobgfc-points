@@ -1,7 +1,21 @@
 import type { ReactNode } from "react";
+import { Outfit, Fraunces } from "next/font/google";
 import Nav from "./components/nav";
 import AuthControls from "./components/auth-controls";
 import { getCurrentUser, getCurrentUserRole, getCurrentUserAngler } from "../lib/auth";
+import "./globals.css";
+
+const bodyFont = Outfit({
+  subsets: ["latin"],
+  variable: "--font-body",
+  weight: ["400", "500", "600", "700"],
+});
+
+const headingFont = Fraunces({
+  subsets: ["latin"],
+  variable: "--font-heading",
+  weight: ["600", "700"],
+});
 
 export const metadata = {
   title: "NOBGFC Points",
@@ -21,12 +35,12 @@ export default async function RootLayout({
 
   return (
     <html lang="en">
-      <body style={{ margin: 0 }}>
+      <body className={`app-shell ${bodyFont.variable} ${headingFont.variable}`}>
         <Nav
           role={role}
           authControls={<AuthControls email={user?.email} role={role} anglerId={angler?.id} />}
         />
-        {children}
+        <div className="page-shell">{children}</div>
       </body>
     </html>
   );

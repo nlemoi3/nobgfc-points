@@ -45,112 +45,99 @@ export default async function NewAnglerPage({
   const { error: saveError } = await searchParams;
 
   return (
-    <main style={{ padding: "40px", fontFamily: "Arial, sans-serif" }}>
+    <main className="panel">
       <h1>Add Angler</h1>
 
       {saveError && (
-        <p style={{ color: "red", background: "#fff0f0", padding: "10px", borderRadius: "4px" }}>
+        <p className="alert alert-danger">
           Save failed: {saveError}
         </p>
       )}
 
       <form action={createAngler}>
-        <p>
+        <div className="form-grid">
+        <p className="field">
           <label>First Name</label>
-          <br />
           <input name="first_name" required />
         </p>
 
-        <p>
+        <p className="field">
           <label>Last Name</label>
-          <br />
           <input name="last_name" required />
         </p>
 
-        <p>
+        <p className="field">
           <label>Date of Birth</label>
-          <br />
           <input name="date_of_birth" type="date" />
         </p>
 
-        <p>
-          <label>
+        <p className="checkbox-row field-full">
+          <label className="checkbox-item">
             <input name="is_member" type="checkbox" /> Member
           </label>
-        </p>
 
-        <p>
-          <label>
+          <label className="checkbox-item">
             <input name="is_youth" type="checkbox" /> Youth
           </label>
         </p>
 
-        <hr />
+        <hr className="field-full" />
 
-        <h2>Contact &amp; Account</h2>
+        <h2 className="field-full">Contact &amp; Account</h2>
 
-        <p>
+        <p className="field field-full">
           <label>Email</label>
-          <br />
           <input
             name="email"
             type="email"
             placeholder="angler email (used to link accounts)"
-            style={{ boxSizing: "border-box", padding: "8px", width: "100%" }}
           />
         </p>
 
-        <p>
+        <p className="field field-full">
           <label>Phone Number</label>
-          <br />
           <input
             name="phone_number"
             type="tel"
             placeholder="angler phone number"
-            style={{ boxSizing: "border-box", padding: "8px", width: "100%" }}
           />
         </p>
 
-        <p>
+        <p className="field field-full">
           <label>User ID</label>
-          <br />
           <input
             name="user_id"
             placeholder="auth.users UUID (optional)"
-            style={{ boxSizing: "border-box", padding: "8px", width: "100%" }}
           />
         </p>
 
-        <p>
+        <p className="field field-full">
           <label>Permission Level</label>
-          <br />
-          <select name="role" style={{ padding: "8px", minWidth: "200px" }}>
+          <select name="role">
             <option value="">None (read-only)</option>
             <option value="member">Member</option>
             <option value="boat">Boat</option>
             <option value="weighmaster">Weighmaster</option>
             <option value="admin">Admin</option>
           </select>
-          <span style={{ marginLeft: "8px", color: "#888", fontSize: "0.85em" }}>
+          <span className="hint" style={{ marginLeft: "8px" }}>
             Requires a User ID to take effect
           </span>
         </p>
 
-        <hr />
+        <hr className="field-full" />
 
-        <h2>Profile</h2>
+        <h2 className="field-full">Profile</h2>
 
-        <p>
+        <p className="field field-full">
           <label>Biography</label>
-          <br />
-          <textarea
-            name="biography"
-            rows={5}
-            style={{ width: "500px" }}
-          />
+          <textarea name="biography" rows={5} />
         </p>
 
-        <button type="submit">Add Angler</button>
+        <p className="field-full">
+          <button type="submit" className="btn">Add Angler</button>
+        </p>
+        </div>
       </form>
     </main>
   );

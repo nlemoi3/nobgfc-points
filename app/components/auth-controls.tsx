@@ -13,29 +13,22 @@ export default function AuthControls({
 }) {
   if (!role) {
     return (
-      <div style={{ marginLeft: "auto" }}>
-        <Link href="/login">Club Sign In</Link>
+      <div className="auth-controls">
+        <Link href="/login" className="nav-link">Club Sign In</Link>
       </div>
     );
   }
 
   return (
-    <div
-      style={{
-        alignItems: "center",
-        display: "flex",
-        gap: "10px",
-        marginLeft: "auto",
-      }}
-    >
-      <span style={{ fontSize: "13px" }}>
+    <div className="auth-controls">
+      <span className="auth-email">
         {email} ({role})
       </span>
       {anglerId && (
-        <Link href={`/anglers/${anglerId}`} style={{ marginLeft: "8px" }}>My Profile</Link>
+        <Link href={`/anglers/${anglerId}`} className="nav-link" style={{ marginLeft: "8px" }}>My Profile</Link>
       )}
       <form action={logout}>
-        <button type="submit">Sign Out</button>
+        <button type="submit" className="signout-btn">Sign Out</button>
       </form>
     </div>
   );

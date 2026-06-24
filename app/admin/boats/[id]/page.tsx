@@ -139,9 +139,9 @@ export default async function EditBoatPage({
 
     if (boatError) {
       return (
-        <main style={{ padding: "40px", fontFamily: "Arial, sans-serif" }}>
+        <main className="panel">
           <h1>Edit Boat</h1>
-          <p style={{ color: "red" }}>Error loading boat: {boatError.message}</p>
+          <p className="alert alert-danger">Error loading boat: {boatError.message}</p>
         </main>
       );
     }
@@ -160,7 +160,7 @@ export default async function EditBoatPage({
 
     if (!boat) {
       return (
-        <main style={{ padding: "40px", fontFamily: "Arial, sans-serif" }}>
+        <main className="panel">
           <h1>Edit Boat</h1>
           <p>Boat not found.</p>
         </main>
@@ -168,23 +168,23 @@ export default async function EditBoatPage({
     }
 
     return (
-      <main style={{ padding: "40px", fontFamily: "Arial, sans-serif" }}>
+      <main className="panel">
         <h1>Edit Boat</h1>
 
         {saveError && (
-          <p style={{ color: "red", background: "#fff0f0", padding: "10px", borderRadius: "4px" }}>
+          <p className="alert alert-danger">
             Save failed: {saveError}
           </p>
         )}
 
         {anglersError && (
-          <p style={{ color: "red", background: "#fff0f0", padding: "10px", borderRadius: "4px" }}>
+          <p className="alert alert-danger">
             Warning: could not load angler list ({anglersError.message})
           </p>
         )}
 
         {ownerLinksError && (
-          <p style={{ color: "red", background: "#fff0f0", padding: "10px", borderRadius: "4px" }}>
+          <p className="alert alert-danger">
             Warning: owner links unavailable ({ownerLinksError.message})
           </p>
         )}
@@ -192,164 +192,152 @@ export default async function EditBoatPage({
         <form action={updateBoat}>
         <input type="hidden" name="id" value={boat.id} />
 
-        <p>
+        <div className="form-grid">
+
+        <p className="field field-full">
           <label>Boat Name</label>
-          <br />
-          <input name="name" defaultValue={boat.name} required style={{ width: "500px" }} />
+          <input name="name" defaultValue={boat.name} required />
         </p>
 
-        <p>
+        <p className="field">
           <label>Make</label>
-          <br />
           <input name="make" defaultValue={boat.make || ""} />
         </p>
 
-        <p>
+        <p className="field">
           <label>Model</label>
-          <br />
           <input name="model" defaultValue={boat.model || ""} />
         </p>
 
-        <p>
+        <p className="field">
           <label>Year</label>
-          <br />
           <input name="year" type="number" defaultValue={boat.year || ""} />
         </p>
 
-        <p>
+        <p className="field">
           <label>Length</label>
-          <br />
           <input name="length_feet" type="number" step="0.1" defaultValue={boat.length_feet || ""} />
         </p>
 
-        <p>
+        <p className="field">
           <label>Home Port</label>
-          <br />
           <input name="home_port" defaultValue={boat.home_port || ""} />
         </p>
 
-        <hr />
+        <hr className="field-full" />
 
-        <h2>Team / Owner Contact</h2>
+        <h2 className="field-full">Team / Owner Contact</h2>
 
-        <p>
+        <p className="field">
           <label>Captain Name</label>
-          <br />
           <input name="captain_name" defaultValue={boat.captain_name || ""} />
         </p>
 
-        <p>
+        <p className="field">
           <label>Captain Email</label>
-          <br />
           <input name="captain_email" type="email" defaultValue={boat.captain_email || ""} />
         </p>
 
-        <p>
+        <p className="field">
           <label>Owner Name</label>
-          <br />
           <input name="owner_name" defaultValue={boat.owner_name || ""} />
         </p>
 
-        <p>
+        <p className="field">
           <label>Owner Email</label>
-          <br />
           <input name="owner_email" type="email" defaultValue={boat.owner_email || ""} />
         </p>
 
-          <SearchableMultiSelect
-            label="Linked Owner Accounts (multiple)"
-            name="owner_angler_ids"
-            options={(anglers || []).map((angler: any) => ({
-              value: String(angler.id),
-              label: `${angler.last_name}, ${angler.first_name}`,
-            }))}
-            defaultSelectedValues={Array.from(currentOwnerIds).map((value) => String(value))}
-          />
+          <div className="field field-full">
+            <SearchableMultiSelect
+              label="Linked Owner Accounts (multiple)"
+              name="owner_angler_ids"
+              options={(anglers || []).map((angler: any) => ({
+                value: String(angler.id),
+                label: `${angler.last_name}, ${angler.first_name}`,
+              }))}
+              defaultSelectedValues={Array.from(currentOwnerIds).map((value) => String(value))}
+            />
+          </div>
 
-        <hr />
+        <hr className="field-full" />
 
-        <h2>Media / Links</h2>
+        <h2 className="field-full">Media / Links</h2>
 
         {boat.photo_url && (
-          <p>
+          <p className="field field-full">
             <strong>Current Boat Photo:</strong>
             <br />
-            <img src={boat.photo_url} alt={boat.name} style={{ maxWidth: "300px" }} />
+            <img src={boat.photo_url} alt={boat.name} className="media-preview" style={{ maxWidth: "300px" }} />
           </p>
         )}
 
-        <p>
+        <p className="field field-full">
           <label>Upload New Boat Photo</label>
-          <br />
           <input name="photo_file" type="file" accept="image/*" />
         </p>
 
-        <p>
+        <p className="field field-full">
           <label>Photo URL</label>
-          <br />
-          <input name="photo_url" defaultValue={boat.photo_url || ""} style={{ width: "500px" }} />
+          <input name="photo_url" defaultValue={boat.photo_url || ""} />
         </p>
 
         {boat.logo_url && (
-          <p>
+          <p className="field field-full">
             <strong>Current Logo:</strong>
             <br />
-            <img src={boat.logo_url} alt={`${boat.name} logo`} style={{ maxWidth: "200px" }} />
+            <img src={boat.logo_url} alt={`${boat.name} logo`} className="media-preview" style={{ maxWidth: "200px" }} />
           </p>
         )}
 
-        <p>
+        <p className="field field-full">
           <label>Upload New Logo</label>
-          <br />
           <input name="logo_file" type="file" accept="image/*" />
         </p>
 
-        <p>
+        <p className="field field-full">
           <label>Logo URL</label>
-          <br />
-          <input name="logo_url" defaultValue={boat.logo_url || ""} style={{ width: "500px" }} />
+          <input name="logo_url" defaultValue={boat.logo_url || ""} />
         </p>
 
-        <p>
+        <p className="field field-full">
           <label>Website URL</label>
-          <br />
-          <input name="website_url" defaultValue={boat.website_url || ""} style={{ width: "500px" }} />
+          <input name="website_url" defaultValue={boat.website_url || ""} />
         </p>
 
-        <p>
+        <p className="field field-full">
           <label>Facebook URL</label>
-          <br />
-          <input name="facebook_url" defaultValue={boat.facebook_url || ""} style={{ width: "500px" }} />
+          <input name="facebook_url" defaultValue={boat.facebook_url || ""} />
         </p>
 
-        <p>
+        <p className="field field-full">
           <label>Instagram URL</label>
-          <br />
-          <input name="instagram_url" defaultValue={boat.instagram_url || ""} style={{ width: "500px" }} />
+          <input name="instagram_url" defaultValue={boat.instagram_url || ""} />
         </p>
 
-        <p>
+        <p className="field field-full">
           <label>YouTube URL</label>
-          <br />
-          <input name="youtube_url" defaultValue={boat.youtube_url || ""} style={{ width: "500px" }} />
+          <input name="youtube_url" defaultValue={boat.youtube_url || ""} />
         </p>
 
-        <p>
+        <p className="field field-full">
           <label>Notes</label>
-          <br />
-          <textarea name="notes" defaultValue={boat.notes || ""} rows={5} style={{ width: "500px" }} />
+          <textarea name="notes" defaultValue={boat.notes || ""} rows={5} />
         </p>
 
-          <button type="submit">Save Boat</button>
+          <p className="field-full">
+            <button type="submit" className="btn">Save Boat</button>
+          </p>
+          </div>
         </form>
       </main>
     );
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unexpected error";
     return (
-      <main style={{ padding: "40px", fontFamily: "Arial, sans-serif" }}>
+      <main className="panel">
         <h1>Edit Boat</h1>
-        <p style={{ color: "red" }}>Error loading boat page: {message}</p>
+        <p className="alert alert-danger">Error loading boat page: {message}</p>
       </main>
     );
   }

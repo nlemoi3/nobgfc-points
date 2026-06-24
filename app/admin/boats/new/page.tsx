@@ -75,87 +75,72 @@ export default async function NewBoatPage({
     .order("last_name");
 
   return (
-    <main style={{ padding: "40px", fontFamily: "Arial, sans-serif" }}>
+    <main className="panel">
       <h1>Add Boat</h1>
 
       {saveError && (
-        <p
-          style={{
-            color: "red",
-            background: "#fff0f0",
-            padding: "10px",
-            borderRadius: "4px",
-          }}
-        >
+        <p className="alert alert-danger">
           Save failed: {saveError}
         </p>
       )}
 
       <form action={createBoat}>
-        <p>
+        <div className="form-grid">
+        <p className="field field-full">
           <label>Boat Name</label>
-          <br />
-          <input name="name" required style={{ width: "500px" }} />
+          <input name="name" required />
         </p>
 
-        <p>
+        <p className="field">
           <label>Make</label>
-          <br />
           <input name="make" />
         </p>
 
-        <p>
+        <p className="field">
           <label>Model</label>
-          <br />
           <input name="model" />
         </p>
 
-        <p>
+        <p className="field">
           <label>Year</label>
-          <br />
           <input name="year" type="number" />
         </p>
 
-        <p>
+        <p className="field">
           <label>Length</label>
-          <br />
           <input name="length_feet" type="number" step="0.1" />
         </p>
 
-        <p>
+        <p className="field">
           <label>Home Port</label>
-          <br />
           <input name="home_port" />
         </p>
 
-        <hr />
+        <hr className="field-full" />
 
-        <h2>Team / Owner Contact</h2>
+        <h2 className="field-full">Team / Owner Contact</h2>
 
-        <p>
+        <p className="field">
           <label>Captain Name</label>
-          <br />
           <input name="captain_name" />
         </p>
 
-        <p>
+        <p className="field">
           <label>Captain Email</label>
-          <br />
           <input name="captain_email" type="email" />
         </p>
 
-        <p>
+        <p className="field">
           <label>Owner Name</label>
-          <br />
           <input name="owner_name" />
         </p>
 
-        <p>
+        <p className="field">
           <label>Owner Email</label>
-          <br />
           <input name="owner_email" type="email" />
         </p>
 
+        <div className="field field-full">
         <SearchableMultiSelect
           label="Linked Owner Accounts (multiple)"
           name="owner_angler_ids"
@@ -164,54 +149,51 @@ export default async function NewBoatPage({
             label: `${angler.last_name}, ${angler.first_name}`,
           }))}
         />
+        </div>
 
-        <hr />
+        <hr className="field-full" />
 
-        <h2>Media / Links</h2>
+        <h2 className="field-full">Media / Links</h2>
 
-        <p>
+        <p className="field field-full">
           <label>Photo URL</label>
-          <br />
-          <input name="photo_url" style={{ width: "500px" }} />
+          <input name="photo_url" />
         </p>
 
-        <p>
+        <p className="field field-full">
           <label>Logo URL</label>
-          <br />
-          <input name="logo_url" style={{ width: "500px" }} />
+          <input name="logo_url" />
         </p>
 
-        <p>
+        <p className="field field-full">
           <label>Website URL</label>
-          <br />
-          <input name="website_url" style={{ width: "500px" }} />
+          <input name="website_url" />
         </p>
 
-        <p>
+        <p className="field field-full">
           <label>Facebook URL</label>
-          <br />
-          <input name="facebook_url" style={{ width: "500px" }} />
+          <input name="facebook_url" />
         </p>
 
-        <p>
+        <p className="field field-full">
           <label>Instagram URL</label>
-          <br />
-          <input name="instagram_url" style={{ width: "500px" }} />
+          <input name="instagram_url" />
         </p>
 
-        <p>
+        <p className="field field-full">
           <label>YouTube URL</label>
-          <br />
-          <input name="youtube_url" style={{ width: "500px" }} />
+          <input name="youtube_url" />
         </p>
 
-        <p>
+        <p className="field field-full">
           <label>Notes</label>
-          <br />
-          <textarea name="notes" rows={5} style={{ width: "500px" }} />
+          <textarea name="notes" rows={5} />
         </p>
 
-        <button type="submit">Create Boat</button>
+        <p className="field-full">
+          <button type="submit" className="btn">Create Boat</button>
+        </p>
+        </div>
       </form>
     </main>
   );

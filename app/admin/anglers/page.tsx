@@ -12,18 +12,18 @@ export default async function AdminAnglersPage() {
     .order("last_name");
 
   return (
-    <main style={{ padding: "40px", fontFamily: "Arial, sans-serif" }}>
-      <h1>Manage Anglers</h1>
-
-      <p>
-        <Link href="/admin/anglers/new" style={{ padding: "8px 16px", background: "#0070f3", color: "#fff", borderRadius: "4px", textDecoration: "none" }}>
+    <main className="panel">
+      <div className="toolbar">
+        <h1>Manage Anglers</h1>
+        <Link href="/admin/anglers/new" className="btn">
           + Add Angler
         </Link>
-      </p>
+      </div>
 
-      {error && <p style={{ color: "red" }}>Error: {error.message}</p>}
+      {error && <p className="alert alert-danger">Error: {error.message}</p>}
 
-      <table border={1} cellPadding={8} style={{ borderCollapse: "collapse" }}>
+      <div className="table-wrap">
+      <table className="admin-table">
         <thead>
           <tr>
             <th>Angler</th>
@@ -48,7 +48,7 @@ export default async function AdminAnglersPage() {
               <td>{angler.is_youth ? "Yes" : "No"}</td>
               <td>{angler.email || "—"}</td>
               <td>{angler.phone_number || "—"}</td>
-              <td style={{ fontFamily: "monospace", fontSize: "0.9em" }}>
+              <td className="mono">
                 {angler.user_id || "—"}
               </td>
               <td>
@@ -58,6 +58,7 @@ export default async function AdminAnglersPage() {
           ))}
         </tbody>
       </table>
+      </div>
     </main>
   );
 }
