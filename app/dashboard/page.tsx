@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { unstable_noStore as noStore } from "next/cache";
-import { existsSync } from "fs";
-import { join } from "path";
 import { supabase } from "../../lib/supabase";
 import { getOfficialEligiblePoints } from "../../lib/scoring";
+
+const BILLFISH_FLAG_URL =
+  "https://eklitnkmhugtjjhfoaku.supabase.co/storage/v1/object/public/catch-media/TBF.png";
 
 function formatDateTime(value: string | null) {
   if (!value) return "No date entered";
@@ -81,9 +82,6 @@ function LargestFishCard({
 
 export default async function DashboardPage() {
   noStore();
-  const hasBillfishFlag = existsSync(
-    join(process.cwd(), "public", "billfish-foundation-flag.png"),
-  );
 
   const { data: catches } = await supabase
     .from("catches")
@@ -218,29 +216,18 @@ export default async function DashboardPage() {
         <div className="dashboard-logo-strip">
           <img src="/nobgfc-logo.png" alt="NOBGFC logo" className="dashboard-logo" />
 
-          {hasBillfishFlag ? (
-            <a
-              href="https://www.billfish.org/"
-              target="_blank"
-              rel="noreferrer"
-              className="dashboard-flag-wrap"
-            >
-              <img
-                src="/billfish-foundation-flag.png"
-                alt="The Billfish Foundation flag"
-                className="dashboard-logo dashboard-flag-logo"
-              />
-            </a>
-          ) : (
-            <a
-              href="https://www.captharry.com/products/the-billfish-foundation-tag-flag?srsltid=AfmBOoqXN7wjDKG-TGASeo_TbZmf-YEcks8viuY19637AG9nyY9_4j54"
-              target="_blank"
-              rel="noreferrer"
-              className="dashboard-flag-link"
-            >
-              Add Billfish Flag Logo
-            </a>
-          )}
+          <a
+            href="https://www.billfish.org/"
+            target="_blank"
+            rel="noreferrer"
+            className="dashboard-flag-wrap"
+          >
+            <img
+              src={BILLFISH_FLAG_URL}
+              alt="The Billfish Foundation flag"
+              className="dashboard-logo dashboard-flag-logo"
+            />
+          </a>
         </div>
       </section>
 
