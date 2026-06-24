@@ -58,7 +58,7 @@ export default async function AdminMembersPage({
       {error && <p className="alert alert-danger">{error}</p>}
       {sent && <p className="alert alert-success">Role updated.</p>}
       {usersError && <p className="alert alert-danger">Auth user error: {usersError.message}</p>}
-      {rolesError && <p className="alert alert-danger">Role error: {rolesError.message}</p>}
+      {rolesError && rolesData === null && <p className="alert alert-danger">Role error: {rolesError.message}</p>}
 
       <h2>Pending Accounts</h2>
       {pendingUsers.length ? (

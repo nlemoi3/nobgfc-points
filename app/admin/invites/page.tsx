@@ -57,7 +57,7 @@ export default async function AdminInvitesPage({
       {sent === "email" && <p className="alert alert-success">Email invite sent.</p>}
       {sent === "sms" && <p className="alert alert-success">Text invite sent.</p>}
       {usersError && <p className="alert alert-danger">Auth user error: {usersError.message}</p>}
-      {rolesError && <p className="alert alert-danger">Role error: {rolesError.message}</p>}
+      {rolesError && rolesData === null && <p className="alert alert-danger">Role error: {rolesError.message}</p>}
 
       <form action={sendInvite} className="form-grid">
         <p className="field">
