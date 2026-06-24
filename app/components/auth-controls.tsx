@@ -25,7 +25,7 @@ export default function AuthControls({
         {email} {role ? `(${role})` : "(pending approval)"}
       </Link>
       {anglerId && (
-        <Link href={`/anglers/${anglerId}`} className="nav-link" style={{ marginLeft: "8px" }}>My Profile</Link>
+        <Link href={`/anglers/${anglerId}`} className="nav-link auth-profile-link">My Profile</Link>
       )}
       <form action={logout}>
         <button type="submit" className="signout-btn">Sign Out</button>

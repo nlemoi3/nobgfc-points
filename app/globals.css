@@ -504,21 +504,47 @@ hr {
   margin-left: auto;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 }
 
 .auth-email {
-  font-size: 0.78rem;
-  color: #45637b;
+  color: #2f5d7b;
+  font-size: 0.82rem;
+  font-weight: 700;
+  line-height: 1;
+  max-width: min(32vw, 240px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.auth-profile-link {
+  font-size: 0.9rem;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.auth-controls form {
+  margin: 0;
 }
 
 .signout-btn {
   border: 1px solid #c5d4e3;
   border-radius: 999px;
   background: #fff;
-  padding: 7px 11px;
+  color: #0f2130;
+  font: inherit;
+  font-size: 0.9rem;
   font-weight: 700;
+  line-height: 1;
+  padding: 8px 13px;
   cursor: pointer;
+  white-space: nowrap;
+}
+
+.signout-btn:hover {
+  border-color: #9eb8cf;
+  color: var(--accent-600);
 }
 
 /* Boat page hero styling */
