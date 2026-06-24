@@ -31,7 +31,7 @@ export default function ForgotPasswordPage({
 
       <div style={{ marginTop: "18px" }}>
         <Link href="/login">Back to sign in</Link>
-      </div>
+    const { error, sent } = await searchParams;
     </main>
   ));
 }

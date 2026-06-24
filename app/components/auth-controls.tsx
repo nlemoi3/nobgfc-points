@@ -11,7 +11,7 @@ export default function AuthControls({
   role: AppRole | null;
   anglerId?: number | string | null;
 }) {
-  if (!role) {
+  if (!email) {
     return (
       <div className="auth-controls">
         <Link href="/login" className="nav-link">Club Sign In</Link>
@@ -22,7 +22,7 @@ export default function AuthControls({
   return (
     <div className="auth-controls">
       <span className="auth-email">
-        {email} ({role})
+        {email} {role ? `(${role})` : "(pending approval)"}
       </span>
       {anglerId && (
         <Link href={`/anglers/${anglerId}`} className="nav-link" style={{ marginLeft: "8px" }}>My Profile</Link>

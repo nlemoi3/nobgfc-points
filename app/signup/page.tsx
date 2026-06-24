@@ -12,7 +12,7 @@ export default function SignupPage({
       <p>Self-service club signup. An admin can change your permissions later.</p>
 
       {error && <p className="alert alert-danger">{error}</p>}
-      {sent && (
+    const { error, sent } = await searchParams;
         <p className="alert" style={{ background: "#eef8f1", borderColor: "#cfe8d7", color: "#1d5f3d" }}>
           Account created. Check your email if confirmation is enabled, then sign in.
         </p>

@@ -42,6 +42,17 @@ NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=...
 The application also accepts the legacy `NEXT_PUBLIC_SUPABASE_ANON_KEY` while
 the project transitions to publishable keys.
 
+Admin invite support also needs these server-side variables:
+
+```text
+SUPABASE_SERVICE_ROLE_KEY=...
+TWILIO_ACCOUNT_SID=...
+TWILIO_AUTH_TOKEN=...
+TWILIO_FROM_NUMBER=...
+```
+
+The Twilio values are only required if you plan to send text-message invites.
+
 ## 4. Test permissions
 
 1. A signed-out visitor can read public standings and profiles.

@@ -44,6 +44,7 @@ export default async function AdminPage() {
             Boat Profile Requests
           </Link>
         </li>
+        <li><Link href="/admin/invites">Invite Members</Link></li>
       </ul>
       <h2>Scoring Tools</h2>
 <ul>

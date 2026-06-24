@@ -37,13 +37,13 @@ export function MagicLinkHandler() {
           return;
         }
 
-        if (tokenType === "recovery") {
+        if (tokenType === "recovery" || tokenType === "invite") {
           router.replace("/reset-password");
           return;
         }
 
-        if (tokenType === "signup" || tokenType === "invite") {
-          router.replace("/login?sent=1");
+        if (tokenType === "signup") {
+          router.replace("/login?message=Email confirmed. Sign in with your password.");
           return;
         }
 

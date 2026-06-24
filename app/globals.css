@@ -176,6 +176,12 @@ hr {
   border-color: #f5cdcd;
 }
 
+.alert-success {
+  color: #145b3c;
+  background: #edf9f2;
+  border-color: #c7e8d5;
+}
+
 .alert-warning {
   color: #7a5614;
   background: #fff8e8;

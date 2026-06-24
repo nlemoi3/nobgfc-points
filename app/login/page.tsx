@@ -59,7 +59,7 @@ export default async function LoginPage({
       </form>
 
       <div style={{ marginTop: "18px", display: "flex", gap: "14px", flexWrap: "wrap" }}>
-        <a href="/signup">Create an account</a>
+        <Link href="/signup">Create an account</Link>
         <a href="/forgot-password">Forgot password?</a>
       </div>
     </main>
