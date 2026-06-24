@@ -606,24 +606,37 @@ hr {
   background: linear-gradient(140deg, rgba(240, 248, 255, 0.95), rgba(231, 243, 252, 0.9));
 }
 
+.dashboard-hero-copy h1 {
+  margin-bottom: 6px;
+}
+
 .dashboard-logo-strip {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 16px;
 }
 
 .dashboard-logo {
   width: auto;
   height: 58px;
   object-fit: contain;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.92);
-  border: 1px solid #d6e3ef;
-  padding: 6px;
+  border-radius: 0;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  filter: drop-shadow(0 3px 8px rgba(10, 34, 53, 0.2));
+}
+
+.dashboard-logo-primary {
+  height: 96px;
+}
+
+.dashboard-logo-secondary {
+  height: 64px;
 }
 
 .dashboard-flag-logo {
-  height: 62px;
+  height: 64px;
 }
 
 .dashboard-flag-wrap {
@@ -742,6 +755,14 @@ hr {
 
   .dashboard-logo {
     height: 48px;
+  }
+
+  .dashboard-logo-primary {
+    height: 72px;
+  }
+
+  .dashboard-logo-secondary {
+    height: 50px;
   }
 
   .boat-hero-logo {

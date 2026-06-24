@@ -206,15 +206,19 @@ export default async function DashboardPage() {
   return (
     <main className="panel dashboard-page">
       <section className="dashboard-hero">
-        <div>
-          <h1>NOBGFC Dashboard</h1>
+        <div className="dashboard-hero-copy">
+          <h1>NOBGFC Championship Dashboard</h1>
           <p className="hint">
             Live pulse of the season across catches, leaders, and standings.
           </p>
         </div>
 
         <div className="dashboard-logo-strip">
-          <img src="/nobgfc-logo.png" alt="NOBGFC logo" className="dashboard-logo" />
+          <img
+            src="/nobgfc-logo.png"
+            alt="NOBGFC logo"
+            className="dashboard-logo dashboard-logo-primary"
+          />
 
           <a
             href="https://www.billfish.org/"
@@ -225,7 +229,7 @@ export default async function DashboardPage() {
             <img
               src={BILLFISH_FLAG_URL}
               alt="The Billfish Foundation flag"
-              className="dashboard-logo dashboard-flag-logo"
+              className="dashboard-logo dashboard-logo-secondary dashboard-flag-logo"
             />
           </a>
         </div>
