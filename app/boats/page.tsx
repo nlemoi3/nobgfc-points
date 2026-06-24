@@ -111,9 +111,6 @@ export default async function BoatsPage({
                     className="boat-list-hero-logo"
                   />
                 )}
-                {!boat.logo_url && (
-                  <span className="boat-list-fallback">No Logo</span>
-                )}
                 <span className="boat-rank-chip">#{rankByBoatId[boat.id] || "-"}</span>
               </div>
 
