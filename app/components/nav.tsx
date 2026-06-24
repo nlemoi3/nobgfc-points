@@ -155,26 +155,9 @@ export default function Nav({
       </NavGroup>
 
       {(role === "weighmaster" || role === "admin") && (
-        <NavGroup
-          title={role === "admin" ? "Admin" : "Weighmaster"}
-          isOpen={openGroup === "Admin"}
-          onToggle={() => toggleGroup("Admin")}
-        >
-          <div><Link href="/admin/catch-entry">Enter Catch</Link></div>
-          <div><Link href="/admin/catches">Manage Catches</Link></div>
-          {role === "admin" && (
-            <>
-              <div><Link href="/admin/boats">Manage Boats</Link></div>
-              <div><Link href="/admin/anglers">Manage Anglers</Link></div>
-              <div><Link href="/admin/events">Manage Events</Link></div>
-              <div><Link href="/admin/scoring-audit">Scoring Audit</Link></div>
-              <div><Link href="/admin/recalculate-scores">Recalculate Scores</Link></div>
-              <div><Link href="/admin/records-review">Records Review</Link></div>
-              <div><Link href="/admin/historical-standings">Historical Standings Admin</Link></div>
-              <div><Link href="/admin/season-champions">Season Champions</Link></div>
-            </>
-          )}
-        </NavGroup>
+        <Link href="/admin" className="nav-link" style={{ marginRight: "18px" }}>
+          {role === "admin" ? "Admin" : "Weighmaster"}
+        </Link>
       )}
 
       {authControls}

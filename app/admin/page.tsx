@@ -1,6 +1,24 @@
 import Link from "next/link";
+import { requireRole } from "../../lib/auth";
 
-export default function AdminPage() {
+export default async function AdminPage() {
+  const { role } = await requireRole("weighmaster");
+  const isAdmin = role === "admin";
+
+  if (!isAdmin) {
+    return (
+      <main style={{ padding: "40px", fontFamily: "Arial, sans-serif" }}>
+        <h1>NOBGFC Weighmaster</h1>
+
+        <h2>Weighmaster Tools</h2>
+        <ul>
+          <li><Link href="/admin/catch-entry">Enter Catch</Link></li>
+          <li><Link href="/admin/catches">Manage Catches</Link></li>
+        </ul>
+      </main>
+    );
+  }
+
   return (
     <main style={{ padding: "40px", fontFamily: "Arial, sans-serif" }}>
       <h1>NOBGFC Admin</h1>
@@ -48,35 +66,10 @@ export default function AdminPage() {
   <li><Link href="/admin/season-champions">Season Champions</Link></li>
   <li><Link href="/admin/season-champions/generate">Generate Season Awards</Link></li>
   <li><Link href="/champions">Hall of Champions</Link></li>
-<li><Link href="/historical-standings">Historical Boat Standings</Link></li>
-<li><Link href="/admin/historical-standings">Historical Standings</Link></li>
-<li><Link href="/admin/season-champions">Season Champions</Link></li>
-<li><Link href="/admin/boat-awards">Boat Awards</Link></li>
-<li><Link href="/admin/awards">Angler Awards</Link></li>
+  <li><Link href="/historical-standings">Historical Boat Standings</Link></li>
+  <li><Link href="/admin/boat-awards">Boat Awards</Link></li>
+  <li><Link href="/admin/awards">Angler Awards</Link></li>
 </ul>
-<p>
-  <Link href="/admin/season-champions/generate">
-    Generate Season Awards
-  </Link>
-</p>
-
-<p>
-  <Link href="/admin/awards">
-    Manage Angler Awards
-  </Link>
-</p>
-
-<p>
-  <Link href="/admin/boat-awards">
-    Manage Boat Awards
-  </Link>
-</p>
-
-<p>
-  <Link href="/admin/season-champions/generate">
-    Generate Season Awards
-  </Link>
-</p>
     </main>
   );
 }
