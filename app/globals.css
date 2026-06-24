@@ -545,20 +545,20 @@ hr {
 
 .boat-list-logo.logo-oval-cut {
   width: 112px;
-  height: 62px;
-  object-fit: cover;
+  height: 78px;
+  object-fit: contain;
   object-position: center;
-  border-radius: 999px;
+  clip-path: ellipse(46% 38% at 50% 50%);
 }
 
 .boat-hero-logo img.logo-oval-cut {
-  width: 150px;
-  height: 90px;
+  width: 170px;
+  height: 118px;
   max-width: none;
   max-height: none;
-  object-fit: cover;
+  object-fit: contain;
   object-position: center;
-  border-radius: 999px;
+  clip-path: ellipse(46% 38% at 50% 50%);
 }
 
 .boat-rank-chip {
