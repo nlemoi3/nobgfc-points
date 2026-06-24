@@ -508,30 +508,48 @@ hr {
 }
 
 .auth-menu {
+  align-items: stretch;
+  border: 1px solid #c5d4e3;
+  border-radius: 999px;
+  display: inline-flex;
+  overflow: visible;
   position: relative;
 }
 
-.auth-menu-trigger {
+.auth-email-link {
   align-items: center;
-  border: 1px solid #c5d4e3;
-  border-radius: 999px;
   color: #234663;
-  cursor: pointer;
   display: flex;
   font-size: 0.84rem;
   font-weight: 700;
-  gap: 8px;
   line-height: 1;
-  list-style: none;
-  padding: 8px 12px;
+  padding: 8px 8px 8px 12px;
   white-space: nowrap;
 }
 
-.auth-menu-trigger::-webkit-details-marker {
+.auth-email-link:hover {
+  color: var(--accent-600);
+  text-shadow: none;
+}
+
+.auth-menu-dropdown {
+  display: flex;
+}
+
+.auth-menu-toggle {
+  align-items: center;
+  color: #234663;
+  cursor: pointer;
+  display: flex;
+  list-style: none;
+  padding: 8px 12px 8px 6px;
+}
+
+.auth-menu-toggle::-webkit-details-marker {
   display: none;
 }
 
-.auth-menu-trigger::after {
+.auth-menu-toggle::after {
   border-left: 4px solid transparent;
   border-right: 4px solid transparent;
   border-top: 5px solid currentColor;
@@ -539,7 +557,7 @@ hr {
   margin-top: 2px;
 }
 
-.auth-menu[open] .auth-menu-trigger {
+.auth-menu:has(.auth-menu-dropdown[open]) {
   background: #fff;
   border-color: #9eb8cf;
   box-shadow: 0 8px 18px rgba(16, 33, 48, 0.08);
