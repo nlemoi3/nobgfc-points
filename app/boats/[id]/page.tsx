@@ -26,11 +26,9 @@ function SocialLink({ href, label }: { href: string | null; label: string }) {
 
 function StatCard({ title, value }: { title: string; value: string | number }) {
   return (
-    <div style={{ border: "1px solid #ccc", padding: "15px", minWidth: "220px" }}>
+    <div className="stat-card">
       <h3>{title}</h3>
-      <p>
-        <strong>{value}</strong>
-      </p>
+      <div className="stat-card-value">{value}</div>
     </div>
   );
 }
@@ -43,7 +41,7 @@ function LargestFishCard({
   catchRecord: any;
 }) {
   return (
-    <div style={{ border: "1px solid #ccc", padding: "15px", minWidth: "220px" }}>
+    <div className="stat-card">
       <h3>{title}</h3>
 
       {catchRecord ? (
@@ -53,21 +51,22 @@ function LargestFishCard({
               src={catchRecord.photo_url}
               alt={title}
               style={{
-                maxWidth: "200px",
+                maxWidth: "100%",
                 display: "block",
                 marginBottom: "10px",
+                borderRadius: "8px",
               }}
             />
           )}
 
-          <p>
+          <p style={{ margin: "8px 0" }}>
             <strong>
               <Link href={`/catches/${catchRecord.id}`}>
                 {catchRecord.weight} lbs
               </Link>
             </strong>
           </p>
-          <p>
+          <p style={{ margin: "4px 0", fontSize: "0.9rem" }}>
             {catchRecord.anglers?.id ? (
               <Link href={`/anglers/${catchRecord.anglers.id}`}>
                 {catchRecord.anglers?.first_name}{" "}
@@ -80,10 +79,12 @@ function LargestFishCard({
               </>
             )}
           </p>
-          <p>{formatDateTime(catchRecord.catch_datetime)}</p>
+          <p style={{ margin: "4px 0", fontSize: "0.85rem", color: "#5a7387" }}>
+            {formatDateTime(catchRecord.catch_datetime)}
+          </p>
         </>
       ) : (
-        <p>No catch</p>
+        <p style={{ margin: "8px 0", color: "#5a7387" }}>No catch</p>
       )}
     </div>
   );
@@ -241,36 +242,46 @@ const careerPoints = boatCatches.reduce(
         <Link href="/boats">← Back to Boats</Link>
       </p>
 
-      <h1>{boat.name}</h1>
-
-      {boat.logo_url && (
-        <img
-          src={boat.logo_url}
-          alt={`${boat.name} logo`}
-          style={{ maxWidth: "200px", display: "block", marginBottom: "20px" }}
-        />
-      )}
-
       {boat.photo_url && (
-        <img
-          src={boat.photo_url}
-          alt={boat.name}
+        <div
+          className="boat-hero"
           style={{
-            maxWidth: "700px",
-            width: "100%",
-            display: "block",
-            marginBottom: "20px",
+            backgroundImage: `url('${boat.photo_url}')`,
           }}
-        />
+        >
+          <div className="boat-hero-content">
+            <div className="boat-hero-text">
+              <h1>{boat.name}</h1>
+            </div>
+            {boat.logo_url && (
+              <div className="boat-hero-logo">
+                <img src={boat.logo_url} alt={`${boat.name} logo`} />
+              </div>
+            )}
+          </div>
+        </div>
       )}
 
-      <div style={{ display: "flex", gap: "20px", flexWrap: "wrap", marginBottom: "30px" }}>
+      {!boat.photo_url && (
+        <>
+          <h1>{boat.name}</h1>
+          {boat.logo_url && (
+            <img
+              src={boat.logo_url}
+              alt={`${boat.name} logo`}
+              style={{ maxWidth: "160px", display: "block", marginBottom: "16px" }}
+            />
+          )}
+        </>
+      )}
+
+      <div className="stats-grid">
         <StatCard title="Current Rank" value={currentRank ? `#${currentRank}` : "Unranked"} />
         <StatCard title="Official Points" value={officialPoints.toFixed(1)} />
         <StatCard title="Blue Marlin Count" value={blueMarlinCount} />
         <StatCard title="Tournament Appearances" value={tournamentAppearances} />
         <StatCard title="Career Points" value={careerPoints.toFixed(1)} />
-<StatCard title="Approved Catches" value={totalApprovedCatches} />
+        <StatCard title="Approved Catches" value={totalApprovedCatches} />
       </div>
 
       <h2>Boat Details</h2>
@@ -326,96 +337,98 @@ const careerPoints = boatCatches.reduce(
 
       <h2>Largest Fish</h2>
 
-      <div style={{ display: "flex", gap: "20px", flexWrap: "wrap", marginBottom: "30px" }}>
+      <div className="stats-grid">
         <LargestFishCard title="Largest Blue Marlin" catchRecord={largestBlueMarlin} />
         <LargestFishCard title="Largest Tuna" catchRecord={largestTuna} />
         <LargestFishCard title="Largest Wahoo" catchRecord={largestWahoo} />
         <LargestFishCard title="Largest Dolphin" catchRecord={largestDolphin} />
       </div>
 
-<h2>Boat Awards</h2>
+      <h2>Boat Awards</h2>
 
-{boatAwards && boatAwards.length > 0 ? (
-  <table border={1} cellPadding={8} style={{ borderCollapse: "collapse", marginBottom: "30px" }}>
-    <thead>
-      <tr>
-        <th>Year</th>
-        <th>Award</th>
-        <th>Notes</th>
-      </tr>
-    </thead>
-    <tbody>
-      {boatAwards.map((award: any) => (
-        <tr key={award.id}>
-          <td>{award.award_year}</td>
-          <td>{award.award_name}</td>
-          <td>{award.notes || "-"}</td>
-        </tr>
-      ))}
-    </tbody>
-  </table>
-) : (
-  <p>No boat awards recorded.</p>
-)}
+      {boatAwards && boatAwards.length > 0 ? (
+        <div className="table-wrap">
+          <table className="admin-table">
+            <thead>
+              <tr>
+                <th>Year</th>
+                <th>Award</th>
+                <th>Notes</th>
+              </tr>
+            </thead>
+            <tbody>
+              {boatAwards.map((award: any) => (
+                <tr key={award.id}>
+                  <td>{award.award_year}</td>
+                  <td>{award.award_name}</td>
+                  <td>{award.notes || "-"}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <p>No boat awards recorded.</p>
+      )}
 
-<h2>Historical Season Results</h2>
+      <h2>Historical Season Results</h2>
 
-{historicalResults.length > 0 ? (
-  <table
-    border={1}
-    cellPadding={8}
-    style={{ borderCollapse: "collapse", marginBottom: "30px" }}
-  >
-    <thead>
-      <tr>
-        <th>Year</th>
-        <th>Rank</th>
-        <th>Points</th>
-        <th>Notes</th>
-      </tr>
-    </thead>
-    <tbody>
-      {historicalResults.map((row: any) => (
-        <tr key={row.id}>
-          <td>{row.season_year}</td>
-          <td>{row.rank}</td>
-          <td>{Number(row.points).toFixed(0)}</td>
-          <td>{row.notes || "-"}</td>
-        </tr>
-      ))}
-    </tbody>
-  </table>
-) : (
-  <p>No historical season results found.</p>
-)}
+      {historicalResults.length > 0 ? (
+        <div className="table-wrap">
+          <table className="admin-table">
+            <thead>
+              <tr>
+                <th>Year</th>
+                <th>Rank</th>
+                <th>Points</th>
+                <th>Notes</th>
+              </tr>
+            </thead>
+            <tbody>
+              {historicalResults.map((row: any) => (
+                <tr key={row.id}>
+                  <td>{row.season_year}</td>
+                  <td>{row.rank}</td>
+                  <td>{Number(row.points).toFixed(0)}</td>
+                  <td>{row.notes || "-"}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <p>No historical season results found.</p>
+      )}
 
       <h2>Tournament History</h2>
 
       {tournamentHistory.length === 0 ? (
         <p>No tournament points yet.</p>
       ) : (
-        <table border={1} cellPadding={8} style={{ borderCollapse: "collapse" }}>
-          <thead>
-            <tr>
-              <th>Tournament</th>
-              <th>Points</th>
-            </tr>
-          </thead>
-          <tbody>
-            {tournamentHistory.map(([eventName, result]) => (
-              <tr key={eventName}>
-                <td>
-                  {result.eventId ? (
-                    <Link href={`/tournaments/${result.eventId}`}>{eventName}</Link>
-                  ) : (
-                    eventName
-                  )}
-                </td>
-                <td>{result.points.toFixed(1)}</td>
+        <div className="table-wrap">
+          <table className="admin-table">
+            <thead>
+              <tr>
+                <th>Tournament</th>
+                <th>Points</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {tournamentHistory.map(([eventName, result]) => (
+                <tr key={eventName}>
+                  <td>
+                    {result.eventId ? (
+                      <Link href={`/tournaments/${result.eventId}`}>{eventName}</Link>
+                    ) : (
+                      eventName
+                    )}
+                  </td>
+                  <td>{result.points.toFixed(1)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
 
       <h2 style={{ marginTop: "30px" }}>Catch History</h2>

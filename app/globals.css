@@ -37,6 +37,19 @@ body.app-shell {
 
 a {
   color: var(--accent-600);
+  text-decoration: none;
+  font-weight: 600;
+  font-family: var(--font-body);
+  transition: color 0.2s ease, text-shadow 0.2s ease;
+}
+
+a:hover {
+  color: var(--accent-500);
+  text-shadow: 0 0 8px rgba(43, 132, 196, 0.2);
+}
+
+a:visited {
+  color: var(--accent-600);
 }
 
 .page-shell {
@@ -374,6 +387,96 @@ hr {
   cursor: pointer;
 }
 
+/* Boat page hero styling */
+.boat-hero {
+  position: relative;
+  height: 320px;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  margin: -26px -26px 28px;
+  box-shadow: var(--shadow-md);
+  display: flex;
+  align-items: flex-end;
+  background-size: cover;
+  background-position: center;
+}
+
+.boat-hero::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(15, 33, 48, 0.72) 100%);
+  z-index: 1;
+}
+
+.boat-hero-content {
+  position: relative;
+  z-index: 2;
+  padding: 24px 26px;
+  width: 100%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+}
+
+.boat-hero-text h1 {
+  margin: 0 0 8px;
+  color: #fff;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.boat-hero-logo {
+  display: flex;
+  align-items: center;
+}
+
+.boat-hero-logo img {
+  max-height: 120px;
+  max-width: 150px;
+  border-radius: 8px;
+  border: 2px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  margin: 28px 0;
+}
+
+.stat-card {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(245, 250, 255, 0.95));
+  border: 1px solid #d5e1ec;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.stat-card h3 {
+  font-size: 0.85rem;
+  color: #5a7387;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin: 0 0 8px;
+  font-weight: 600;
+}
+
+.stat-card-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--accent-600);
+}
+
 @media (max-width: 900px) {
   .top-nav-inner {
     flex-wrap: wrap;
@@ -387,5 +490,18 @@ hr {
   .toolbar {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .boat-hero {
+    height: 240px;
+  }
+
+  .boat-hero-content {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .boat-hero-logo {
+    margin-top: 12px;
   }
 }
