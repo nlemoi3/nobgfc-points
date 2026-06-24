@@ -45,6 +45,7 @@ export default async function AdminPage() {
           </Link>
         </li>
         <li><Link href="/admin/invites">Invite Members</Link></li>
+        <li><Link href="/admin/members">Manage Members</Link></li>
       </ul>
       <h2>Scoring Tools</h2>
 <ul>

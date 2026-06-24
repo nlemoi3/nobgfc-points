@@ -182,6 +182,12 @@ hr {
   border-color: #c7e8d5;
 }
 
+.role-assign-form {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
 .alert-warning {
   color: #7a5614;
   background: #fff8e8;
