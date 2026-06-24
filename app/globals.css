@@ -215,6 +215,14 @@ hr {
   align-items: center;
   gap: 10px;
   margin-bottom: 16px;
+  position: sticky;
+  top: 74px;
+  z-index: 20;
+  background: rgba(247, 251, 255, 0.94);
+  backdrop-filter: blur(6px);
+  border: 1px solid #d8e4ef;
+  border-radius: 14px;
+  padding: 10px;
 }
 
 .searchbar input {
@@ -621,6 +629,7 @@ hr {
 
   .searchbar {
     flex-wrap: wrap;
+    top: 118px;
   }
 
   .boat-hero {
