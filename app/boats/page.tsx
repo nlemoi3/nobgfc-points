@@ -103,20 +103,16 @@ export default async function BoatsPage({
         <div className="boats-grid">
           {filteredBoats.map((boat: any) => (
             <Link key={boat.id} href={`/boats/${boat.id}`} className="boat-list-card">
-              <div
-                className="boat-list-media"
-                style={
-                  boat.photo_url
-                    ? { backgroundImage: `url('${boat.photo_url}')` }
-                    : undefined
-                }
-              >
+              <div className="boat-list-media">
                 {boat.logo_url && (
                   <img
                     src={boat.logo_url}
                     alt={boat.name}
-                    className="boat-list-logo"
+                    className="boat-list-hero-logo"
                   />
+                )}
+                {!boat.logo_url && (
+                  <span className="boat-list-fallback">No Logo</span>
                 )}
                 <span className="boat-rank-chip">#{rankByBoatId[boat.id] || "-"}</span>
               </div>
