@@ -1,7 +1,10 @@
 import Link from "next/link";
+import { requireRole } from "../../../lib/auth";
 import { supabase } from "../../../lib/supabase";
 
 export default async function AdminEventsPage() {
+  await requireRole("admin");
+
   const { data: events, error } = await supabase
     .from("events")
     .select("*")

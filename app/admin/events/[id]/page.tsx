@@ -1,9 +1,12 @@
 import { redirect } from "next/navigation";
+import { requireRole } from "../../../../lib/auth";
 import { supabase } from "../../../../lib/supabase";
 import { createClient } from "../../../../lib/supabase/server";
 
 async function updateEvent(formData: FormData) {
   "use server";
+
+  await requireRole("admin");
 
   const supabase = await createClient();
   const id = Number(formData.get("id"));
@@ -36,6 +39,8 @@ export default async function EditEventPage({
   params: Promise<{ id: string }>;
   searchParams: Promise<{ error?: string; saved?: string }>;
 }) {
+  await requireRole("admin");
+
   const { id } = await params;
   const { error: pageError, saved } = await searchParams;
   const eventId = Number(id);
