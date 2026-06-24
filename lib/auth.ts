@@ -90,6 +90,19 @@ export async function getCurrentUserAngler() {
       .maybeSingle();
 
     if (!updateError && updated) {
+      // Assign member role only if the user has no existing role
+      const { data: existingRole } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      if (!existingRole) {
+        await supabase
+          .from("user_roles")
+          .insert({ user_id: user.id, role: "member" });
+      }
+
       return updated;
     }
 
