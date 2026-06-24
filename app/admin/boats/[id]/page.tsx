@@ -28,6 +28,10 @@ async function updateBoat(formData: FormData) {
 
   const supabase = await createClient();
   const id = Number(formData.get("id"));
+  const ownerAnglerIds = formData
+    .getAll("owner_angler_ids")
+    .map((value) => Number(value))
+    .filter((value) => Number.isFinite(value) && value > 0);
 
   const photoFile = formData.get("photo_file") as File | null;
   const logoFile = formData.get("logo_file") as File | null;
@@ -65,6 +69,25 @@ async function updateBoat(formData: FormData) {
 
   if (error) throw new Error(error.message);
 
+  // Replace owner links in one save to keep boat owners in sync with the form.
+  const { error: deleteOwnersError } = await supabase
+    .from("boat_owners")
+    .delete()
+    .eq("boat_id", id);
+
+  if (deleteOwnersError) throw new Error(deleteOwnersError.message);
+
+  if (ownerAnglerIds.length > 0) {
+    const { error: insertOwnersError } = await supabase.from("boat_owners").insert(
+      ownerAnglerIds.map((anglerId) => ({
+        boat_id: id,
+        angler_id: anglerId,
+      })),
+    );
+
+    if (insertOwnersError) throw new Error(insertOwnersError.message);
+  }
+
   redirect(`/boats/${id}`);
 }
 
@@ -81,6 +104,18 @@ export default async function EditBoatPage({
     .select("*")
     .eq("id", Number(id))
     .single();
+
+  const { data: anglers } = await supabase
+    .from("anglers")
+    .select("id,first_name,last_name")
+    .order("last_name");
+
+  const { data: ownerLinks } = await supabase
+    .from("boat_owners")
+    .select("angler_id")
+    .eq("boat_id", Number(id));
+
+  const currentOwnerIds = new Set((ownerLinks || []).map((row: any) => row.angler_id));
 
   if (!boat) {
     return (
@@ -160,6 +195,28 @@ export default async function EditBoatPage({
           <label>Owner Email</label>
           <br />
           <input name="owner_email" type="email" defaultValue={boat.owner_email || ""} />
+        </p>
+
+        <p>
+          <label>Linked Owner Accounts (multiple)</label>
+          <br />
+          <select
+            name="owner_angler_ids"
+            multiple
+            size={10}
+            style={{ minWidth: "360px" }}
+            defaultValue={Array.from(currentOwnerIds).map((value) => String(value))}
+          >
+            {anglers?.map((angler: any) => (
+              <option key={angler.id} value={angler.id}>
+                {angler.last_name}, {angler.first_name}
+              </option>
+            ))}
+          </select>
+          <br />
+          <small style={{ color: "#555" }}>
+            Hold Ctrl (Windows) or Cmd (Mac) to select multiple owners.
+          </small>
         </p>
 
         <hr />

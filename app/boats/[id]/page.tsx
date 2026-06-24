@@ -103,6 +103,11 @@ export default async function BoatProfilePage({
     .eq("id", boatId)
     .single();
 
+  const { data: ownerLinks } = await supabase
+    .from("boat_owners")
+    .select("angler_id, anglers(id, first_name, last_name)")
+    .eq("boat_id", boatId);
+
   const { data: allCatches } = await supabase
   .from("catches")
   .select(`
@@ -290,6 +295,23 @@ const careerPoints = boatCatches.reduce(
       {boat.owner_name && (
         <p>
           <strong>Owner:</strong> {boat.owner_name}
+        </p>
+      )}
+
+      {ownerLinks && ownerLinks.length > 0 && (
+        <p>
+          <strong>Owner Accounts:</strong>{" "}
+          {ownerLinks
+            .map((link: any) => link.anglers)
+            .filter(Boolean)
+            .map((owner: any, index: number) => (
+              <span key={owner.id}>
+                {index > 0 ? ", " : ""}
+                <Link href={`/anglers/${owner.id}`}>
+                  {owner.first_name} {owner.last_name}
+                </Link>
+              </span>
+            ))}
         </p>
       )}
 
