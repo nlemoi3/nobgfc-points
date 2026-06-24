@@ -468,9 +468,11 @@ hr {
 .boat-hero-logo img {
   max-height: 120px;
   max-width: 150px;
-  border-radius: 8px;
-  border: 2px solid rgba(255, 255, 255, 0.8);
+  border-radius: 0;
+  border: 0;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  background: transparent;
+  mix-blend-mode: multiply;
 }
 
 .stats-grid {
@@ -536,6 +538,7 @@ hr {
   background: transparent;
   border: 0;
   padding: 0;
+  mix-blend-mode: multiply;
 }
 
 .boat-rank-chip {
