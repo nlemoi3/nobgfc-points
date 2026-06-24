@@ -504,47 +504,99 @@ hr {
   margin-left: auto;
   display: flex;
   align-items: center;
-  gap: 12px;
+  position: relative;
+}
+
+.auth-menu {
+  position: relative;
+}
+
+.auth-menu-trigger {
+  align-items: center;
+  border: 1px solid #c5d4e3;
+  border-radius: 999px;
+  color: #234663;
+  cursor: pointer;
+  display: flex;
+  font-size: 0.84rem;
+  font-weight: 700;
+  gap: 8px;
+  line-height: 1;
+  list-style: none;
+  padding: 8px 12px;
+  white-space: nowrap;
+}
+
+.auth-menu-trigger::-webkit-details-marker {
+  display: none;
+}
+
+.auth-menu-trigger::after {
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 5px solid currentColor;
+  content: "";
+  margin-top: 2px;
+}
+
+.auth-menu[open] .auth-menu-trigger {
+  background: #fff;
+  border-color: #9eb8cf;
+  box-shadow: 0 8px 18px rgba(16, 33, 48, 0.08);
 }
 
 .auth-email {
-  color: #2f5d7b;
-  font-size: 0.82rem;
-  font-weight: 700;
-  line-height: 1;
-  max-width: min(32vw, 240px);
+  display: block;
+  max-width: min(34vw, 250px);
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
-.auth-profile-link {
-  font-size: 0.9rem;
-  line-height: 1;
-  white-space: nowrap;
+.auth-menu-panel {
+  background: #fff;
+  border: 1px solid #d8e2ec;
+  border-radius: 10px;
+  box-shadow: var(--shadow-md);
+  display: grid;
+  gap: 2px;
+  margin-top: 8px;
+  min-width: 220px;
+  padding: 8px;
+  position: absolute;
+  right: 0;
+  top: 100%;
+  z-index: 1000;
 }
 
-.auth-controls form {
+.auth-menu-panel a,
+.auth-menu-panel .signout-btn {
+  color: #234663;
+  display: block;
+  font-size: 0.92rem;
+  font-weight: 700;
+  padding: 9px 10px;
+  text-align: left;
+  width: 100%;
+}
+
+.auth-menu-panel a:hover,
+.auth-menu-panel .signout-btn:hover {
+  background: #f1f6fb;
+  border-color: transparent;
+  border-radius: 7px;
+  color: var(--accent-600);
+  text-shadow: none;
+}
+
+.auth-menu-panel form {
   margin: 0;
 }
 
 .signout-btn {
-  border: 1px solid #c5d4e3;
-  border-radius: 999px;
-  background: #fff;
-  color: #0f2130;
+  background: transparent;
+  border: 0;
   font: inherit;
-  font-size: 0.9rem;
-  font-weight: 700;
-  line-height: 1;
-  padding: 8px 13px;
   cursor: pointer;
-  white-space: nowrap;
-}
-
-.signout-btn:hover {
-  border-color: #9eb8cf;
-  color: var(--accent-600);
 }
 
 /* Boat page hero styling */

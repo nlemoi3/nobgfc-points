@@ -21,15 +21,22 @@ export default function AuthControls({
 
   return (
     <div className="auth-controls">
-      <Link href="/account" className="auth-email">
-        {email} {role ? `(${role})` : "(pending approval)"}
-      </Link>
-      {anglerId && (
-        <Link href={`/anglers/${anglerId}`} className="nav-link auth-profile-link">My Profile</Link>
-      )}
-      <form action={logout}>
-        <button type="submit" className="signout-btn">Sign Out</button>
-      </form>
+      <details className="auth-menu">
+        <summary className="auth-menu-trigger">
+          <span className="auth-email">
+            {email} {role ? `(${role})` : "(pending approval)"}
+          </span>
+        </summary>
+        <div className="auth-menu-panel">
+          <Link href="/account">Account Settings</Link>
+          {anglerId && (
+            <Link href={`/anglers/${anglerId}`}>My Profile</Link>
+          )}
+          <form action={logout}>
+            <button type="submit" className="signout-btn">Sign Out</button>
+          </form>
+        </div>
+      </details>
     </div>
   );
 }
