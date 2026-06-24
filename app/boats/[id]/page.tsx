@@ -251,10 +251,16 @@ const careerPoints = boatCatches.reduce(
           >
             <div className="boat-hero-content">
               <div className="boat-hero-text">
-                <h1>{boat.name}</h1>
+                <h1 style={{ margin: "0 0 2px" }}>{boat.name}</h1>
                 {boat.home_port && (
-                  <p style={{ margin: "8px 0 0", color: "#e0e8f0", fontSize: "0.9rem", textAlign: "center" }}>
+                  <p style={{ margin: "0 0 4px", color: "#e0e8f0", fontSize: "0.9rem", textAlign: "center" }}>
                     {boat.home_port}
+                  </p>
+                )}
+                {[boat.year, boat.make, boat.model].filter(Boolean).join(" ") && (
+                  <p style={{ margin: "0", color: "#d0dce8", fontSize: "0.85rem", textAlign: "center" }}>
+                    {[boat.year, boat.make, boat.model].filter(Boolean).join(" ")}
+                    {boat.length_feet ? ` — ${boat.length_feet} ft` : ""}
                   </p>
                 )}
               </div>
@@ -269,10 +275,16 @@ const careerPoints = boatCatches.reduce(
 
         {!boat.photo_url && (
           <>
-            <h1>{boat.name}</h1>
+            <h1 style={{ margin: "0 0 2px" }}>{boat.name}</h1>
             {boat.home_port && (
-              <p style={{ margin: "8px 0 16px", fontSize: "0.9rem", color: "#5a7387", textAlign: "center" }}>
+              <p style={{ margin: "0 0 4px", fontSize: "0.9rem", color: "#5a7387", textAlign: "center" }}>
                 {boat.home_port}
+              </p>
+            )}
+            {[boat.year, boat.make, boat.model].filter(Boolean).join(" ") && (
+              <p style={{ margin: "0 0 16px", fontSize: "0.85rem", color: "#7a8fa3", textAlign: "center" }}>
+                {[boat.year, boat.make, boat.model].filter(Boolean).join(" ")}
+                {boat.length_feet ? ` — ${boat.length_feet} ft` : ""}
               </p>
             )}
             {boat.logo_url && (
@@ -295,13 +307,6 @@ const careerPoints = boatCatches.reduce(
       </div>
 
       <h2>Boat Details</h2>
-
-      {[boat.year, boat.make, boat.model].filter(Boolean).join(" ") && (
-        <p>
-          <strong>Specifications:</strong> {[boat.year, boat.make, boat.model].filter(Boolean).join(" ")}
-          {boat.length_feet ? ` — ${boat.length_feet} ft` : ""}
-        </p>
-      )}
 
       {boat.captain_name && (
         <p>
