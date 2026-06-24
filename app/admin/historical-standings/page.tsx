@@ -11,7 +11,7 @@ export default async function AdminHistoricalStandingsPage() {
     .order("rank", { ascending: true });
 
   return (
-    <main style={{ padding: "40px", fontFamily: "Arial, sans-serif" }}>
+    <main className="panel">
       <h1>Manage Historical Standings</h1>
       <p>
   <Link href="/admin/historical-standings/new">

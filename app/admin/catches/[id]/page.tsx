@@ -213,7 +213,7 @@ export default async function EditCatchPage({
 
   if (!catchRecord) {
     return (
-      <main style={{ padding: "40px", fontFamily: "Arial, sans-serif" }}>
+      <main className="panel">
         <h1>Edit Catch</h1>
         <p>Catch not found.</p>
       </main>
@@ -231,7 +231,7 @@ export default async function EditCatchPage({
     : "";
 
   return (
-    <main style={{ padding: "40px", fontFamily: "Arial, sans-serif" }}>
+    <main className="panel">
       <h1>Edit Catch</h1>
 
       {isLocked && (

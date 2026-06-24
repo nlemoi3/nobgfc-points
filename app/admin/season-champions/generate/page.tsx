@@ -133,7 +133,7 @@ await supabase
 
 export default function GenerateSeasonAwardsPage() {
   return (
-    <main style={{ padding: "40px", fontFamily: "Arial, sans-serif" }}>
+    <main className="panel">
       <h1>Generate Season Awards</h1>
 
       <form action={generateAwards}>

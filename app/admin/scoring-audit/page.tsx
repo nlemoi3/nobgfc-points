@@ -105,7 +105,7 @@ export default async function ScoringAuditPage() {
   const mismatches = rows.filter((r: any) => !r.matches);
 
   return (
-    <main style={{ padding: "40px", fontFamily: "Arial, sans-serif" }}>
+    <main className="panel">
       <h1>Scoring Audit</h1>
 
       <p>

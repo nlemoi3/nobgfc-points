@@ -22,7 +22,7 @@ async function createHistoricalStanding(formData: FormData) {
 
 export default function NewHistoricalStandingPage() {
   return (
-    <main style={{ padding: "40px", fontFamily: "Arial, sans-serif" }}>
+    <main className="panel">
       <h1>Add Historical Standing</h1>
 
       <form action={createHistoricalStanding}>

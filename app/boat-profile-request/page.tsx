@@ -30,7 +30,7 @@ async function submitBoatProfileRequest(formData: FormData) {
 
 export default function BoatProfileRequestPage() {
   return (
-    <main style={{ padding: "40px", fontFamily: "Arial, sans-serif" }}>
+    <main className="panel">
       <h1>Boat Profile Update Request</h1>
 
       <p>

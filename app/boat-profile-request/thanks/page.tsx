@@ -1,6 +1,6 @@
 export default function BoatProfileRequestThanksPage() {
   return (
-    <main style={{ padding: "40px", fontFamily: "Arial, sans-serif" }}>
+    <main className="panel">
       <h1>Request Submitted</h1>
 
       <p>

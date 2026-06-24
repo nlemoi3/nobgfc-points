@@ -32,7 +32,7 @@ export default async function GalleryPage() {
     .order("catch_datetime", { ascending: false });
 
   return (
-    <main style={{ padding: "40px", fontFamily: "Arial, sans-serif" }}>
+    <main className="panel">
       <h1>Photo Gallery</h1>
 
       {error && <p style={{ color: "red" }}>Error: {error.message}</p>}

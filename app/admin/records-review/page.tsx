@@ -32,7 +32,7 @@ export default async function RecordsReviewPage() {
     }) || [];
 
   return (
-    <main style={{ padding: "40px", fontFamily: "Arial, sans-serif" }}>
+    <main className="panel">
       <h1>Records Review</h1>
 
       <p>

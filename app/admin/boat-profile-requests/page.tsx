@@ -23,7 +23,7 @@ export default async function AdminBoatProfileRequestsPage() {
     .order("created_at", { ascending: false });
 
   return (
-    <main style={{ padding: "40px", fontFamily: "Arial, sans-serif" }}>
+    <main className="panel">
       <h1>Boat Profile Requests</h1>
 
       {error && (

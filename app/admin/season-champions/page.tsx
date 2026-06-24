@@ -83,7 +83,7 @@ const { data: catches, error } = await supabase
   const youthChampion = youthStandings[0];
 
   return (
-    <main style={{ padding: "40px", fontFamily: "Arial, sans-serif" }}>
+    <main className="panel">
       <h1>Season Champions</h1>
 
       {error && (

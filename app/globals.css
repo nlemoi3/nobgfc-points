@@ -45,6 +45,78 @@ a {
   padding: 0 20px 48px;
 }
 
+/* Legacy page polish: lifts older pages into the shared visual language */
+.page-shell > main:not(.panel) {
+  background: rgba(255, 255, 255, 0.86);
+  backdrop-filter: blur(4px);
+  border: 1px solid #d5e1ec;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.page-shell > main {
+  line-height: 1.55;
+}
+
+.page-shell > main p {
+  color: #2e4f67;
+}
+
+.page-shell > main ul {
+  margin: 10px 0 18px;
+  padding-left: 22px;
+}
+
+.page-shell > main li {
+  margin: 4px 0;
+}
+
+.page-shell > main table:not(.admin-table) {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid #d8e2ec;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: #fff;
+}
+
+.page-shell > main table:not(.admin-table) th,
+.page-shell > main table:not(.admin-table) td {
+  padding: 11px 12px;
+  border-bottom: 1px solid #e7edf4;
+  text-align: left;
+}
+
+.page-shell > main table:not(.admin-table) thead th {
+  background: #f1f6fb;
+  color: #274b68;
+  font-size: 0.82rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.page-shell > main input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+.page-shell > main select,
+.page-shell > main textarea {
+  border: 1px solid #cad9e7;
+  border-radius: 9px;
+  padding: 9px 10px;
+  background: #fff;
+  color: var(--ink-900);
+}
+
+.page-shell > main button:not(.btn):not(.signout-btn) {
+  appearance: none;
+  border: 0;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--accent-600), var(--accent-500));
+  color: #fff;
+  padding: 9px 14px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 8px 16px rgba(31, 110, 168, 0.22);
+}
+
 .panel {
   background: rgba(255, 255, 255, 0.86);
   backdrop-filter: blur(4px);

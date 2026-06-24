@@ -20,7 +20,7 @@ export default async function TournamentsPage() {
     .order("start_date", { ascending: false });
 
   return (
-    <main style={{ padding: "40px", fontFamily: "Arial, sans-serif" }}>
+    <main className="panel">
       <h1>Tournament Archive</h1>
 
       <p>

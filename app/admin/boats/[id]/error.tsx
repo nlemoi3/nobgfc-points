@@ -6,7 +6,7 @@ export default function EditBoatError({
   error: Error & { digest?: string };
 }) {
   return (
-    <main style={{ padding: "40px", fontFamily: "Arial, sans-serif" }}>
+    <main className="panel">
       <h1>Edit Boat — Error</h1>
       <p style={{ color: "red" }}>
         <strong>{error.message}</strong>

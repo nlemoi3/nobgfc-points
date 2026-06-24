@@ -58,11 +58,11 @@ export default async function EditAwardPage({
     .order("last_name");
 
   if (!award) {
-    return <main style={{ padding: "40px" }}>Award not found.</main>;
+    return <main className="panel">Award not found.</main>;
   }
 
   return (
-    <main style={{ padding: "40px", fontFamily: "Arial, sans-serif" }}>
+    <main className="panel">
       <h1>Edit Angler Award</h1>
 
       <form action={updateAward}>

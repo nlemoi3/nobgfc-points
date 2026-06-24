@@ -41,7 +41,7 @@ const { data, error } = await supabase
     .sort((a, b) => b.points - a.points);
 
   return (
-    <main style={{ padding: "40px", fontFamily: "Arial, sans-serif" }}>
+    <main className="panel">
       <h1>Dutch Prager Youth Standings</h1>
 
       <p>

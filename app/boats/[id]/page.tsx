@@ -128,7 +128,7 @@ export default async function BoatProfilePage({
   .eq("status", "approved");
 
   if (!boat) {
-    return <main style={{ padding: "40px" }}>Boat not found.</main>;
+    return <main className="panel">Boat not found.</main>;
   }
 const { data: boatAwards } = await supabase
   .from("boat_awards")
@@ -236,7 +236,7 @@ const careerPoints = boatCatches.reduce(
   ).length;
 
   return (
-    <main style={{ padding: "40px", fontFamily: "Arial, sans-serif" }}>
+    <main className="panel">
       <p>
         <Link href="/boats">← Back to Boats</Link>
       </p>

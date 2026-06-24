@@ -59,14 +59,14 @@ export default async function EditBoatAwardPage({
 
   if (!award) {
     return (
-      <main style={{ padding: "40px" }}>
+      <main className="panel">
         Boat award not found.
       </main>
     );
   }
 
   return (
-    <main style={{ padding: "40px", fontFamily: "Arial, sans-serif" }}>
+    <main className="panel">
       <h1>Edit Boat Award</h1>
 
       <form action={updateBoatAward}>

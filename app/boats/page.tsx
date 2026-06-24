@@ -51,7 +51,7 @@ export default async function BoatsPage() {
   });
 
   return (
-    <main style={{ padding: "40px", fontFamily: "Arial, sans-serif" }}>
+    <main className="panel">
       <h1>Boats</h1>
 
       {error && (

@@ -27,7 +27,7 @@ export default async function NewBoatAwardPage() {
     .order("name");
 
   return (
-    <main style={{ padding: "40px", fontFamily: "Arial, sans-serif" }}>
+    <main className="panel">
       <h1>Add Boat Award</h1>
 
       <form action={createBoatAward}>

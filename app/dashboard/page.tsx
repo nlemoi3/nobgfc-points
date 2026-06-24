@@ -198,7 +198,7 @@ const { data: catches } = await supabase
   )[0];
 
   return (
-    <main style={{ padding: "40px", fontFamily: "Arial, sans-serif" }}>
+    <main className="panel">
       <h1>NOBGFC Dashboard</h1>
 
       <div style={{ display: "flex", gap: "20px", flexWrap: "wrap", marginBottom: "30px" }}>

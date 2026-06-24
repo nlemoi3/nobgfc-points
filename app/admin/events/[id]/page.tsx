@@ -42,7 +42,7 @@ export default async function EditEventPage({
 
   if (error || !event) {
     return (
-      <main style={{ padding: "40px", fontFamily: "Arial, sans-serif" }}>
+      <main className="panel">
         <h1>Edit Event</h1>
         <p style={{ color: "red" }}>Event not found.</p>
       </main>
@@ -50,7 +50,7 @@ export default async function EditEventPage({
   }
 
   return (
-    <main style={{ padding: "40px", fontFamily: "Arial, sans-serif" }}>
+    <main className="panel">
       <h1>Edit Event</h1>
 
       <form action={updateEvent}>

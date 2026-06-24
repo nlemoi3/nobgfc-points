@@ -95,7 +95,7 @@ boatScores[boat].points += Number(c.points_awarded || 0);
     .sort((a: any, b: any) => b.weight - a.weight)[0];
 
   return (
-    <main style={{ padding: "40px", fontFamily: "Arial, sans-serif" }}>
+    <main className="panel">
       <p>
         <Link href="/tournaments">← Back to Tournament Archive</Link>
       </p>

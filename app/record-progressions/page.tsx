@@ -143,7 +143,7 @@ export default async function RecordProgressionsPage() {
   const approvedCatches = catches || [];
 
   return (
-    <main style={{ padding: "40px", fontFamily: "Arial, sans-serif" }}>
+    <main className="panel">
       <h1>Record Progressions</h1>
 
       <p>

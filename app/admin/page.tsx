@@ -7,7 +7,7 @@ export default async function AdminPage() {
 
   if (!isAdmin) {
     return (
-      <main style={{ padding: "40px", fontFamily: "Arial, sans-serif" }}>
+      <main className="panel">
         <h1>NOBGFC Weighmaster</h1>
 
         <h2>Weighmaster Tools</h2>
@@ -20,7 +20,7 @@ export default async function AdminPage() {
   }
 
   return (
-    <main style={{ padding: "40px", fontFamily: "Arial, sans-serif" }}>
+    <main className="panel">
       <h1>NOBGFC Admin</h1>
 
       <h2>Catch Management</h2>

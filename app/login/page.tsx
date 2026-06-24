@@ -22,49 +22,38 @@ export default async function LoginPage({
   const { error, next = "" } = await searchParams;
 
   return (
-    <main
-      style={{
-        fontFamily: "Arial, sans-serif",
-        margin: "60px auto",
-        maxWidth: "420px",
-        padding: "0 20px",
-      }}
-    >
+    <main className="panel" style={{ margin: "60px auto", maxWidth: "460px" }}>
       <h1>Club Sign In</h1>
       <p>Use your approved NOBGFC account.</p>
 
-      {error && <p style={{ color: "#b42318" }}>{error}</p>}
+      {error && <p className="alert alert-danger">{error}</p>}
 
       <form action={login}>
         <input type="hidden" name="next" value={next} />
 
-        <p>
+        <p className="field">
           <label htmlFor="email">Email</label>
-          <br />
           <input
             id="email"
             name="email"
             type="email"
             autoComplete="email"
             required
-            style={{ boxSizing: "border-box", padding: "8px", width: "100%" }}
           />
         </p>
 
-        <p>
+        <p className="field">
           <label htmlFor="password">Password</label>
-          <br />
           <input
             id="password"
             name="password"
             type="password"
             autoComplete="current-password"
             required
-            style={{ boxSizing: "border-box", padding: "8px", width: "100%" }}
           />
         </p>
 
-        <button type="submit" style={{ padding: "9px 16px" }}>
+        <button type="submit" className="btn">
           Sign In
         </button>
       </form>

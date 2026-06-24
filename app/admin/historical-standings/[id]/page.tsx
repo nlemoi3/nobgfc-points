@@ -55,7 +55,7 @@ export default async function EditHistoricalStandingPage({
 
   if (!row) {
     return (
-      <main style={{ padding: "40px", fontFamily: "Arial, sans-serif" }}>
+      <main className="panel">
         <h1>Edit Historical Standing</h1>
         <p>Historical standing not found.</p>
       </main>
@@ -63,7 +63,7 @@ export default async function EditHistoricalStandingPage({
   }
 
   return (
-    <main style={{ padding: "40px", fontFamily: "Arial, sans-serif" }}>
+    <main className="panel">
       <h1>Edit Historical Standing</h1>
 
       <form action={updateHistoricalStanding}>

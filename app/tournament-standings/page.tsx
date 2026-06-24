@@ -55,7 +55,7 @@ const { data: catches, error } = await supabase
   const eventEntries = Object.entries(eventStandings);
 
   return (
-    <main style={{ padding: "40px", fontFamily: "Arial, sans-serif" }}>
+    <main className="panel">
       <h1>Tournament Standings</h1>
 
       {error && <p style={{ color: "red" }}>Error: {error.message}</p>}

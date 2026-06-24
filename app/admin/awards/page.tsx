@@ -19,7 +19,7 @@ export default async function AdminAwardsPage() {
   });
 
   return (
-    <main style={{ padding: "40px", fontFamily: "Arial, sans-serif" }}>
+    <main className="panel">
       <h1>Angler Awards</h1>
 
       <p>

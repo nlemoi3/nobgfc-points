@@ -8,7 +8,7 @@ export default async function EventsPage() {
     .order("start_date");
 
   return (
-    <main style={{ padding: "40px", fontFamily: "Arial, sans-serif" }}>
+    <main className="panel">
       <h1>2026 Events</h1>
 
       {error && <p style={{ color: "red" }}>Error: {error.message}</p>}

@@ -220,7 +220,7 @@ export default async function RecordsPage() {
   ).sort((a, b) => b[1].count - a[1].count)[0];
 
   return (
-    <main style={{ padding: "40px", fontFamily: "Arial, sans-serif" }}>
+    <main className="panel">
       <h1>Club Records</h1>
 
       <p>

@@ -53,7 +53,7 @@ export default async function CatchDetailPage({
 
   if (error || !catchRecord) {
     return (
-      <main style={{ padding: "40px", fontFamily: "Arial, sans-serif" }}>
+      <main className="panel">
         <h1>Catch Not Found</h1>
         <p>This catch could not be found.</p>
         <p>
@@ -77,7 +77,7 @@ const anglerName = Array.isArray(anglerValue)
   : `${anglerValue?.first_name || ""} ${anglerValue?.last_name || ""}`.trim();
 
   return (
-    <main style={{ padding: "40px", fontFamily: "Arial, sans-serif" }}>
+    <main className="panel">
       <p>
         <Link href="/catches">← Back to Catches</Link>
       </p>

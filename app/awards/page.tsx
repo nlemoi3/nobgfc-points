@@ -70,7 +70,7 @@ const { data: catches, error } = await supabase
   });
 
   return (
-    <main style={{ padding: "40px", fontFamily: "Arial, sans-serif" }}>
+    <main className="panel">
       <h1>Annual Awards</h1>
 
       <div style={{ display: "flex", gap: "40px", marginBottom: "30px" }}>

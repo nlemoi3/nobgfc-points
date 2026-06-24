@@ -8,7 +8,7 @@ export default async function AdminEventsPage() {
     .order("start_date");
 
   return (
-    <main style={{ padding: "40px", fontFamily: "Arial, sans-serif" }}>
+    <main className="panel">
       <h1>Manage Events</h1>
 
       {error && (

@@ -95,7 +95,7 @@ if (eventStatus === "locked") {
 
 export default function RecalculateScoresPage() {
   return (
-    <main style={{ padding: "40px", fontFamily: "Arial, sans-serif" }}>
+    <main className="panel">
       <h1>Recalculate Scores</h1>
 
       <p>

@@ -84,7 +84,7 @@ export default async function ChampionsPage() {
   }
 
   return (
-    <main style={{ padding: "40px", fontFamily: "Arial, sans-serif" }}>
+    <main className="panel">
       <h1>Hall of Champions</h1>
 
       {years.length === 0 ? (

@@ -49,7 +49,7 @@ export default async function AnglerProfilePage({
     .order("catch_datetime", { ascending: false });
 
   if (!angler) {
-    return <main style={{ padding: "40px" }}>Angler not found.</main>;
+    return <main className="panel">Angler not found.</main>;
   }
 
   const { data: awards } = await supabase
@@ -84,7 +84,7 @@ export default async function AnglerProfilePage({
   );
 
   return (
-    <main style={{ padding: "40px", fontFamily: "Arial, sans-serif" }}>
+    <main className="panel">
       <p>
         <Link href="/anglers">← Back to Anglers</Link>
       </p>

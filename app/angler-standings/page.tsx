@@ -27,7 +27,7 @@ const { data } = await supabase
     .sort((a, b) => b[1].points - a[1].points);
 
   return (
-    <main style={{ padding: "40px" }}>
+    <main className="panel">
       <h1>Angler Standings</h1>
 
       <table border={1} cellPadding={8}>

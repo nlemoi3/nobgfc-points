@@ -61,7 +61,7 @@ export default async function AnglersPage() {
   });
 
   return (
-    <main style={{ padding: "40px", fontFamily: "Arial, sans-serif" }}>
+    <main className="panel">
       <h1>Anglers</h1>
 
       {error && (

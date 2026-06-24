@@ -140,7 +140,7 @@ export default async function BoatProfileRequestDetailPage({
 
   if (!request) {
     return (
-      <main style={{ padding: "40px", fontFamily: "Arial, sans-serif" }}>
+      <main className="panel">
         <h1>Boat Profile Request</h1>
         <p>Request not found.</p>
       </main>
@@ -148,7 +148,7 @@ export default async function BoatProfileRequestDetailPage({
   }
 
   return (
-    <main style={{ padding: "40px", fontFamily: "Arial, sans-serif" }}>
+    <main className="panel">
       <h1>Boat Profile Request</h1>
 
       <p><strong>Boat:</strong> {request.boat_name}</p>

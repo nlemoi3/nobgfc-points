@@ -51,7 +51,7 @@ export default async function HistoricalStandingsPage() {
   ).sort((a: any, b: any) => b - a);
 
   return (
-    <main style={{ padding: "40px", fontFamily: "Arial, sans-serif" }}>
+    <main className="panel">
       <h1>Historical Boat Standings</h1>
 
       {error && <p style={{ color: "red" }}>Error: {error.message}</p>}

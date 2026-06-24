@@ -35,7 +35,7 @@ export default async function AdminCatchesPage() {
     .order("id", { ascending: false });
 
   return (
-    <main style={{ padding: "40px", fontFamily: "Arial, sans-serif" }}>
+    <main className="panel">
       <h1>Manage Catches</h1>
 
       {error && <p style={{ color: "red" }}>Error: {error.message}</p>}
