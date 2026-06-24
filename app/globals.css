@@ -472,7 +472,8 @@ hr {
   border: 0;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   background: transparent;
-  mix-blend-mode: multiply;
+  mix-blend-mode: normal;
+  display: block;
 }
 
 .stats-grid {
@@ -531,14 +532,15 @@ hr {
 .boat-list-logo {
   position: relative;
   z-index: 2;
-  width: 62px;
-  height: 62px;
-  border-radius: 10px;
-  object-fit: contain;
+  width: auto;
+  height: auto;
+  max-width: 112px;
+  max-height: 62px;
   background: transparent;
   border: 0;
   padding: 0;
-  mix-blend-mode: multiply;
+  mix-blend-mode: normal;
+  display: block;
 }
 
 .boat-rank-chip {
