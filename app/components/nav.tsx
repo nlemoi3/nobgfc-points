@@ -120,10 +120,6 @@ export default function Nav({
         <strong>NOBGFC</strong>
       </Link>
 
-      <Link href="/dashboard" className="nav-link" style={{ marginRight: "20px" }}>
-        Dashboard
-      </Link>
-
       <NavGroup title="Competition" isOpen={openGroup === "Competition"} onToggle={() => toggleGroup("Competition")}>
         <div><Link href="/standings">Raw Standings</Link></div>
         <div><Link href="/official-standings">Official Boats</Link></div>
