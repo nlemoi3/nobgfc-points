@@ -1,31 +1,13 @@
-import { getCurrentUserRole } from "../../lib/auth";
+import { getCurrentUser } from "../../lib/auth";
 import { confirmSignup } from "./actions";
-import { redirect } from "next/navigation";
 
 export default async function SignupPage({
   searchParams,
 }: {
-  searchParams: Promise<{ token?: string; error?: string }>;
+  searchParams: Promise<{ error?: string }>;
 }) {
-  const role = await getCurrentUserRole();
-
-  // If already signed in, redirect to dashboard
-  if (role) {
-    redirect(
-      role === "admin"
-        ? "/admin"
-        : role === "weighmaster"
-          ? "/admin/catch-entry"
-          : "/dashboard",
-    );
-  }
-
-  const { token, error } = await searchParams;
-
-  // If no token, redirect to login
-  if (!token) {
-    redirect("/login");
-  }
+  const user = await getCurrentUser();
+  const { error } = await searchParams;
 
   return (
     <main className="panel" style={{ margin: "60px auto", maxWidth: "460px" }}>
@@ -34,9 +16,13 @@ export default async function SignupPage({
 
       {error && <p className="alert alert-danger">{error}</p>}
 
-      <form action={confirmSignup}>
-        <input type="hidden" name="token" value={token} />
+      {!user ? (
+        <p className="alert alert-warning">
+          Open your invite link again so we can verify your account before you set a password.
+        </p>
+      ) : null}
 
+      <form action={confirmSignup}>
         <p className="field">
           <label htmlFor="password">Password</label>
           <input

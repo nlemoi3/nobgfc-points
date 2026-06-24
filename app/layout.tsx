@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { Outfit, Fraunces } from "next/font/google";
 import Nav from "./components/nav";
 import AuthControls from "./components/auth-controls";
+import { MagicLinkHandler } from "./components/magic-link-handler";
 import { getCurrentUser, getCurrentUserRole, getCurrentUserAngler } from "../lib/auth";
 import "./globals.css";
 
@@ -36,6 +37,7 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body className={`app-shell ${bodyFont.variable} ${headingFont.variable}`}>
+        <MagicLinkHandler />
         <Nav
           role={role}
           authControls={<AuthControls email={user?.email} role={role} anglerId={angler?.id} />}

@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { createClient } from "../../lib/supabase/client";
 
 export function MagicLinkHandler() {
   const router = useRouter();
@@ -9,35 +10,42 @@ export function MagicLinkHandler() {
 
   useEffect(() => {
     async function handleAuthCallback() {
-      const hash = window.location.hash;
-      const code = searchParams.get("code");
+      const hash = window.location.hash.startsWith("#")
+        ? window.location.hash.slice(1)
+        : window.location.hash;
+      const params = new URLSearchParams(hash);
+      const tokenType = params.get("type");
+      const accessToken = params.get("access_token");
 
-      // Check for confirmation token (email verification/signup)
-      if (code) {
-        // Redirect to signup with the confirmation code
-        router.push(`/signup?token=${encodeURIComponent(code)}`);
+      if (!accessToken) {
         return;
       }
 
-      // Check for access_token (existing magic link flow - auto sign-in)
-      // This handles password reset or existing user magic links
-      if (hash.includes("access_token")) {
-        try {
-          const supabase = await import("../../lib/supabase/client").then(
-            (m) => m.createClient(),
-          );
+      try {
+        const supabase = createClient();
 
-          const {
-            data: { session },
-          } = await supabase.auth.getSession();
+        const { data: sessionData, error } = await supabase.auth.getSession();
 
-          if (session?.user) {
-            router.push("/dashboard");
-          }
-        } catch (error) {
-          console.error("Failed to process sign in link:", error);
-          router.push("/login?error=Failed to process sign in link");
+        if (error) {
+          console.error("Failed to process auth callback:", error);
+          router.replace(`/login?error=${encodeURIComponent(error.message)}`);
+          return;
         }
+
+        if (!sessionData.session?.user) {
+          router.replace("/login?error=Failed to establish session from invite link");
+          return;
+        }
+
+        if (tokenType === "invite") {
+          router.replace("/signup");
+          return;
+        }
+
+        router.replace("/dashboard");
+      } catch (error) {
+        console.error("Failed to process auth callback:", error);
+        router.replace("/login?error=Failed to process sign in link");
       }
     }
 

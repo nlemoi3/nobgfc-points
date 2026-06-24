@@ -6,25 +6,17 @@ import { createClient } from "../../lib/supabase/server";
 export async function confirmSignup(formData: FormData) {
   const password = String(formData.get("password") || "");
   const confirmPassword = String(formData.get("confirmPassword") || "");
-  const token = String(formData.get("token") || "");
 
   // Validate password match
   if (password !== confirmPassword) {
-    redirect(`/signup?token=${encodeURIComponent(token)}&error=${encodeURIComponent("Passwords do not match")}`);
+    redirect(`/signup?error=${encodeURIComponent("Passwords do not match")}`);
   }
 
   if (password.length < 8) {
-    redirect(`/signup?token=${encodeURIComponent(token)}&error=${encodeURIComponent("Password must be at least 8 characters")}`);
+    redirect(`/signup?error=${encodeURIComponent("Password must be at least 8 characters")}`);
   }
 
   const supabase = await createClient();
-
-  // Verify the token and exchange it for a session
-  const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(token);
-
-  if (exchangeError) {
-    redirect(`/signup?error=${encodeURIComponent("Invalid or expired link. Please request a new invite.")}`);
-  }
 
   // Get the current user
   const {
@@ -32,7 +24,7 @@ export async function confirmSignup(formData: FormData) {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect(`/signup?error=${encodeURIComponent("Session not established. Please try again.")}`);
+    redirect(`/signup?error=${encodeURIComponent("Session not established from invite link. Please open the invite again.")}`);
   }
 
   // Update the user's password

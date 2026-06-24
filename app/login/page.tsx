@@ -1,7 +1,6 @@
 import { getCurrentUserRole } from "../../lib/auth";
 import { login } from "./actions";
 import { redirect } from "next/navigation";
-import { MagicLinkHandler } from "../components/magic-link-handler";
 
 export default async function LoginPage({
   searchParams,
@@ -24,7 +23,6 @@ export default async function LoginPage({
 
   return (
     <main className="panel" style={{ margin: "60px auto", maxWidth: "460px" }}>
-      <MagicLinkHandler />
       <h1>Club Sign In</h1>
       <p>Use your approved NOBGFC account.</p>
 
