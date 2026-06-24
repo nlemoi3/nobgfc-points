@@ -3,7 +3,14 @@ import { supabase } from "../../lib/supabase";
 
 export const dynamic = "force-dynamic";
 
-export default async function BoatsPage() {
+export default async function BoatsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string }>;
+}) {
+  const { q = "" } = await searchParams;
+  const query = q.trim().toLowerCase();
+
   const { data: boats, error } = await supabase
     .from("boats")
     .select("*")
@@ -34,13 +41,31 @@ export default async function BoatsPage() {
       (boatPoints[b.id] || 0) - (boatPoints[a.id] || 0)
   );
 
+  const filteredBoats = query
+    ? rankedBoats.filter((boat: any) => {
+        const haystack = [
+          boat.name,
+          boat.make,
+          boat.model,
+          boat.home_port,
+          boat.captain_name,
+          boat.owner_name,
+        ]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase();
+
+        return haystack.includes(query);
+      })
+    : rankedBoats;
+
   const rankByBoatId: Record<number, number> = {};
 
   rankedBoats.forEach((boat: any, index: number) => {
     rankByBoatId[boat.id] = index + 1;
   });
 
-  const totalBoats = boats?.length || 0;
+  const totalBoats = filteredBoats.length;
   const topPoints = rankedBoats[0] ? (boatPoints[rankedBoats[0].id] || 0) : 0;
 
   return (
@@ -48,9 +73,23 @@ export default async function BoatsPage() {
       <div className="toolbar">
         <h1>Boats</h1>
         <p className="hint">
-          {totalBoats} boats, top career total {topPoints.toFixed(1)} points
+          {totalBoats} boats shown, top career total {topPoints.toFixed(1)} points
         </p>
       </div>
+
+      <form className="searchbar" method="get" action="/boats">
+        <input
+          type="search"
+          name="q"
+          defaultValue={q}
+          placeholder="Search by boat, make, model, port, captain, or owner"
+          aria-label="Search boats"
+        />
+        <button type="submit" className="btn">Search</button>
+        {q && (
+          <Link href="/boats" className="btn btn-ghost">Clear</Link>
+        )}
+      </form>
 
       {error && (
         <p className="alert alert-danger">
@@ -58,11 +97,11 @@ export default async function BoatsPage() {
         </p>
       )}
 
-      {rankedBoats.length === 0 ? (
+      {filteredBoats.length === 0 ? (
         <p>No boats found.</p>
       ) : (
         <div className="boats-grid">
-          {rankedBoats.map((boat: any) => (
+          {filteredBoats.map((boat: any) => (
             <Link key={boat.id} href={`/boats/${boat.id}`} className="boat-list-card">
               <div
                 className="boat-list-media"

@@ -203,6 +203,30 @@ hr {
   transform: translateY(-1px);
 }
 
+.btn-ghost {
+  border: 1px solid #c5d4e3;
+  background: #fff;
+  color: #29506b;
+  box-shadow: none;
+}
+
+.searchbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.searchbar input {
+  flex: 1;
+  min-width: 220px;
+  border: 1px solid #cad9e7;
+  border-radius: 999px;
+  padding: 10px 14px;
+  background: #fff;
+  color: var(--ink-900);
+}
+
 .table-wrap {
   overflow-x: auto;
   border: 1px solid #d8e2ec;
@@ -593,6 +617,10 @@ hr {
   .toolbar {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .searchbar {
+    flex-wrap: wrap;
   }
 
   .boat-hero {

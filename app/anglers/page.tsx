@@ -3,7 +3,14 @@ import { supabase } from "../../lib/supabase";
 
 export const dynamic = "force-dynamic";
 
-export default async function AnglersPage() {
+export default async function AnglersPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string }>;
+}) {
+  const { q = "" } = await searchParams;
+  const query = q.trim().toLowerCase();
+
   const { data: anglers, error } = await supabase
     .from("anglers")
     .select(`
@@ -60,82 +67,109 @@ export default async function AnglersPage() {
     return bPoints - aPoints;
   });
 
+  const filteredAnglers = query
+    ? sortedAnglers.filter((angler: any) => {
+        const haystack = [angler.first_name, angler.last_name]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase();
+
+        return haystack.includes(query);
+      })
+    : sortedAnglers;
+
   return (
     <main className="panel">
-      <h1>Anglers</h1>
+      <div className="toolbar">
+        <h1>Anglers</h1>
+        <p className="hint">{filteredAnglers.length} anglers shown</p>
+      </div>
+
+      <form className="searchbar" method="get" action="/anglers">
+        <input
+          type="search"
+          name="q"
+          defaultValue={q}
+          placeholder="Search by angler name"
+          aria-label="Search anglers"
+        />
+        <button type="submit" className="btn">Search</button>
+        {q && (
+          <Link href="/anglers" className="btn btn-ghost">Clear</Link>
+        )}
+      </form>
 
       {error && (
-        <p style={{ color: "red" }}>
+        <p className="alert alert-danger">
           Error: {error.message}
         </p>
       )}
 
-      <table
-        border={1}
-        cellPadding={8}
-        style={{ borderCollapse: "collapse", width: "100%" }}
-      >
-        <thead>
-          <tr>
-            <th>Photo</th>
-            <th>Angler</th>
-            <th>Status</th>
-            <th>Career Points</th>
-            <th>Approved Catches</th>
-            <th>Blue Marlin</th>
-            <th>Profile</th>
-          </tr>
-        </thead>
+      <div className="table-wrap">
+        <table className="admin-table">
+          <thead>
+            <tr>
+              <th>Photo</th>
+              <th>Angler</th>
+              <th>Status</th>
+              <th>Career Points</th>
+              <th>Approved Catches</th>
+              <th>Blue Marlin</th>
+              <th>Profile</th>
+            </tr>
+          </thead>
 
-        <tbody>
-          {sortedAnglers.map((angler: any) => {
-            const stats = statsByAnglerId[angler.id] || {
-              points: 0,
-              catches: 0,
-              blueMarlin: 0,
-            };
+          <tbody>
+            {filteredAnglers.map((angler: any) => {
+              const stats = statsByAnglerId[angler.id] || {
+                points: 0,
+                catches: 0,
+                blueMarlin: 0,
+              };
 
-            return (
-              <tr key={angler.id}>
-                <td>
-                  {angler.photo_url ? (
-                    <img
-                      src={angler.photo_url}
-                      alt={`${angler.first_name} ${angler.last_name}`}
-                      style={{
-                        width: "70px",
-                        height: "70px",
-                        objectFit: "cover",
-                      }}
-                    />
-                  ) : (
-                    "-"
-                  )}
-                </td>
+              return (
+                <tr key={angler.id}>
+                  <td>
+                    {angler.photo_url ? (
+                      <img
+                        src={angler.photo_url}
+                        alt={`${angler.first_name} ${angler.last_name}`}
+                        style={{
+                          width: "70px",
+                          height: "70px",
+                          objectFit: "cover",
+                          borderRadius: "8px",
+                        }}
+                      />
+                    ) : (
+                      "-"
+                    )}
+                  </td>
 
-                <td>
-                  <Link href={`/anglers/${angler.id}`}>
-                    {angler.first_name} {angler.last_name}
-                  </Link>
-                </td>
+                  <td>
+                    <Link href={`/anglers/${angler.id}`}>
+                      {angler.first_name} {angler.last_name}
+                    </Link>
+                  </td>
 
-                <td>
-                  {angler.is_member ? "Member" : "Guest"}
-                  {angler.is_youth ? " • Youth" : ""}
-                </td>
+                  <td>
+                    {angler.is_member ? "Member" : "Guest"}
+                    {angler.is_youth ? " • Youth" : ""}
+                  </td>
 
-                <td>{stats.points.toFixed(1)}</td>
-                <td>{stats.catches}</td>
-                <td>{stats.blueMarlin}</td>
+                  <td>{stats.points.toFixed(1)}</td>
+                  <td>{stats.catches}</td>
+                  <td>{stats.blueMarlin}</td>
 
-                <td>
-                  <Link href={`/anglers/${angler.id}`}>View Profile</Link>
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+                  <td>
+                    <Link href={`/anglers/${angler.id}`}>View Profile</Link>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
     </main>
   );
 }
