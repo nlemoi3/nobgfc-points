@@ -64,3 +64,31 @@ export async function updateAccount(formData: FormData) {
 
   redirect("/account?success=Account details updated successfully.");
 }
+
+export async function updateAccountPassword(formData: FormData) {
+  const user = await getCurrentUser();
+
+  if (!user) {
+    redirect("/login?next=/account");
+  }
+
+  const password = String(formData.get("password") || "");
+  const confirmPassword = String(formData.get("confirmPassword") || "");
+
+  if (password.length < 8) {
+    redirect("/account?error=Password must be at least 8 characters");
+  }
+
+  if (password !== confirmPassword) {
+    redirect("/account?error=Passwords do not match");
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase.auth.updateUser({ password });
+
+  if (error) {
+    redirect(`/account?error=${encodeURIComponent(error.message)}`);
+  }
+
+  redirect("/account?success=Password updated successfully.");
+}

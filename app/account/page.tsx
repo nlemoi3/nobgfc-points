@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { getCurrentUser, getCurrentUserAngler } from "../../lib/auth";
-import { updateAccount } from "./actions";
+import { updateAccount, updateAccountPassword } from "./actions";
 
 export default async function AccountPage({
   searchParams,
@@ -79,6 +79,43 @@ export default async function AccountPage({
           <p className="field-full">
             <button type="submit" className="btn">
               Save Account
+            </button>
+          </p>
+        </div>
+      </form>
+
+      <hr />
+
+      <h2>Password</h2>
+      <form action={updateAccountPassword}>
+        <div className="form-grid">
+          <p className="field">
+            <label htmlFor="password">New Password</label>
+            <input
+              id="password"
+              name="password"
+              type="password"
+              autoComplete="new-password"
+              minLength={8}
+              required
+            />
+          </p>
+
+          <p className="field">
+            <label htmlFor="confirmPassword">Confirm Password</label>
+            <input
+              id="confirmPassword"
+              name="confirmPassword"
+              type="password"
+              autoComplete="new-password"
+              minLength={8}
+              required
+            />
+          </p>
+
+          <p className="field-full">
+            <button type="submit" className="btn">
+              Update Password
             </button>
           </p>
         </div>
