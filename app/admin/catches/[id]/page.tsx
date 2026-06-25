@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import CatchEventFields from "../../../components/catch-event-fields";
 import { supabase } from "../../../../lib/supabase";
 import { createClient } from "../../../../lib/supabase/server";
 
@@ -271,33 +272,18 @@ export default async function EditCatchPage({
       <form action={updateCatch}>
         <input type="hidden" name="id" value={catchRecord.id} />
 
-        <p>
-          <label>Event</label>
-          <br />
-          <select
-            name="event_id"
-            defaultValue={catchRecord.event_id}
-            required
-            disabled={isLocked}
-          >
-            {events?.map((event: any) => (
-              <option key={event.id} value={event.id}>
-                {event.name} {event.status === "locked" ? "(locked)" : ""}
-              </option>
-            ))}
-          </select>
-        </p>
-
-        <p>
-          <label>Catch Date & Time</label>
-          <br />
-          <input
-            name="catch_datetime"
-            type="datetime-local"
-            defaultValue={defaultDateTime}
-            disabled={isLocked}
-          />
-        </p>
+        <CatchEventFields
+          events={(events || []).map((event: any) => ({
+            id: event.id,
+            name: event.name,
+            start_date: event.start_date,
+            end_date: event.end_date,
+            status: event.status,
+          }))}
+          defaultDateTime={defaultDateTime}
+          defaultEventId={catchRecord.event_id}
+          disabled={isLocked}
+        />
 
         <p>
           <label>Boat</label>

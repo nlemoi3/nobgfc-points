@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { supabase } from "../../../lib/supabase";
 import { createClient } from "../../../lib/supabase/server";
+import CatchEventFields from "../../components/catch-event-fields";
 import SearchableSelect from "../../components/searchable-select";
 
 async function saveCatch(formData: FormData) {
@@ -100,23 +101,15 @@ export default async function CatchEntryPage() {
       <h1>Catch Entry</h1>
 
       <form action={saveCatch}>
-        <p>
-          <label>Event</label>
-          <br />
-          <select name="event_id" required>
-            {events?.map((event: any) => (
-              <option key={event.id} value={event.id}>
-                {event.name}
-              </option>
-            ))}
-          </select>
-        </p>
-
-        <p>
-          <label>Catch Date & Time</label>
-          <br />
-          <input name="catch_datetime" type="datetime-local" />
-        </p>
+        <CatchEventFields
+          events={(events || []).map((event: any) => ({
+            id: event.id,
+            name: event.name,
+            start_date: event.start_date,
+            end_date: event.end_date,
+            status: event.status,
+          }))}
+        />
 
         <SearchableSelect
           label="Boat"
