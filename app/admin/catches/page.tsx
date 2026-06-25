@@ -36,7 +36,12 @@ export default async function AdminCatchesPage() {
 
   return (
     <main className="panel">
-      <h1>Manage Catches</h1>
+      <div className="toolbar">
+        <h1>Manage Catches</h1>
+        <Link href="/admin/catch-entry" className="btn">
+          + Add Catch
+        </Link>
+      </div>
 
       {error && <p style={{ color: "red" }}>Error: {error.message}</p>}
 

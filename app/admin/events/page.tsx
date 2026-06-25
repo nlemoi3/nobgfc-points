@@ -27,7 +27,12 @@ export default async function AdminEventsPage() {
 
   return (
     <main className="panel">
-      <h1>Manage Tournament Scheduling</h1>
+      <div className="toolbar">
+        <h1>Manage Tournament Scheduling</h1>
+        <Link href="/admin/events/new" className="btn">
+          + Add Event
+        </Link>
+      </div>
 
       <p className="hint">
         Update dates, set cancelled/rescheduled statuses, and publish scheduling notes.

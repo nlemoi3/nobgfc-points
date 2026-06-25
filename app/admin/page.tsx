@@ -25,6 +25,7 @@ export default async function AdminPage() {
 
       <h2>Catch Management</h2>
       <ul>
+        <li><Link href="/admin/catch-entry">Add Catch</Link></li>
         <li><Link href="/admin/catches">Manage Catches</Link></li>
         <li><Link href="/admin/boats">Manage Boats</Link></li>
         <li><Link href="/admin/anglers">Manage Anglers</Link></li>
