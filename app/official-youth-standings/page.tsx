@@ -21,28 +21,38 @@ const { data, error } = await supabase
   .gte("catch_datetime", seasonStart)
   .lt("catch_datetime", seasonEnd);
 
-  const youthCatches: Record<string, any[]> = {};
+  const youthCatches = new Map<
+    string,
+    { anglerId?: number; anglerName: string; catches: any[] }
+  >();
 
   data?.forEach((catchRecord: any) => {
     if (!catchRecord.anglers?.is_youth) return;
 
+    const anglerId = catchRecord.anglers?.id;
     const anglerName =
       `${catchRecord.anglers?.first_name || "Unknown"} ${catchRecord.anglers?.last_name || "Angler"}`;
+    const key = anglerId ? String(anglerId) : `unknown:${anglerName}`;
+    const group = youthCatches.get(key) || {
+      anglerId,
+      anglerName,
+      catches: [],
+    };
 
-    if (!youthCatches[anglerName]) {
-      youthCatches[anglerName] = [];
-    }
-
-    youthCatches[anglerName].push(catchRecord);
+    group.catches.push(catchRecord);
+    youthCatches.set(key, group);
   });
 
-  const standings = Object.entries(youthCatches)
-    .map(([anglerName, catches]) => ({
+  const standings = Array.from(youthCatches.values())
+    .map(({ anglerId, anglerName, catches }) => ({
+      anglerId,
       anglerName,
-      anglerId: catches[0]?.anglers?.id,
       points: getOfficialEligiblePoints(catches),
     }))
-    .sort((a, b) => b.points - a.points);
+    .sort(
+      (a, b) =>
+        b.points - a.points || a.anglerName.localeCompare(b.anglerName)
+    );
 
   return (
     <main className="panel">
@@ -70,7 +80,7 @@ const { data, error } = await supabase
 
         <tbody>
           {standings.map((row, index) => (
-            <tr key={row.anglerName}>
+            <tr key={row.anglerId ?? row.anglerName}>
               <td>{index + 1}</td>
               <td>
                 {row.anglerId ? (
