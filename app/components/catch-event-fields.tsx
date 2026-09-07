@@ -53,6 +53,7 @@ export default function CatchEventFields({
         <input
           name="catch_datetime"
           type="datetime-local"
+          required
           value={catchDateTime}
           onChange={(event) => setCatchDateTime(event.target.value)}
           disabled={disabled}
