@@ -2,6 +2,14 @@ import Link from "next/link";
 import { supabase } from "../../lib/supabase";
 import { getActiveSeasonRange } from "../../lib/season";
 
+const BILLFISH_SPECIES = new Set([
+  "Blue Marlin",
+  "White Marlin",
+  "Sailfish",
+  "Spearfish",
+  "Swordfish",
+]);
+
 function formatDate(value: string | null) {
   if (!value) return "No date";
 
@@ -21,7 +29,8 @@ const { data: catches, error } = await supabase
     points_awarded,
     status,
     events(id,name,start_date,end_date,status),
-    boats(id,name)
+    boats(id,name),
+    species(name)
   `)
   .eq("status", "approved")
   .gte("catch_datetime", seasonStart)
@@ -34,6 +43,9 @@ const { data: catches, error } = await supabase
   const eventInfo: Record<string, any> = {};
 
   catches?.forEach((c: any) => {
+    // Rule 12: tournament boat awards are based on billfish points only.
+    if (!BILLFISH_SPECIES.has(c.species?.name)) return;
+
     const event = c.events;
     const eventId = event?.id;
     const boatId = c.boats?.id;
@@ -67,7 +79,9 @@ const { data: catches, error } = await supabase
 
       {error && <p style={{ color: "red" }}>Error: {error.message}</p>}
 
-      {eventEntries.length === 0 && <p>No tournament catches entered yet.</p>}
+      {eventEntries.length === 0 && (
+        <p>No approved billfish catches entered for tournament boat standings yet.</p>
+      )}
 
       {eventEntries.map(([eventId, boatScores]) => {
         const event = eventInfo[eventId];
