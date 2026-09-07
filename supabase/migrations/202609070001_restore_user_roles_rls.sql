@@ -36,7 +36,4 @@ to authenticated
 using ((select public.has_app_role('admin')))
 with check ((select public.has_app_role('admin')));
 
--- Trigger functions do not need to be callable through the Data API.
-revoke all on function public.handle_new_user_role() from public;
-
 commit;
