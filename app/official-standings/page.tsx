@@ -21,25 +21,31 @@ const { data, error } = await supabase
   .gte("catch_datetime", seasonStart)
   .lt("catch_datetime", seasonEnd);
 
-  const boatCatches: Record<string, any[]> = {};
+  const boatCatches = new Map<
+    string,
+    { boatId?: number; boatName: string; catches: any[] }
+  >();
 
   data?.forEach((catchRecord: any) => {
+    const boatId = catchRecord.boats?.id;
     const boatName = catchRecord.boats?.name || "Unknown Boat";
+    const key = boatId ? String(boatId) : `unknown:${boatName}`;
+    const group = boatCatches.get(key) || { boatId, boatName, catches: [] };
 
-    if (!boatCatches[boatName]) {
-      boatCatches[boatName] = [];
-    }
-
-    boatCatches[boatName].push(catchRecord);
+    group.catches.push(catchRecord);
+    boatCatches.set(key, group);
   });
 
-  const standings = Object.entries(boatCatches)
-    .map(([boatName, catches]) => ({
+  const standings = Array.from(boatCatches.values())
+    .map(({ boatId, boatName, catches }) => ({
+      boatId,
       boatName,
-      boatId: catches[0]?.boats?.id,
       points: getOfficialEligiblePoints(catches),
     }))
-    .sort((a, b) => b.points - a.points);
+    .sort(
+      (a, b) =>
+        b.points - a.points || a.boatName.localeCompare(b.boatName)
+    );
 
   return (
     <main className="panel">
@@ -58,7 +64,7 @@ const { data, error } = await supabase
 
         <tbody>
           {standings.map((row, index) => (
-            <tr key={row.boatName}>
+            <tr key={row.boatId ?? row.boatName}>
               <td>{index + 1}</td>
               <td>
                 {row.boatId ? (
