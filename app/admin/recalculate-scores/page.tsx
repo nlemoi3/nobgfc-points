@@ -1,58 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "../../../lib/supabase/server";
-
-function calculateExpectedPoints(c: any) {
-  const speciesName = c.species?.name || "";
-  const weight = c.weight !== null ? Number(c.weight) : null;
-  const lineClass = Number(c.line_class || 130);
-
-  const lineMultipliers: Record<number, number> = {
-    130: 1.0,
-    80: 1.3,
-    50: 1.5,
-    30: 2.0,
-    20: 3.0,
-    16: 3.5,
-    12: 4.0,
-    8: 4.5,
-    4: 5.0,
-    2: 6.0,
-  };
-
-  const multiplier = lineMultipliers[lineClass] || 1;
-
-  let basePoints = 0;
-  let tagBonus = 0;
-
-  if (c.released && speciesName === "Blue Marlin") basePoints = 500;
-  else if (
-    c.released &&
-    ["White Marlin", "Sailfish", "Spearfish", "Swordfish"].includes(speciesName)
-  ) {
-    basePoints = 150;
-  } else if (
-    c.released &&
-    ["Yellowfin Tuna", "Bigeye Tuna"].includes(speciesName)
-  ) {
-    basePoints = 100;
-  } else if (weight !== null) {
-    basePoints = Math.floor(weight);
-  }
-
-  if (c.tagged && speciesName === "Blue Marlin") tagBonus = 50;
-  else if (
-    c.tagged &&
-    ["White Marlin", "Sailfish", "Spearfish"].includes(speciesName)
-  ) {
-    tagBonus = 25;
-  }
-
-  if (["Yellowfin Tuna", "Bigeye Tuna"].includes(speciesName) && c.released) {
-    return basePoints;
-  }
-
-  return basePoints * multiplier + tagBonus;
-}
+import { calculateCatchPoints } from "../../../lib/scoring";
 
 async function recalculateScores() {
   "use server";
@@ -78,7 +26,14 @@ const eventStatus = (catchRecord as any).events?.status;
 if (eventStatus === "locked") {
   continue;
 }
-    const points = calculateExpectedPoints(catchRecord);
+    const points = calculateCatchPoints({
+      speciesName: (catchRecord as any).species?.name || "",
+      weight:
+        catchRecord.weight === null ? null : Number(catchRecord.weight),
+      lineClass: Number(catchRecord.line_class || 130),
+      released: Boolean(catchRecord.released),
+      tagged: Boolean(catchRecord.tagged),
+    });
 
     const { error: updateError } = await supabase
       .from("catches")
