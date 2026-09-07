@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { supabase } from "../../lib/supabase";
+import { getActiveSeasonRange } from "../../lib/season";
 
 function formatDate(value: string | null) {
   if (!value) return "No date";
@@ -12,6 +13,7 @@ function formatDate(value: string | null) {
 }
 
 export default async function TournamentStandingsPage() {
+  const { start: seasonStart, end: seasonEnd } = await getActiveSeasonRange(supabase);
 const { data: catches, error } = await supabase
   .from("catches")
   .select(`
@@ -21,7 +23,9 @@ const { data: catches, error } = await supabase
     events(id,name,start_date,end_date,status),
     boats(id,name)
   `)
-  .eq("status", "approved");
+  .eq("status", "approved")
+  .gte("catch_datetime", seasonStart)
+  .lt("catch_datetime", seasonEnd);
 
   const eventStandings: Record<
     string,
