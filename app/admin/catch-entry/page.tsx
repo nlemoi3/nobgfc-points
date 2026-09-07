@@ -3,6 +3,7 @@ import { supabase } from "../../../lib/supabase";
 import { createClient } from "../../../lib/supabase/server";
 import CatchEventFields from "../../components/catch-event-fields";
 import SearchableSelect from "../../components/searchable-select";
+import { calculateCatchPoints, validateCatchInput } from "../../../lib/scoring";
 
 async function saveCatch(formData: FormData) {
   "use server";
@@ -21,51 +22,37 @@ async function saveCatch(formData: FormData) {
 
   const { data: speciesRow } = await authenticatedSupabase
     .from("species")
-    .select("name")
+    .select("name,minimum_weight")
     .eq("id", species_id)
     .single();
 
-  const { data: multiplierRow } = await authenticatedSupabase
-    .from("line_class_multipliers")
-    .select("multiplier")
-    .eq("line_class", line_class)
-    .single();
-
   const speciesName = speciesRow?.name || "";
-  const multiplier = Number(multiplierRow?.multiplier || 1);
+  const minimumWeight =
+    speciesRow?.minimum_weight === null ||
+    speciesRow?.minimum_weight === undefined
+      ? null
+      : Number(speciesRow.minimum_weight);
 
-  let basePoints = 0;
-  let tagBonus = 0;
+  const validationErrors = validateCatchInput({
+    speciesName,
+    minimumWeight,
+    weight,
+    lineClass: line_class,
+    released,
+    tagged,
+  });
 
-  if (released && speciesName === "Blue Marlin") {
-    basePoints = 500;
-  } else if (
-    released &&
-    ["White Marlin", "Sailfish", "Spearfish", "Swordfish"].includes(speciesName)
-  ) {
-    basePoints = 150;
-  } else if (
-    released &&
-    ["Yellowfin Tuna", "Bigeye Tuna"].includes(speciesName)
-  ) {
-    basePoints = 100;
-  } else if (weight !== null) {
-    basePoints = Math.floor(weight);
+  if (validationErrors.length > 0) {
+    throw new Error(validationErrors.join(" "));
   }
 
-  if (tagged && speciesName === "Blue Marlin") {
-    tagBonus = 50;
-  } else if (
-    tagged &&
-    ["White Marlin", "Sailfish", "Spearfish"].includes(speciesName)
-  ) {
-    tagBonus = 25;
-  }
-
-  const points_awarded =
-    ["Yellowfin Tuna", "Bigeye Tuna"].includes(speciesName) && released
-      ? basePoints
-      : basePoints * multiplier + tagBonus;
+  const points_awarded = calculateCatchPoints({
+    speciesName,
+    weight,
+    lineClass: line_class,
+    released,
+    tagged,
+  });
 
   const { error } = await authenticatedSupabase.from("catches").insert({
     event_id,

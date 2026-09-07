@@ -2,70 +2,7 @@ import { redirect } from "next/navigation";
 import CatchEventFields from "../../../components/catch-event-fields";
 import { supabase } from "../../../../lib/supabase";
 import { createClient } from "../../../../lib/supabase/server";
-
-async function calculatePoints(
-  species_id: number,
-  weight: number | null,
-  line_class: number,
-  released: boolean,
-  tagged: boolean
-) {
-  const authenticatedSupabase = await createClient();
-  const { data: speciesRow } = await authenticatedSupabase
-    .from("species")
-    .select("name")
-    .eq("id", species_id)
-    .single();
-
-  const speciesName = speciesRow?.name || "";
-
-  const lineMultipliers: Record<number, number> = {
-    130: 1.0,
-    80: 1.3,
-    50: 1.5,
-    30: 2.0,
-    20: 3.0,
-    16: 3.5,
-    12: 4.0,
-    8: 4.5,
-    4: 5.0,
-    2: 6.0,
-  };
-
-  const multiplier = lineMultipliers[line_class] || 1;
-
-  let basePoints = 0;
-  let tagBonus = 0;
-
-  if (released && speciesName === "Blue Marlin") basePoints = 500;
-  else if (
-    released &&
-    ["White Marlin", "Sailfish", "Spearfish", "Swordfish"].includes(speciesName)
-  ) {
-    basePoints = 150;
-  } else if (
-    released &&
-    ["Yellowfin Tuna", "Bigeye Tuna"].includes(speciesName)
-  ) {
-    basePoints = 100;
-  } else if (weight !== null) {
-    basePoints = Math.floor(weight);
-  }
-
-  if (tagged && speciesName === "Blue Marlin") tagBonus = 50;
-  else if (
-    tagged &&
-    ["White Marlin", "Sailfish", "Spearfish"].includes(speciesName)
-  ) {
-    tagBonus = 25;
-  }
-
-  if (["Yellowfin Tuna", "Bigeye Tuna"].includes(speciesName) && released) {
-    return basePoints;
-  }
-
-  return basePoints * multiplier + tagBonus;
-}
+import { calculateCatchPoints, validateCatchInput } from "../../../../lib/scoring";
 
 async function uploadCatchPhoto(file: File | null, catchId: number) {
   if (!file || file.size === 0) return null;
@@ -131,6 +68,48 @@ async function updateCatch(formData: FormData) {
   const line_class = Number(formData.get("line_class"));
   const released = formData.get("released") === "on";
   const tagged = formData.get("tagged") === "on";
+  const status = String(formData.get("status") || "approved");
+
+  const { data: speciesRow, error: speciesError } = await authenticatedSupabase
+    .from("species")
+    .select("name,minimum_weight")
+    .eq("id", species_id)
+    .single();
+
+  if (speciesError || !speciesRow) {
+    redirect(
+      `${returnUrl}?error=${encodeURIComponent("The selected species could not be loaded.")}`,
+    );
+  }
+
+  const speciesName = speciesRow.name;
+  const minimumWeight =
+    speciesRow.minimum_weight === null ? null : Number(speciesRow.minimum_weight);
+
+  if (status === "approved") {
+    const validationErrors = validateCatchInput({
+      speciesName,
+      minimumWeight,
+      weight,
+      lineClass: line_class,
+      released,
+      tagged,
+    });
+
+    if (validationErrors.length > 0) {
+      redirect(
+        `${returnUrl}?error=${encodeURIComponent(validationErrors.join(" "))}`,
+      );
+    }
+  }
+
+  const points_awarded = calculateCatchPoints({
+    speciesName,
+    weight,
+    lineClass: line_class,
+    released,
+    tagged,
+  });
 
   const photoFile = formData.get("photo_file");
   let uploadedPhotoUrl: string | null = null;
@@ -149,14 +128,6 @@ async function updateCatch(formData: FormData) {
 
   const currentPhotoUrl = String(formData.get("photo_url") || "");
 
-  const points_awarded = await calculatePoints(
-    species_id,
-    weight,
-    line_class,
-    released,
-    tagged
-  );
-
   const { error } = await authenticatedSupabase
     .from("catches")
     .update({
@@ -168,7 +139,7 @@ async function updateCatch(formData: FormData) {
       line_class,
       released,
       tagged,
-      status: String(formData.get("status") || "approved"),
+      status,
       catch_datetime: formData.get("catch_datetime") || null,
       photo_url: uploadedPhotoUrl || currentPhotoUrl,
       points_awarded,
