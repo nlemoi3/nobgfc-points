@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { supabase } from "../../lib/supabase";
 import { getOfficialEligiblePoints } from "../../lib/scoring";
+import { getActiveSeasonRange } from "../../lib/season";
 
 export default async function OfficialYouthStandingsPage() {
+  const { start: seasonStart, end: seasonEnd } = await getActiveSeasonRange(supabase);
 const { data, error } = await supabase
   .from("catches")
   .select(`
@@ -15,7 +17,9 @@ const { data, error } = await supabase
     anglers(id,first_name,last_name,is_youth),
     species(name)
   `)
-  .eq("status", "approved");
+  .eq("status", "approved")
+  .gte("catch_datetime", seasonStart)
+  .lt("catch_datetime", seasonEnd);
 
   const youthCatches: Record<string, any[]> = {};
 
