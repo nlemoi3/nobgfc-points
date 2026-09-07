@@ -22,7 +22,8 @@ export const LINE_CLASS_MULTIPLIERS: Record<number, number> = {
   2: 6,
 };
 
-const BEST_THREE_SPECIES = ["Dolphin", "Wahoo", "Yellowfin Tuna"] as const;
+const BEST_THREE_WEIGHED_SPECIES = ["Dolphin", "Wahoo"] as const;
+const LIMITED_TUNA_SPECIES = ["Yellowfin Tuna", "Bigeye Tuna"] as const;
 
 type PointCalculationInput = {
   speciesName: string;
@@ -115,34 +116,47 @@ export function calculateCatchPoints({
   return basePoints * multiplier + tagBonus;
 }
 
+function rankForEligibility(a: CatchRecord, b: CatchRecord) {
+  return (
+    Number(b.points_awarded || 0) - Number(a.points_awarded || 0) ||
+    Number(b.weight || 0) - Number(a.weight || 0) ||
+    a.id - b.id
+  );
+}
+
 function selectOfficialCatches(catches: CatchRecord[]) {
   const eligible: CatchRecord[] = [];
-  const limited = new Map<string, CatchRecord[]>(
-    BEST_THREE_SPECIES.map((name) => [name, []])
+  const limitedWeighed = new Map<string, CatchRecord[]>(
+    BEST_THREE_WEIGHED_SPECIES.map((name) => [name, []])
   );
+  const weighedTuna: CatchRecord[] = [];
+  const releasedTuna: CatchRecord[] = [];
 
   catches.forEach((catchRecord) => {
     const speciesName = catchRecord.species?.name;
 
-    if (speciesName && limited.has(speciesName)) {
-      limited.get(speciesName)?.push(catchRecord);
+    if (speciesName && limitedWeighed.has(speciesName)) {
+      limitedWeighed.get(speciesName)?.push(catchRecord);
+    } else if (
+      speciesName &&
+      LIMITED_TUNA_SPECIES.includes(
+        speciesName as (typeof LIMITED_TUNA_SPECIES)[number]
+      )
+    ) {
+      // Rule 6 and Rule 11 jointly limit Yellowfin and Bigeye tuna to
+      // three weighed and three tagged/released entries.
+      (catchRecord.released ? releasedTuna : weighedTuna).push(catchRecord);
     } else {
-      // Bigeye is intentionally unlimited here. The three-fish tuna rule is
-      // specific to Yellowfin and must not combine the two species.
       eligible.push(catchRecord);
     }
   });
 
-  limited.forEach((items) => {
-    eligible.push(
-      ...[...items]
-        .sort(
-          (a, b) =>
-            Number(b.points_awarded || 0) - Number(a.points_awarded || 0)
-        )
-        .slice(0, 3)
-    );
+  limitedWeighed.forEach((items) => {
+    eligible.push(...[...items].sort(rankForEligibility).slice(0, 3));
   });
+
+  eligible.push(...weighedTuna.sort(rankForEligibility).slice(0, 3));
+  eligible.push(...releasedTuna.sort(rankForEligibility).slice(0, 3));
 
   return eligible;
 }
