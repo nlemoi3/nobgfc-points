@@ -4,7 +4,9 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "typecheck": "tsc --noEmit",
+    "test:scoring": "node --experimental-strip-types --test tests/scoring.test.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.0",

@@ -70,6 +70,32 @@ export function validateCatchInput(input: CatchValidationInput) {
   return errors;
 }
 
+type EventAssignmentValidationInput = {
+  catchDateTime: string | null;
+  eventStartDate: string | null;
+  eventEndDate: string | null;
+  eventStatus?: string | null;
+};
+
+export function validateEventAssignment(input: EventAssignmentValidationInput) {
+  const errors: string[] = [];
+  const catchDate = input.catchDateTime?.slice(0, 10) || "";
+  const eventStart = input.eventStartDate || "";
+  const eventEnd = input.eventEndDate || eventStart;
+
+  if (!catchDate) {
+    errors.push("Catch date and time are required.");
+  } else if (!eventStart || catchDate < eventStart || catchDate > eventEnd) {
+    errors.push("Catch date must fall within the selected event dates.");
+  }
+
+  if (input.eventStatus === "locked") {
+    errors.push("The selected event is locked.");
+  }
+
+  return errors;
+}
+
 export function calculateCatchPoints({
   speciesName,
   weight,

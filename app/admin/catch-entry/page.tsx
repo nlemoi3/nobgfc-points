@@ -3,7 +3,11 @@ import { supabase } from "../../../lib/supabase";
 import { createClient } from "../../../lib/supabase/server";
 import CatchEventFields from "../../components/catch-event-fields";
 import SearchableSelect from "../../components/searchable-select";
-import { calculateCatchPoints, validateCatchInput } from "../../../lib/scoring";
+import {
+  calculateCatchPoints,
+  validateCatchInput,
+  validateEventAssignment,
+} from "../../../lib/scoring";
 
 async function saveCatch(formData: FormData) {
   "use server";
@@ -18,13 +22,20 @@ async function saveCatch(formData: FormData) {
   const line_class = Number(formData.get("line_class"));
   const released = formData.get("released") === "on";
   const tagged = formData.get("tagged") === "on";
-  const catch_datetime = formData.get("catch_datetime") || null;
+  const catch_datetime = String(formData.get("catch_datetime") || "") || null;
 
-  const { data: speciesRow } = await authenticatedSupabase
+  const [{ data: speciesRow }, { data: eventRow }] = await Promise.all([
+    authenticatedSupabase
     .from("species")
     .select("name,minimum_weight")
     .eq("id", species_id)
-    .single();
+    .single(),
+    authenticatedSupabase
+      .from("events")
+      .select("start_date,end_date,status")
+      .eq("id", event_id)
+      .single(),
+  ]);
 
   const speciesName = speciesRow?.name || "";
   const minimumWeight =
@@ -41,6 +52,15 @@ async function saveCatch(formData: FormData) {
     released,
     tagged,
   });
+
+  validationErrors.push(
+    ...validateEventAssignment({
+      catchDateTime: catch_datetime,
+      eventStartDate: eventRow?.start_date || null,
+      eventEndDate: eventRow?.end_date || null,
+      eventStatus: eventRow?.status || null,
+    })
+  );
 
   if (validationErrors.length > 0) {
     throw new Error(validationErrors.join(" "));

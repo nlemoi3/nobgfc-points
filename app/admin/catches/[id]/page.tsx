@@ -2,7 +2,11 @@ import { redirect } from "next/navigation";
 import CatchEventFields from "../../../components/catch-event-fields";
 import { supabase } from "../../../../lib/supabase";
 import { createClient } from "../../../../lib/supabase/server";
-import { calculateCatchPoints, validateCatchInput } from "../../../../lib/scoring";
+import {
+  calculateCatchPoints,
+  validateCatchInput,
+  validateEventAssignment,
+} from "../../../../lib/scoring";
 
 async function uploadCatchPhoto(file: File | null, catchId: number) {
   if (!file || file.size === 0) return null;
@@ -69,6 +73,9 @@ async function updateCatch(formData: FormData) {
   const released = formData.get("released") === "on";
   const tagged = formData.get("tagged") === "on";
   const status = String(formData.get("status") || "approved");
+  const event_id = Number(formData.get("event_id"));
+  const catch_datetime = String(formData.get("catch_datetime") || "") || null;
+  const eligibility_notes = String(formData.get("eligibility_notes") || "").trim();
 
   const { data: speciesRow, error: speciesError } = await authenticatedSupabase
     .from("species")
@@ -87,6 +94,12 @@ async function updateCatch(formData: FormData) {
     speciesRow.minimum_weight === null ? null : Number(speciesRow.minimum_weight);
 
   if (status === "approved") {
+    const { data: eventRow } = await authenticatedSupabase
+      .from("events")
+      .select("start_date,end_date,status")
+      .eq("id", event_id)
+      .single();
+
     const validationErrors = validateCatchInput({
       speciesName,
       minimumWeight,
@@ -96,11 +109,26 @@ async function updateCatch(formData: FormData) {
       tagged,
     });
 
+    validationErrors.push(
+      ...validateEventAssignment({
+        catchDateTime: catch_datetime,
+        eventStartDate: eventRow?.start_date || null,
+        eventEndDate: eventRow?.end_date || null,
+        eventStatus: eventRow?.status || null,
+      })
+    );
+
     if (validationErrors.length > 0) {
       redirect(
         `${returnUrl}?error=${encodeURIComponent(validationErrors.join(" "))}`,
       );
     }
+  }
+
+  if (status === "rejected" && !eligibility_notes) {
+    redirect(
+      `${returnUrl}?error=${encodeURIComponent("A rejection reason is required.")}`,
+    );
   }
 
   const points_awarded = calculateCatchPoints({
@@ -131,7 +159,7 @@ async function updateCatch(formData: FormData) {
   const { error } = await authenticatedSupabase
     .from("catches")
     .update({
-      event_id: Number(formData.get("event_id")),
+      event_id,
       boat_id: Number(formData.get("boat_id")),
       angler_id: Number(formData.get("angler_id")),
       species_id,
@@ -140,9 +168,10 @@ async function updateCatch(formData: FormData) {
       released,
       tagged,
       status,
-      catch_datetime: formData.get("catch_datetime") || null,
+      catch_datetime,
       photo_url: uploadedPhotoUrl || currentPhotoUrl,
       points_awarded,
+      eligibility_notes: eligibility_notes || null,
     })
     .eq("id", id);
 
