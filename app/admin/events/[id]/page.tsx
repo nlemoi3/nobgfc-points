@@ -139,10 +139,10 @@ export default async function EditEventPage({
           </select>
         </p>
 
-        <p className="field field-full">
+        <div className="field field-full">
           <label>Scheduling Notes / Public Notice</label>
           <ScheduleNotePresets defaultValue={event.notes || ""} />
-        </p>
+        </div>
 
         <p className="field-full">
           <button type="submit" className="btn">Save Schedule</button>
