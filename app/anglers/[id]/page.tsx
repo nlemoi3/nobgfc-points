@@ -1,6 +1,7 @@
 // Angler profile type fix
 import Link from "next/link";
 import { supabase } from "../../../lib/supabase";
+import { formatCatchWeight, isWeighedCatch } from "../../../lib/scoring";
 
 function formatDateTime(value: string | null) {
   if (!value) return "No date";
@@ -69,7 +70,7 @@ export default async function AnglerProfilePage({
       .length || 0;
 
   const largestFish = [...(catches || [])]
-    .filter((c: any) => c.weight)
+    .filter((c: any) => isWeighedCatch(c))
     .sort((a: any, b: any) => b.weight - a.weight)[0];
 
   const boatsFished = Array.from(
@@ -267,7 +268,7 @@ export default async function AnglerProfilePage({
     {relationName(c.species)}
   </Link>
 </td>
-                <td>{c.weight ? `${c.weight} lbs` : "Released"}</td>
+                <td>{formatCatchWeight(c)}</td>
                 <td>{c.released ? "Yes" : "No"}</td>
                 <td>{c.tagged ? "Yes" : "No"}</td>
                 <td>{c.points_awarded}</td>
