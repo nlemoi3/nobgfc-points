@@ -3,6 +3,8 @@ import test from "node:test";
 
 import {
   calculateCatchPoints,
+  formatCatchWeight,
+  isWeighedCatch,
   validateCatchInput,
   validateEventAssignment,
 } from "../lib/scoring.ts";
@@ -54,6 +56,17 @@ test("released tuna receives 100 points without a line bonus", () => {
     }),
     100,
   );
+});
+
+test("release estimates are labeled and excluded from weighed records", () => {
+  const releasedEstimate = {
+    weight: 250,
+    released: true,
+  };
+
+  assert.equal(formatCatchWeight(releasedEstimate), "250 lbs (estimated)");
+  assert.equal(isWeighedCatch(releasedEstimate), false);
+  assert.equal(isWeighedCatch({ weight: 250, released: false }), true);
 });
 
 test("minimum weight and tag/release combinations are enforced", () => {
