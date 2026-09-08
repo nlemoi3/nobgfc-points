@@ -1,6 +1,10 @@
 import Link from "next/link";
 import { supabase } from "../../../lib/supabase";
-import { getOfficialEligiblePoints } from "../../../lib/scoring";
+import {
+  formatCatchWeight,
+  getOfficialEligiblePoints,
+  isWeighedCatch,
+} from "../../../lib/scoring";
 
 function formatDateTime(value: string | null) {
   if (!value) return "No date";
@@ -197,22 +201,23 @@ const careerPoints = boatCatches.reduce(
 
 
   const largestBlueMarlin = boatCatches
-    .filter((c: any) => c.species?.name === "Blue Marlin" && c.weight)
+    .filter((c: any) => c.species?.name === "Blue Marlin" && isWeighedCatch(c))
     .sort((a: any, b: any) => b.weight - a.weight)[0];
 
   const largestTuna = boatCatches
     .filter(
       (c: any) =>
-        ["Yellowfin Tuna", "Bigeye Tuna"].includes(c.species?.name) && c.weight
+        ["Yellowfin Tuna", "Bigeye Tuna"].includes(c.species?.name) &&
+        isWeighedCatch(c)
     )
     .sort((a: any, b: any) => b.weight - a.weight)[0];
 
   const largestWahoo = boatCatches
-    .filter((c: any) => c.species?.name === "Wahoo" && c.weight)
+    .filter((c: any) => c.species?.name === "Wahoo" && isWeighedCatch(c))
     .sort((a: any, b: any) => b.weight - a.weight)[0];
 
   const largestDolphin = boatCatches
-    .filter((c: any) => c.species?.name === "Dolphin" && c.weight)
+    .filter((c: any) => c.species?.name === "Dolphin" && isWeighedCatch(c))
     .sort((a: any, b: any) => b.weight - a.weight)[0];
 
   const tournamentScores: Record<string, { eventId: number; points: number }> = {};
@@ -518,7 +523,7 @@ const careerPoints = boatCatches.reduce(
     {c.species?.name}
   </Link>
 </td>
-                  <td>{c.weight ? `${c.weight} lbs` : "Released"}</td>
+                  <td>{formatCatchWeight(c)}</td>
                   <td>{c.released ? "Yes" : "No"}</td>
                   <td>{c.tagged ? "Yes" : "No"}</td>
                   <td>{c.points_awarded}</td>

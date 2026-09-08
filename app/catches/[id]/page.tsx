@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { supabase } from "../../../lib/supabase";
+import { formatCatchWeight } from "../../../lib/scoring";
 
 export const dynamic = "force-dynamic";
 
@@ -113,7 +114,7 @@ const anglerName = Array.isArray(anglerValue)
           <h3>Weight</h3>
           <p>
             <strong>
-              {catchRecord.weight ? `${catchRecord.weight} lbs` : "Released"}
+              {formatCatchWeight(catchRecord)}
             </strong>
           </p>
         </div>

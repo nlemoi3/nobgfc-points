@@ -26,8 +26,7 @@ export default async function RecordsReviewPage() {
         !c.photo_url ||
         !c.catch_datetime ||
         (!c.released && !c.weight) ||
-        c.points_awarded === null ||
-        (c.released && c.weight)
+        c.points_awarded === null
       );
     }) || [];
 
@@ -37,6 +36,8 @@ export default async function RecordsReviewPage() {
 
       <p>
         Approved catches with missing data that may affect club records.
+        Estimated weights on released fish are allowed and do not qualify for
+        weighed-fish records.
       </p>
 
       {error && (
@@ -72,8 +73,6 @@ export default async function RecordsReviewPage() {
             if (!c.catch_datetime) problems.push("Missing Date");
             if (!c.released && !c.weight) problems.push("Missing Weight");
             if (c.points_awarded === null) problems.push("Missing Points");
-            if (c.released && c.weight)
-              problems.push("Released Fish Has Weight");
 
             return (
               <tr key={c.id}>

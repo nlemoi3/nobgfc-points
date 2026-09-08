@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { supabase } from "../../lib/supabase";
+import { isWeighedCatch } from "../../lib/scoring";
 
 const AWARD_SPECIES = [
   "Blue Marlin",
@@ -62,7 +63,7 @@ const { data: catches, error } = await supabase
   catches?.forEach((c: any) => {
     const species = c.species?.name;
 
-    if (!species || !c.weight) return;
+    if (!species || !isWeighedCatch(c)) return;
 
     if (!speciesAwards[species] || c.weight > speciesAwards[species].weight) {
       speciesAwards[species] = c;

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { supabase } from "../../lib/supabase";
+import { isWeighedCatch } from "../../lib/scoring";
 
 export const dynamic = "force-dynamic";
 
@@ -144,7 +145,9 @@ export default async function RecordsPage() {
 
   const largestBySpecies = (speciesNames: string[]) =>
     catches
-      ?.filter((c: any) => speciesNames.includes(c.species?.name) && c.weight)
+      ?.filter(
+        (c: any) => speciesNames.includes(c.species?.name) && isWeighedCatch(c),
+      )
       .sort((a: any, b: any) => Number(b.weight) - Number(a.weight))[0];
 
   const highestPointCatch = [...(catches || [])].sort(

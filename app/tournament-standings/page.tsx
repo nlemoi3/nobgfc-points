@@ -75,7 +75,15 @@ const { data: catches, error } = await supabase
 
   return (
     <main className="panel">
-      <h1>Tournament Standings</h1>
+      <div className="toolbar">
+        <div>
+          <h1>Tournament Standings</h1>
+          <p>Billfish-point rankings by tournament.</p>
+        </div>
+        <Link href="/events" className="btn btn-ghost">
+          Event Schedule
+        </Link>
+      </div>
 
       {error && <p style={{ color: "red" }}>Error: {error.message}</p>}
 

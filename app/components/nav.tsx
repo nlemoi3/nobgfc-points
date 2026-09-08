@@ -121,10 +121,11 @@ export default function Nav({
       </Link>
 
       <NavGroup title="Competition" isOpen={openGroup === "Competition"} onToggle={() => toggleGroup("Competition")}>
-        <div><Link href="/official-standings">Official Boats</Link></div>
-        <div><Link href="/official-angler-standings">Official Anglers</Link></div>
+        <div><Link href="/events">Event Schedule</Link></div>
+        <div><Link href="/official-standings">Official Boat Standings</Link></div>
+        <div><Link href="/official-angler-standings">Official Angler Standings</Link></div>
         <div><Link href="/official-youth-standings">Youth Standings</Link></div>
-        <div><Link href="/tournament-standings">Tournaments</Link></div>
+        <div><Link href="/tournament-standings">Tournament Standings</Link></div>
       </NavGroup>
 
       <NavGroup title="Directory" isOpen={openGroup === "Directory"} onToggle={() => toggleGroup("Directory")}>
