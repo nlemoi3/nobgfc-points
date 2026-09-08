@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { unstable_noStore as noStore } from "next/cache";
-import { supabase } from "../../../lib/supabase";
+import { createClient } from "../../../lib/supabase/server";
 
 function formatDateTime(value: string | null) {
   if (!value) return "No date";
@@ -14,8 +14,15 @@ function formatDateTime(value: string | null) {
   });
 }
 
-export default async function AdminCatchesPage() {
+export default async function AdminCatchesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ created?: string }>;
+}) {
   noStore();
+
+  const { created } = await searchParams;
+  const supabase = await createClient();
 
   const { data: catches, error } = await supabase
     .from("catches")
@@ -27,6 +34,7 @@ export default async function AdminCatchesPage() {
       tagged,
       status,
       catch_datetime,
+      eligibility_notes,
       boats(id,name),
       anglers(id,first_name,last_name),
       species(name),
@@ -43,6 +51,10 @@ export default async function AdminCatchesPage() {
         </Link>
       </div>
 
+      {created === "1" && (
+        <p className="alert">Catch saved as pending and ready for review.</p>
+      )}
+
       {error && <p style={{ color: "red" }}>Error: {error.message}</p>}
 
       <table border={1} cellPadding={8} style={{ borderCollapse: "collapse" }}>
@@ -57,6 +69,7 @@ export default async function AdminCatchesPage() {
             <th>Released</th>
             <th>Tagged</th>
             <th>Status</th>
+            <th>Review Notes</th>
             <th>Points</th>
             <th>Action</th>
           </tr>
@@ -66,7 +79,7 @@ export default async function AdminCatchesPage() {
           {catches?.map((c: any) => (
             <tr key={c.id}>
               <td>
-                <Link href={`/catches/${c.id}`}>
+                <Link href={`/admin/catches/${c.id}`}>
                   {formatDateTime(c.catch_datetime)}
                 </Link>
               </td>
@@ -98,7 +111,7 @@ export default async function AdminCatchesPage() {
                 )}
               </td>
               <td>
-                <Link href={`/catches/${c.id}`}>{c.species?.name}</Link>
+                {c.species?.name}
               </td>
               <td>{c.weight ? `${c.weight} lbs` : "Released"}</td>
               <td>{c.released ? "Yes" : "No"}</td>
@@ -117,6 +130,8 @@ export default async function AdminCatchesPage() {
             >
               {c.status || "approved"}
             </td>
+
+            <td>{c.eligibility_notes || "-"}</td>
 
             <td>{c.points_awarded}</td>
               <td>
