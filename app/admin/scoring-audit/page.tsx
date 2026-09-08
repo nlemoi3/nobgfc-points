@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { unstable_noStore as noStore } from "next/cache";
 import { createClient } from "../../../lib/supabase/server";
-import { calculateCatchPoints } from "../../../lib/scoring";
+import { calculateCatchPoints, formatCatchWeight } from "../../../lib/scoring";
 
 function formatDateTime(value: string | null) {
   if (!value) return "No date";
@@ -156,7 +156,7 @@ export default async function ScoringAuditPage() {
               <td>
                 <Link href={`/catches/${c.id}`}>{c.species?.name}</Link>
               </td>
-              <td>{c.weight ? `${c.weight} lbs` : "Released"}</td>
+              <td>{formatCatchWeight(c)}</td>
               <td>{c.line_class || "-"}</td>
               <td>{c.released ? "Yes" : "No"}</td>
               <td>{c.tagged ? "Yes" : "No"}</td>
