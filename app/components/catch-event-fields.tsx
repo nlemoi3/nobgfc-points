@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 type CatchEventOption = {
   id: number | string;
@@ -9,6 +9,31 @@ type CatchEventOption = {
   end_date: string | null;
   status?: string | null;
 };
+
+function findMatchingEventId(
+  events: CatchEventOption[],
+  catchDateTime: string,
+) {
+  const catchDate = catchDateTime.slice(0, 10);
+
+  if (!catchDate) return "";
+
+  const matchingEvent = events.find((event) => {
+    if (
+      !event.start_date ||
+      ["locked", "cancelled"].includes(event.status || "")
+    ) {
+      return false;
+    }
+
+    const startDate = event.start_date;
+    const endDate = event.end_date || event.start_date;
+
+    return startDate <= catchDate && catchDate <= endDate;
+  });
+
+  return matchingEvent ? String(matchingEvent.id) : "";
+}
 
 export default function CatchEventFields({
   events,
@@ -23,31 +48,7 @@ export default function CatchEventFields({
 }) {
   const [catchDateTime, setCatchDateTime] = useState(defaultDateTime);
   const [eventId, setEventId] = useState(defaultEventId ? String(defaultEventId) : "");
-  const [dateWasEdited, setDateWasEdited] = useState(false);
 
-  useEffect(() => {
-    const catchDate = catchDateTime.slice(0, 10);
-
-    if (!catchDate || disabled || (defaultEventId && !dateWasEdited)) {
-      return;
-    }
-
-    const matchingEvent = events.find((event) => {
-      if (
-        !event.start_date ||
-        ["locked", "cancelled"].includes(event.status || "")
-      ) {
-        return false;
-      }
-
-      const startDate = event.start_date;
-      const endDate = event.end_date || event.start_date;
-
-      return startDate <= catchDate && catchDate <= endDate;
-    });
-
-    setEventId(matchingEvent ? String(matchingEvent.id) : "");
-  }, [catchDateTime, dateWasEdited, defaultEventId, disabled, events]);
 
   return (
     <>
@@ -60,8 +61,9 @@ export default function CatchEventFields({
           required
           value={catchDateTime}
           onChange={(event) => {
-            setCatchDateTime(event.target.value);
-            setDateWasEdited(true);
+            const nextCatchDateTime = event.target.value;
+            setCatchDateTime(nextCatchDateTime);
+            setEventId(findMatchingEventId(events, nextCatchDateTime));
           }}
           disabled={disabled}
         />
