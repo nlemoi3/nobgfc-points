@@ -9,6 +9,30 @@ export type CatchRecord = {
   } | null;
 };
 
+type CatchWeight = {
+  weight: number | string | null;
+  released: boolean | null;
+};
+
+export function isWeighedCatch(catchRecord: CatchWeight) {
+  return (
+    !catchRecord.released &&
+    catchRecord.weight !== null &&
+    Number.isFinite(Number(catchRecord.weight)) &&
+    Number(catchRecord.weight) > 0
+  );
+}
+
+export function formatCatchWeight(catchRecord: CatchWeight) {
+  if (catchRecord.released) {
+    return catchRecord.weight !== null
+      ? `${catchRecord.weight} lbs (estimated)`
+      : "Released";
+  }
+
+  return catchRecord.weight !== null ? `${catchRecord.weight} lbs` : "—";
+}
+
 export const LINE_CLASS_MULTIPLIERS: Record<number, number> = {
   130: 1,
   80: 1.3,
