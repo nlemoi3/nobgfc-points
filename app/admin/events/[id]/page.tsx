@@ -12,6 +12,27 @@ async function updateEvent(formData: FormData) {
   const supabase = await createClient();
   const id = Number(formData.get("id"));
   const returnUrl = `/admin/events/${id}`;
+  const status = String(formData.get("status") || "scheduled");
+
+  if (status === "locked") {
+    const { count, error: pendingError } = await supabase
+      .from("catches")
+      .select("id", { count: "exact", head: true })
+      .eq("event_id", id)
+      .eq("status", "pending");
+
+    if (pendingError) {
+      redirect(
+        `${returnUrl}?error=${encodeURIComponent(`Unable to check pending catches: ${pendingError.message}`)}`,
+      );
+    }
+
+    if ((count || 0) > 0) {
+      redirect(
+        `${returnUrl}?error=${encodeURIComponent("Review every pending catch before locking this event.")}`,
+      );
+    }
+  }
 
   const { error } = await supabase
     .from("events")
@@ -19,7 +40,7 @@ async function updateEvent(formData: FormData) {
       name: String(formData.get("name") || ""),
       start_date: String(formData.get("start_date") || ""),
       end_date: String(formData.get("end_date") || ""),
-      status: String(formData.get("status") || "scheduled"),
+      status,
       notes: String(formData.get("notes") || ""),
     })
     .eq("id", id);

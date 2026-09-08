@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import CatchEventFields from "../../../components/catch-event-fields";
-import { supabase } from "../../../../lib/supabase";
 import { createClient } from "../../../../lib/supabase/server";
+import { requireRole } from "../../../../lib/auth";
 import {
   calculateCatchPoints,
   validateCatchInput,
@@ -54,6 +54,8 @@ async function getCatchEventStatus(catchId: number) {
 async function updateCatch(formData: FormData) {
   "use server";
 
+  await requireRole("weighmaster");
+
   const authenticatedSupabase = await createClient();
   const id = Number(formData.get("id"));
   const returnUrl = `/admin/catches/${id}`;
@@ -72,7 +74,7 @@ async function updateCatch(formData: FormData) {
   const line_class = Number(formData.get("line_class"));
   const released = formData.get("released") === "on";
   const tagged = formData.get("tagged") === "on";
-  const status = String(formData.get("status") || "approved");
+  const status = String(formData.get("status") || "pending");
   const event_id = Number(formData.get("event_id"));
   const catch_datetime = String(formData.get("catch_datetime") || "") || null;
   const eligibility_notes = String(formData.get("eligibility_notes") || "").trim();
@@ -171,7 +173,8 @@ async function updateCatch(formData: FormData) {
       catch_datetime,
       photo_url: uploadedPhotoUrl || currentPhotoUrl,
       points_awarded,
-      eligibility_notes: eligibility_notes || null,
+      eligibility_notes:
+        status === "approved" ? null : eligibility_notes || null,
     })
     .eq("id", id);
 
@@ -186,6 +189,8 @@ async function updateCatch(formData: FormData) {
 
 async function deleteCatch(formData: FormData) {
   "use server";
+
+  await requireRole("weighmaster");
 
   const authenticatedSupabase = await createClient();
   const id = Number(formData.get("id"));
@@ -223,6 +228,7 @@ export default async function EditCatchPage({
   const { id } = await params;
   const { error } = await searchParams;
   const catchId = Number(id);
+  const supabase = await createClient();
 
   const [
     { data: catchRecord },
@@ -406,6 +412,18 @@ export default async function EditCatchPage({
             <option value="approved">Approved</option>
             <option value="rejected">Rejected</option>
           </select>
+        </p>
+
+        <p>
+          <label>Review / Rejection Notes</label>
+          <br />
+          <textarea
+            name="eligibility_notes"
+            defaultValue={catchRecord.eligibility_notes || ""}
+            placeholder="Required when rejecting a catch"
+            rows={3}
+            disabled={isLocked}
+          />
         </p>
 
         <hr />

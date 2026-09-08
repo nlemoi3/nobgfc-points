@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { unstable_noStore as noStore } from "next/cache";
-import { supabase } from "../../../lib/supabase";
+import { createClient } from "../../../lib/supabase/server";
 import { calculateCatchPoints } from "../../../lib/scoring";
 
 function formatDateTime(value: string | null) {
@@ -18,6 +18,7 @@ function formatDateTime(value: string | null) {
 export default async function ScoringAuditPage() {
   noStore();
 
+  const supabase = await createClient();
   const { data: catches, error } = await supabase
     .from("catches")
     .select(`
@@ -26,6 +27,8 @@ export default async function ScoringAuditPage() {
       line_class,
       released,
       tagged,
+      status,
+      eligibility_notes,
       points_awarded,
       catch_datetime,
       boats(id,name),
@@ -86,7 +89,9 @@ export default async function ScoringAuditPage() {
       <table border={1} cellPadding={8} style={{ borderCollapse: "collapse" }}>
         <thead>
           <tr>
-            <th>Status</th>
+            <th>Score Check</th>
+            <th>Catch Status</th>
+            <th>Review Notes</th>
             <th>Date</th>
             <th>Event</th>
             <th>Event Status</th>
@@ -113,8 +118,10 @@ export default async function ScoringAuditPage() {
               }}
             >
               <td>{c.matches ? "OK" : "CHECK"}</td>
+              <td>{c.status || "-"}</td>
+              <td>{c.eligibility_notes || "-"}</td>
               <td>
-                <Link href={`/catches/${c.id}`}>
+                <Link href={`/admin/catches/${c.id}`}>
                   {formatDateTime(c.catch_datetime)}
                 </Link>
               </td>

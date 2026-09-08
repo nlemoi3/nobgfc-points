@@ -32,7 +32,10 @@ export default function CatchEventFields({
     }
 
     const matchingEvent = events.find((event) => {
-      if (!event.start_date) {
+      if (
+        !event.start_date ||
+        ["locked", "cancelled"].includes(event.status || "")
+      ) {
         return false;
       }
 
@@ -58,6 +61,10 @@ export default function CatchEventFields({
           onChange={(event) => setCatchDateTime(event.target.value)}
           disabled={disabled}
         />
+        <br />
+        <span className="hint">
+          Enter when the fish was caught, not when this form is submitted.
+        </span>
       </p>
 
       <p>
@@ -71,11 +78,17 @@ export default function CatchEventFields({
           disabled={disabled}
         >
           <option value="">Select event</option>
-          {events.map((event) => (
-            <option key={event.id} value={event.id}>
-              {event.name} {event.status === "locked" ? "(locked)" : ""}
-            </option>
-          ))}
+          {events.map((event) => {
+            const unavailable = ["locked", "cancelled"].includes(
+              event.status || "",
+            );
+
+            return (
+              <option key={event.id} value={event.id} disabled={unavailable}>
+                {event.name} {unavailable ? `(${event.status})` : ""}
+              </option>
+            );
+          })}
         </select>
       </p>
     </>
