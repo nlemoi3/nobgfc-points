@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { supabase } from "../../lib/supabase";
+import { formatCatchWeight } from "../../lib/scoring";
 
 export const dynamic = "force-dynamic";
 
@@ -71,7 +72,7 @@ export default async function GalleryPage() {
               <h3>{c.species?.name || "Catch"}</h3>
 
               <p>
-                {c.weight ? `${c.weight} lbs` : c.released ? "Released" : "-"}
+                {formatCatchWeight(c)}
                 <br />
                 {formatDate(c.catch_datetime)}
               </p>
