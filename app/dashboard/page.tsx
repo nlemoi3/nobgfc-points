@@ -1,7 +1,11 @@
 import Link from "next/link";
 import { unstable_noStore as noStore } from "next/cache";
 import { supabase } from "../../lib/supabase";
-import { getOfficialEligiblePoints } from "../../lib/scoring";
+import {
+  formatCatchWeight,
+  getOfficialEligiblePoints,
+  isWeighedCatch,
+} from "../../lib/scoring";
 import { getActiveSeasonRange } from "../../lib/season";
 
 const BILLFISH_FLAG_URL =
@@ -179,23 +183,23 @@ export default async function DashboardPage() {
     .slice(0, 10);
 
   const largestBlueMarlin = catches
-    ?.filter((c: any) => c.species?.name === "Blue Marlin" && c.weight)
+    ?.filter((c: any) => c.species?.name === "Blue Marlin" && isWeighedCatch(c))
     .sort((a: any, b: any) => b.weight - a.weight)[0];
 
   const largestTuna = catches
     ?.filter(
       (c: any) =>
         ["Yellowfin Tuna", "Bigeye Tuna"].includes(c.species?.name) &&
-        c.weight
+        isWeighedCatch(c)
     )
     .sort((a: any, b: any) => b.weight - a.weight)[0];
 
   const largestWahoo = catches
-    ?.filter((c: any) => c.species?.name === "Wahoo" && c.weight)
+    ?.filter((c: any) => c.species?.name === "Wahoo" && isWeighedCatch(c))
     .sort((a: any, b: any) => b.weight - a.weight)[0];
 
   const largestDolphin = catches
-    ?.filter((c: any) => c.species?.name === "Dolphin" && c.weight)
+    ?.filter((c: any) => c.species?.name === "Dolphin" && isWeighedCatch(c))
     .sort((a: any, b: any) => b.weight - a.weight)[0];
 
   const blueMarlinCatches =
@@ -419,7 +423,7 @@ export default async function DashboardPage() {
                   <td>
                     <Link href={`/catches/${c.id}`}>{c.species?.name}</Link>
                   </td>
-                  <td>{c.weight ? `${c.weight} lbs` : "Released"}</td>
+                  <td>{formatCatchWeight(c)}</td>
                   <td>{c.points_awarded}</td>
                 </tr>
               ))}
