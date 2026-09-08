@@ -23,11 +23,12 @@ export default function CatchEventFields({
 }) {
   const [catchDateTime, setCatchDateTime] = useState(defaultDateTime);
   const [eventId, setEventId] = useState(defaultEventId ? String(defaultEventId) : "");
+  const [dateWasEdited, setDateWasEdited] = useState(false);
 
   useEffect(() => {
     const catchDate = catchDateTime.slice(0, 10);
 
-    if (!catchDate || disabled) {
+    if (!catchDate || disabled || (defaultEventId && !dateWasEdited)) {
       return;
     }
 
@@ -46,7 +47,7 @@ export default function CatchEventFields({
     });
 
     setEventId(matchingEvent ? String(matchingEvent.id) : "");
-  }, [catchDateTime, disabled, events]);
+  }, [catchDateTime, dateWasEdited, defaultEventId, disabled, events]);
 
   return (
     <>
@@ -58,7 +59,10 @@ export default function CatchEventFields({
           type="datetime-local"
           required
           value={catchDateTime}
-          onChange={(event) => setCatchDateTime(event.target.value)}
+          onChange={(event) => {
+            setCatchDateTime(event.target.value);
+            setDateWasEdited(true);
+          }}
           disabled={disabled}
         />
         <br />
