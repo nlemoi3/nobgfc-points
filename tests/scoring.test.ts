@@ -116,3 +116,17 @@ test("catch date must fall inside an unlocked event", () => {
     ["The selected event is locked."],
   );
 });
+
+test("locked and cancelled events reject catch assignment", () => {
+  for (const eventStatus of ["locked", "cancelled"]) {
+    assert.deepEqual(
+      validateEventAssignment({
+        catchDateTime: "2027-05-01T09:30",
+        eventStartDate: "2027-05-01",
+        eventEndDate: "2027-05-02",
+        eventStatus,
+      }),
+      [`The selected event is ${eventStatus}.`],
+    );
+  }
+});
