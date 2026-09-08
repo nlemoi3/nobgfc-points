@@ -89,8 +89,8 @@ export function validateEventAssignment(input: EventAssignmentValidationInput) {
     errors.push("Catch date must fall within the selected event dates.");
   }
 
-  if (input.eventStatus === "locked") {
-    errors.push("The selected event is locked.");
+  if (["locked", "cancelled"].includes(input.eventStatus || "")) {
+    errors.push(`The selected event is ${input.eventStatus}.`);
   }
 
   return errors;
