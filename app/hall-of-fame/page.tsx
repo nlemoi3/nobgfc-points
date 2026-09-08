@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { supabase } from "../../lib/supabase";
+import { isWeighedCatch } from "../../lib/scoring";
 
 function formatDate(value: string | null) {
   if (!value) return "No date";
@@ -134,7 +135,9 @@ const { data: catches } = await supabase
 
   const largestBySpecies = (speciesNames: string[]) =>
     catches
-      ?.filter((c: any) => speciesNames.includes(c.species?.name) && c.weight)
+      ?.filter(
+        (c: any) => speciesNames.includes(c.species?.name) && isWeighedCatch(c),
+      )
       .sort((a: any, b: any) => b.weight - a.weight)[0];
 
   const blueMarlinCatches =
