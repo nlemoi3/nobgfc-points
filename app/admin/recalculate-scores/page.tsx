@@ -1,9 +1,12 @@
 import { redirect } from "next/navigation";
 import { createClient } from "../../../lib/supabase/server";
 import { calculateCatchPoints } from "../../../lib/scoring";
+import { requireRole } from "../../../lib/auth";
 
 async function recalculateScores() {
   "use server";
+
+  await requireRole("weighmaster");
 
   const supabase = await createClient();
 const { data: catches, error } = await supabase
