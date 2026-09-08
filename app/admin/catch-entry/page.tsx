@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { supabase } from "../../../lib/supabase";
 import { createClient } from "../../../lib/supabase/server";
+import { requireRole } from "../../../lib/auth";
 import CatchEventFields from "../../components/catch-event-fields";
 import SearchableSelect from "../../components/searchable-select";
 import {
@@ -11,6 +12,8 @@ import {
 
 async function saveCatch(formData: FormData) {
   "use server";
+
+  await requireRole("weighmaster");
 
   const authenticatedSupabase = await createClient();
   const event_id = Number(formData.get("event_id"));
@@ -85,13 +88,14 @@ async function saveCatch(formData: FormData) {
     tagged,
     catch_datetime,
     points_awarded,
+    status: "pending",
   });
 
   if (error) {
     throw new Error(error.message);
   }
 
-  redirect("/catches");
+  redirect("/admin/catches?created=1");
 }
 
 export default async function CatchEntryPage() {
