@@ -2,6 +2,7 @@ import Link from "next/link";
 import { unstable_noStore as noStore } from "next/cache";
 import { supabase } from "../../lib/supabase";
 import { getOfficialEligiblePoints } from "../../lib/scoring";
+import { getActiveSeasonRange } from "../../lib/season";
 
 const BILLFISH_FLAG_URL =
   "https://eklitnkmhugtjjhfoaku.supabase.co/storage/v1/object/public/catch-media/TBF.png";
@@ -83,6 +84,11 @@ function LargestFishCard({
 export default async function DashboardPage() {
   noStore();
 
+  const {
+    year: seasonYear,
+    start: seasonStart,
+    end: seasonEnd,
+  } = await getActiveSeasonRange(supabase);
   const { data: catches } = await supabase
     .from("catches")
     .select(`
@@ -96,43 +102,66 @@ export default async function DashboardPage() {
       created_at,
       photo_url,
       boats(id,name),
-      anglers(id,first_name,last_name),
+      anglers(id,first_name,last_name,is_member),
       species(name)
     `)
-    .eq("status", "approved");
+    .eq("status", "approved")
+    .gte("catch_datetime", seasonStart)
+    .lt("catch_datetime", seasonEnd);
 
-  const boatCatches: Record<string, any[]> = {};
-  const anglerCatches: Record<string, any[]> = {};
+  const boatCatches = new Map<
+    string,
+    { id?: number; name: string; catches: any[] }
+  >();
+  const anglerCatches = new Map<
+    string,
+    { id?: number; name: string; catches: any[] }
+  >();
 
   catches?.forEach((c: any) => {
-    const boat = c.boats?.name || "Unknown Boat";
-    const angler =
+    const boatId = c.boats?.id;
+    const boatName = c.boats?.name || "Unknown Boat";
+    const boatKey = boatId ? String(boatId) : `unknown:${boatName}`;
+    const boatGroup = boatCatches.get(boatKey) || {
+      id: boatId,
+      name: boatName,
+      catches: [],
+    };
+    boatGroup.catches.push(c);
+    boatCatches.set(boatKey, boatGroup);
+
+    if (!c.anglers?.is_member) return;
+
+    const anglerId = c.anglers?.id;
+    const anglerName =
       `${c.anglers?.first_name || ""} ${c.anglers?.last_name || ""}`.trim();
-
-    if (!boatCatches[boat]) boatCatches[boat] = [];
-    if (!anglerCatches[angler]) anglerCatches[angler] = [];
-
-    boatCatches[boat].push(c);
-    anglerCatches[angler].push(c);
+    const anglerKey = anglerId ? String(anglerId) : `unknown:${anglerName}`;
+    const anglerGroup = anglerCatches.get(anglerKey) || {
+      id: anglerId,
+      name: anglerName || "Unknown Angler",
+      catches: [],
+    };
+    anglerGroup.catches.push(c);
+    anglerCatches.set(anglerKey, anglerGroup);
   });
 
-  const boatStandings = Object.entries(boatCatches)
-    .map(([name, catches]) => ({
+  const boatStandings = Array.from(boatCatches.values())
+    .map(({ id, name, catches }) => ({
+      id,
       name,
-      id: catches[0]?.boats?.id,
       points: getOfficialEligiblePoints(catches),
     }))
-    .sort((a, b) => b.points - a.points);
+    .sort((a, b) => b.points - a.points || a.name.localeCompare(b.name));
 
   const boatLeader = boatStandings[0];
 
-  const anglerStandings = Object.entries(anglerCatches)
-    .map(([name, catches]) => ({
+  const anglerStandings = Array.from(anglerCatches.values())
+    .map(({ id, name, catches }) => ({
+      id,
       name,
-      id: catches[0]?.anglers?.id,
       points: getOfficialEligiblePoints(catches),
     }))
-    .sort((a, b) => b.points - a.points);
+    .sort((a, b) => b.points - a.points || a.name.localeCompare(b.name));
 
   const anglerLeader = anglerStandings[0];
 
@@ -172,32 +201,46 @@ export default async function DashboardPage() {
   const blueMarlinCatches =
     catches?.filter((c: any) => c.species?.name === "Blue Marlin") || [];
 
-  const anglerCounts: Record<string, { count: number; id?: number }> = {};
-  const boatCounts: Record<string, { count: number; id?: number }> = {};
+  const anglerCounts = new Map<
+    string,
+    { count: number; id?: number; name: string }
+  >();
+  const boatCounts = new Map<
+    string,
+    { count: number; id?: number; name: string }
+  >();
 
   blueMarlinCatches.forEach((c: any) => {
-    const angler =
+    const anglerId = c.anglers?.id;
+    const anglerName =
       `${c.anglers?.first_name || ""} ${c.anglers?.last_name || ""}`.trim();
+    const anglerKey = anglerId ? String(anglerId) : `unknown:${anglerName}`;
+    const angler = anglerCounts.get(anglerKey) || {
+      count: 0,
+      id: anglerId,
+      name: anglerName || "Unknown Angler",
+    };
+    angler.count += 1;
+    anglerCounts.set(anglerKey, angler);
 
-    const boat = c.boats?.name || "Unknown Boat";
-
-    if (!anglerCounts[angler]) {
-      anglerCounts[angler] = { count: 0, id: c.anglers?.id };
-    }
-    if (!boatCounts[boat]) {
-      boatCounts[boat] = { count: 0, id: c.boats?.id };
-    }
-
-    anglerCounts[angler].count += 1;
-    boatCounts[boat].count += 1;
+    const boatId = c.boats?.id;
+    const boatName = c.boats?.name || "Unknown Boat";
+    const boatKey = boatId ? String(boatId) : `unknown:${boatName}`;
+    const boat = boatCounts.get(boatKey) || {
+      count: 0,
+      id: boatId,
+      name: boatName,
+    };
+    boat.count += 1;
+    boatCounts.set(boatKey, boat);
   });
 
-  const topBlueMarlinAngler = Object.entries(anglerCounts).sort(
-    (a, b) => b[1].count - a[1].count
+  const topBlueMarlinAngler = Array.from(anglerCounts.values()).sort(
+    (a, b) => b.count - a.count || a.name.localeCompare(b.name)
   )[0];
 
-  const topBlueMarlinBoat = Object.entries(boatCounts).sort(
-    (a, b) => b[1].count - a[1].count
+  const topBlueMarlinBoat = Array.from(boatCounts.values()).sort(
+    (a, b) => b.count - a.count || a.name.localeCompare(b.name)
   )[0];
 
   const totalApprovedCatches = catches?.length || 0;
@@ -207,7 +250,7 @@ export default async function DashboardPage() {
     <main className="panel dashboard-page">
       <section className="dashboard-hero">
         <div className="dashboard-hero-copy">
-          <h1>NOBGFC Championship Dashboard</h1>
+          <h1>{seasonYear} NOBGFC Championship Dashboard</h1>
           <p className="hint">
             Live pulse of the season across catches, leaders, and standings.
           </p>
@@ -297,15 +340,15 @@ export default async function DashboardPage() {
           {topBlueMarlinAngler ? (
             <>
               <strong>
-                {topBlueMarlinAngler[1].id ? (
-                  <Link href={`/anglers/${topBlueMarlinAngler[1].id}`}>
-                    {topBlueMarlinAngler[0]}
+                {topBlueMarlinAngler.id ? (
+                  <Link href={`/anglers/${topBlueMarlinAngler.id}`}>
+                    {topBlueMarlinAngler.name}
                   </Link>
                 ) : (
-                  topBlueMarlinAngler[0]
+                  topBlueMarlinAngler.name
                 )}
               </strong>
-              <p className="hint">{topBlueMarlinAngler[1].count} Blue Marlin</p>
+              <p className="hint">{topBlueMarlinAngler.count} Blue Marlin</p>
             </>
           ) : (
             <p>No Blue Marlin</p>
@@ -317,15 +360,15 @@ export default async function DashboardPage() {
           {topBlueMarlinBoat ? (
             <>
               <strong>
-                {topBlueMarlinBoat[1].id ? (
-                  <Link href={`/boats/${topBlueMarlinBoat[1].id}`}>
-                    {topBlueMarlinBoat[0]}
+                {topBlueMarlinBoat.id ? (
+                  <Link href={`/boats/${topBlueMarlinBoat.id}`}>
+                    {topBlueMarlinBoat.name}
                   </Link>
                 ) : (
-                  topBlueMarlinBoat[0]
+                  topBlueMarlinBoat.name
                 )}
               </strong>
-              <p className="hint">{topBlueMarlinBoat[1].count} Blue Marlin</p>
+              <p className="hint">{topBlueMarlinBoat.count} Blue Marlin</p>
             </>
           ) : (
             <p>No Blue Marlin</p>
@@ -398,7 +441,7 @@ export default async function DashboardPage() {
             </thead>
             <tbody>
               {boatStandings.map((boat, index) => (
-                <tr key={boat.name}>
+                <tr key={boat.id ?? boat.name}>
                   <td>{index + 1}</td>
                   <td>
                     {boat.id ? (
