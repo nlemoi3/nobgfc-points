@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { unstable_noStore as noStore } from "next/cache";
-import { createAdminClient } from "../../../lib/supabase/admin";
+import { createClient } from "../../../lib/supabase/server";
 import { requireRole } from "../../../lib/auth";
 
 function formatDate(value: string | null) {
@@ -19,7 +19,7 @@ export default async function AdminBoatProfileRequestsPage() {
   await requireRole("admin");
   noStore();
 
-  const supabase = createAdminClient();
+  const supabase = await createClient();
   const { data: requests, error } = await supabase
     .from("boat_profile_requests")
     .select("*")

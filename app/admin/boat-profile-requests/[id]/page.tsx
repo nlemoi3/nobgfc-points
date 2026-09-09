@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { createAdminClient } from "../../../../lib/supabase/admin";
+import { createClient } from "../../../../lib/supabase/server";
 import { requireRole } from "../../../../lib/auth";
 
 async function applyToExistingBoat(formData: FormData) {
@@ -7,7 +7,7 @@ async function applyToExistingBoat(formData: FormData) {
 
   await requireRole("admin");
 
-  const supabase = createAdminClient();
+  const supabase = await createClient();
   const requestId = Number(formData.get("request_id"));
   const boatId = Number(formData.get("boat_id"));
   const status = String(formData.get("status") || "applied");
@@ -26,9 +26,20 @@ async function applyToExistingBoat(formData: FormData) {
     throw new Error("Request not found.");
   }
 
-  const { error: boatError } = await supabase
-    .from("boats")
-    .update({
+  const { data: boatsData, error: loadBoatError } = await supabase.rpc(
+    "admin_get_boats",
+    { p_id: boatId },
+  );
+  const existingBoat = Array.isArray(boatsData) ? boatsData[0] : null;
+
+  if (loadBoatError || !existingBoat) {
+    throw new Error(loadBoatError?.message || "Boat not found.");
+  }
+
+  const { error: boatError } = await supabase.rpc("admin_upsert_boat", {
+    p_id: boatId,
+    p_record: {
+      ...existingBoat,
       make: request.make,
       model: request.model,
       year: request.year,
@@ -40,8 +51,8 @@ async function applyToExistingBoat(formData: FormData) {
       youtube_url: request.youtube_url,
       notes: request.notes,
       profile_status: "approved",
-    })
-    .eq("id", boatId);
+    },
+  });
 
   if (boatError) throw new Error(boatError.message);
 
@@ -60,7 +71,7 @@ async function createNewBoatFromRequest(formData: FormData) {
 
   await requireRole("admin");
 
-  const supabase = createAdminClient();
+  const supabase = await createClient();
   const requestId = Number(formData.get("request_id"));
 
   const { data: request } = await supabase
@@ -73,10 +84,14 @@ async function createNewBoatFromRequest(formData: FormData) {
     throw new Error("Request not found.");
   }
 
-  const { data: newBoat, error: boatError } = await supabase
-    .from("boats")
-    .insert({
+  const { data: newBoatId, error: boatError } = await supabase.rpc(
+    "admin_upsert_boat",
+    {
+      p_id: null,
+      p_record: {
       name: request.boat_name,
+      owner_name: "",
+      active: true,
       make: request.make,
       model: request.model,
       year: request.year,
@@ -90,12 +105,17 @@ async function createNewBoatFromRequest(formData: FormData) {
       captain_name: request.contact_name,
       captain_email: request.contact_email,
       profile_status: "approved",
-      active: true,
-    })
-    .select("id")
-    .single();
+      owner_email: "",
+      photo_url: "",
+      logo_url: "",
+      user_id: null,
+      },
+    },
+  );
 
-  if (boatError) throw new Error(boatError.message);
+  if (boatError || !newBoatId) {
+    throw new Error(boatError?.message || "Unable to create boat.");
+  }
 
   const { error: requestError } = await supabase
     .from("boat_profile_requests")
@@ -104,7 +124,7 @@ async function createNewBoatFromRequest(formData: FormData) {
 
   if (requestError) throw new Error(requestError.message);
 
-  redirect(`/boats/${newBoat.id}`);
+  redirect(`/boats/${newBoatId}`);
 }
 
 async function updateRequestStatus(formData: FormData) {
@@ -112,7 +132,7 @@ async function updateRequestStatus(formData: FormData) {
 
   await requireRole("admin");
 
-  const supabase = createAdminClient();
+  const supabase = await createClient();
   const requestId = Number(formData.get("request_id"));
   const status = String(formData.get("status") || "new");
 
@@ -133,7 +153,7 @@ export default async function BoatProfileRequestDetailPage({
 }) {
   await requireRole("admin");
   const { id } = await params;
-  const supabase = createAdminClient();
+  const supabase = await createClient();
 
   const { data: request } = await supabase
     .from("boat_profile_requests")

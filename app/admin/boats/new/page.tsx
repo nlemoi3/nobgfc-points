@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { createAdminClient } from "../../../../lib/supabase/admin";
+import { createClient } from "../../../../lib/supabase/server";
 import SearchableMultiSelect from "../../../components/searchable-multi-select";
 import { requireRole } from "../../../../lib/auth";
 
@@ -8,16 +8,18 @@ async function createBoat(formData: FormData) {
 
   await requireRole("admin");
 
-  const supabase = createAdminClient();
+  const supabase = await createClient();
   const ownerAnglerIds = formData
     .getAll("owner_angler_ids")
     .map((value) => Number(value))
     .filter((value) => Number.isFinite(value) && value > 0);
 
-  const { data: boat, error } = await supabase
-    .from("boats")
-    .insert({
+  const { data: boatId, error } = await supabase.rpc("admin_upsert_boat", {
+    p_id: null,
+    p_record: {
       name: String(formData.get("name") || ""),
+      owner_name: String(formData.get("owner_name") || ""),
+      active: true,
       make: String(formData.get("make") || ""),
       model: String(formData.get("model") || ""),
       year: formData.get("year") ? Number(formData.get("year")) : null,
@@ -31,16 +33,16 @@ async function createBoat(formData: FormData) {
       facebook_url: String(formData.get("facebook_url") || ""),
       instagram_url: String(formData.get("instagram_url") || ""),
       youtube_url: String(formData.get("youtube_url") || ""),
+      notes: String(formData.get("notes") || ""),
       captain_name: String(formData.get("captain_name") || ""),
       captain_email: String(formData.get("captain_email") || ""),
-      owner_name: String(formData.get("owner_name") || ""),
       owner_email: String(formData.get("owner_email") || ""),
-      notes: String(formData.get("notes") || ""),
-    })
-    .select("id")
-    .single();
+      profile_status: "approved",
+      user_id: null,
+    },
+  });
 
-  if (error || !boat) {
+  if (error || !boatId) {
     redirect(
       `/admin/boats/new?error=${encodeURIComponent(error?.message || "Unable to create boat")}`,
     );
@@ -49,7 +51,7 @@ async function createBoat(formData: FormData) {
   if (ownerAnglerIds.length > 0) {
     const { error: ownersError } = await supabase.from("boat_owners").insert(
       ownerAnglerIds.map((anglerId) => ({
-        boat_id: boat.id,
+        boat_id: boatId,
         angler_id: anglerId,
       })),
     );
@@ -61,7 +63,7 @@ async function createBoat(formData: FormData) {
     }
   }
 
-  redirect(`/admin/boats/${boat.id}`);
+  redirect(`/admin/boats/${boatId}`);
 }
 
 export default async function NewBoatPage({
@@ -71,7 +73,7 @@ export default async function NewBoatPage({
 }) {
   await requireRole("admin");
   const { error: saveError } = await searchParams;
-  const supabase = createAdminClient();
+  const supabase = await createClient();
 
   const { data: anglers } = await supabase
     .from("anglers")

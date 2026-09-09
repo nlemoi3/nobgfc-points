@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation";
 import { createClient } from "./supabase/server";
-import { createAdminClient } from "./supabase/admin";
 
 export type AppRole = "member" | "boat" | "weighmaster" | "admin";
 
@@ -55,64 +54,25 @@ export async function getCurrentUserAngler() {
   }
 
   const user = authData.user;
-  const adminSupabase = createAdminClient();
-  // Try finding angler by linked user_id first
-  const { data, error } = await adminSupabase
-    .from("anglers")
-    .select("*")
-    .eq("user_id", user.id)
-    .maybeSingle();
+  const { data, error } = await supabase.rpc("claim_angler_profile");
 
-  if (error) {
+  if (error || !data) {
     return null;
   }
 
-  if (data) {
-    return data;
+  const { data: existingRole } = await supabase
+    .from("user_roles")
+    .select("role")
+    .eq("user_id", user.id)
+    .maybeSingle();
+
+  if (!existingRole) {
+    await supabase
+      .from("user_roles")
+      .insert({ user_id: user.id, role: "member" });
   }
 
-  // If no angler linked by user_id, attempt to match by email and link it
-  if (user.email) {
-    const { data: byEmail, error: emailError } = await adminSupabase
-      .from("anglers")
-      .select("*")
-      .eq("email", user.email)
-      .maybeSingle();
-
-    if (emailError || !byEmail) {
-      return null;
-    }
-
-    // Try to associate the angler record with this authenticated user
-    const { data: updated, error: updateError } = await adminSupabase
-      .from("anglers")
-      .update({ user_id: user.id })
-      .eq("id", byEmail.id)
-      .select()
-      .maybeSingle();
-
-    if (!updateError && updated) {
-      // Assign member role only if the user has no existing role
-      const { data: existingRole } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", user.id)
-        .maybeSingle();
-
-      if (!existingRole) {
-        await supabase
-          .from("user_roles")
-          .insert({ user_id: user.id, role: "member" });
-      }
-
-      return updated;
-    }
-
-    // If update failed due to RLS or other reasons, still return the matched angler
-    return byEmail;
-  }
-
-  return null;
+  return data;
 }
 
 export async function linkCurrentUserToAngler(anglerId: number) {
@@ -123,15 +83,9 @@ export async function linkCurrentUserToAngler(anglerId: number) {
     return null;
   }
 
-  const user = authData.user;
-  const { data, error } = await supabase
-    .from("anglers")
-    .update({ user_id: user.id })
-    .eq("id", anglerId)
-    .select()
-    .maybeSingle();
+  const { data, error } = await supabase.rpc("claim_angler_profile");
 
-  if (error || !data) {
+  if (error || !data || Number(data.id) !== anglerId) {
     return null;
   }
 

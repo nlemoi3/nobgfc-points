@@ -3,7 +3,6 @@
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "../../lib/auth";
 import { createClient } from "../../lib/supabase/server";
-import { createAdminClient } from "../../lib/supabase/admin";
 
 export async function updateAccount(formData: FormData) {
   const user = await getCurrentUser();
@@ -22,18 +21,15 @@ export async function updateAccount(formData: FormData) {
   }
 
   const supabase = await createClient();
-  const adminSupabase = createAdminClient();
-  const { data: angler, error: anglerError } = await adminSupabase
-    .from("anglers")
-    .update({
-      email,
-      phone_number: phoneNumber,
-      date_of_birth: dateOfBirth,
-      address,
-    })
-    .eq("user_id", user.id)
-    .select("id")
-    .maybeSingle();
+  const { data: anglerId, error: anglerError } = await supabase.rpc(
+    "update_current_angler_profile",
+    {
+      p_email: email,
+      p_phone_number: phoneNumber,
+      p_date_of_birth: dateOfBirth,
+      p_address: address,
+    },
+  );
 
   if (anglerError) {
     redirect(`/account?error=${encodeURIComponent(anglerError.message)}`);
@@ -47,7 +43,7 @@ export async function updateAccount(formData: FormData) {
       redirect(`/account?error=${encodeURIComponent(updateEmailError.message)}`);
     }
 
-    if (!angler) {
+    if (!anglerId) {
       redirect(
         "/account?warning=No linked angler profile was found. Email update requested; check your inbox to confirm your new address.",
       );
@@ -58,7 +54,7 @@ export async function updateAccount(formData: FormData) {
     );
   }
 
-  if (!angler) {
+  if (!anglerId) {
     redirect(
       "/account?warning=No linked angler profile was found. Only your sign-in email can be updated here.",
     );

@@ -1,12 +1,12 @@
 import { redirect } from "next/navigation";
-import { createAdminClient } from "../../../../lib/supabase/admin";
+import { createClient } from "../../../../lib/supabase/server";
 import SearchableMultiSelect from "../../../components/searchable-multi-select";
 import { requireRole } from "../../../../lib/auth";
 
 async function uploadBoatMedia(file: File | null, boatId: number, type: "photo" | "logo") {
   if (!file || file.size === 0) return null;
 
-  const supabase = createAdminClient();
+  const supabase = await createClient();
   const extension = file.name.split(".").pop();
   const filePath = `boats/${boatId}/${type}-${Date.now()}.${extension}`;
 
@@ -31,7 +31,7 @@ async function updateBoat(formData: FormData) {
   const id = Number(formData.get("id"));
 
   try {
-    const supabase = createAdminClient();
+    const supabase = await createClient();
     const ownerAnglerIds = formData
       .getAll("owner_angler_ids")
       .map((value) => Number(value))
@@ -46,10 +46,11 @@ async function updateBoat(formData: FormData) {
     const currentPhotoUrl = String(formData.get("photo_url") || "");
     const currentLogoUrl = String(formData.get("logo_url") || "");
 
-    const { error } = await supabase
-      .from("boats")
-      .update({
+    const { error } = await supabase.rpc("admin_upsert_boat", {
+      p_id: id,
+      p_record: {
         name: String(formData.get("name") || ""),
+        owner_name: String(formData.get("owner_name") || ""),
         make: String(formData.get("make") || ""),
         model: String(formData.get("model") || ""),
         year: formData.get("year") ? Number(formData.get("year")) : null,
@@ -63,13 +64,12 @@ async function updateBoat(formData: FormData) {
         facebook_url: String(formData.get("facebook_url") || ""),
         instagram_url: String(formData.get("instagram_url") || ""),
         youtube_url: String(formData.get("youtube_url") || ""),
+        notes: String(formData.get("notes") || ""),
         captain_name: String(formData.get("captain_name") || ""),
         captain_email: String(formData.get("captain_email") || ""),
-        owner_name: String(formData.get("owner_name") || ""),
         owner_email: String(formData.get("owner_email") || ""),
-        notes: String(formData.get("notes") || ""),
-      })
-      .eq("id", id);
+      },
+    });
 
     if (error) {
       redirect(`/admin/boats/${id}?error=${encodeURIComponent(error.message)}`);
@@ -132,13 +132,13 @@ export default async function EditBoatPage({
   const { error: saveError } = await searchParams;
 
   try {
-    const supabase = createAdminClient();
+    const supabase = await createClient();
 
-    const { data: boat, error: boatError } = await supabase
-      .from("boats")
-      .select("*")
-      .eq("id", Number(id))
-      .single();
+    const { data: boatsData, error: boatError } = await supabase.rpc(
+      "admin_get_boats",
+      { p_id: Number(id) },
+    );
+    const boat = Array.isArray(boatsData) ? boatsData[0] : null;
 
     if (boatError) {
       return (
