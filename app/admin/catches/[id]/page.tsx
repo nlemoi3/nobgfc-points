@@ -239,8 +239,11 @@ export default async function EditCatchPage({
   ] = await Promise.all([
     supabase.from("catches").select("*").eq("id", catchId).single(),
     supabase.from("events").select("*").order("start_date"),
-    supabase.from("boats").select("*").order("name"),
-    supabase.from("anglers").select("*").order("last_name"),
+    supabase.from("boats").select("id,name").order("name"),
+    supabase
+      .from("anglers")
+      .select("id,first_name,last_name")
+      .order("last_name"),
     supabase.from("species").select("*").order("name"),
   ]);
 

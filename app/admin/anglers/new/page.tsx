@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { createClient } from "../../../../lib/supabase/server";
+import { createAdminClient } from "../../../../lib/supabase/admin";
 import { requireRole } from "../../../../lib/auth";
 
 async function createAngler(formData: FormData) {
@@ -7,7 +7,7 @@ async function createAngler(formData: FormData) {
 
   await requireRole("admin");
 
-  const supabase = await createClient();
+  const supabase = createAdminClient();
 
   const userId = String(formData.get("user_id") || "").trim() || null;
   const email = String(formData.get("email") || "").trim() || null;

@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "./supabase/server";
+import { createAdminClient } from "./supabase/admin";
 
 export type AppRole = "member" | "boat" | "weighmaster" | "admin";
 
@@ -54,8 +55,9 @@ export async function getCurrentUserAngler() {
   }
 
   const user = authData.user;
+  const adminSupabase = createAdminClient();
   // Try finding angler by linked user_id first
-  const { data, error } = await supabase
+  const { data, error } = await adminSupabase
     .from("anglers")
     .select("*")
     .eq("user_id", user.id)
@@ -71,7 +73,7 @@ export async function getCurrentUserAngler() {
 
   // If no angler linked by user_id, attempt to match by email and link it
   if (user.email) {
-    const { data: byEmail, error: emailError } = await supabase
+    const { data: byEmail, error: emailError } = await adminSupabase
       .from("anglers")
       .select("*")
       .eq("email", user.email)
@@ -82,7 +84,7 @@ export async function getCurrentUserAngler() {
     }
 
     // Try to associate the angler record with this authenticated user
-    const { data: updated, error: updateError } = await supabase
+    const { data: updated, error: updateError } = await adminSupabase
       .from("anglers")
       .update({ user_id: user.id })
       .eq("id", byEmail.id)

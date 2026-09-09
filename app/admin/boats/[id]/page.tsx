@@ -1,12 +1,12 @@
 import { redirect } from "next/navigation";
-import { createClient } from "../../../../lib/supabase/server";
+import { createAdminClient } from "../../../../lib/supabase/admin";
 import SearchableMultiSelect from "../../../components/searchable-multi-select";
 import { requireRole } from "../../../../lib/auth";
 
 async function uploadBoatMedia(file: File | null, boatId: number, type: "photo" | "logo") {
   if (!file || file.size === 0) return null;
 
-  const supabase = await createClient();
+  const supabase = createAdminClient();
   const extension = file.name.split(".").pop();
   const filePath = `boats/${boatId}/${type}-${Date.now()}.${extension}`;
 
@@ -31,7 +31,7 @@ async function updateBoat(formData: FormData) {
   const id = Number(formData.get("id"));
 
   try {
-    const supabase = await createClient();
+    const supabase = createAdminClient();
     const ownerAnglerIds = formData
       .getAll("owner_angler_ids")
       .map((value) => Number(value))
@@ -132,7 +132,7 @@ export default async function EditBoatPage({
   const { error: saveError } = await searchParams;
 
   try {
-    const supabase = await createClient();
+    const supabase = createAdminClient();
 
     const { data: boat, error: boatError } = await supabase
       .from("boats")

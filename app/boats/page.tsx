@@ -13,7 +13,9 @@ export default async function BoatsPage({
 
   const { data: boats, error } = await supabase
     .from("boats")
-    .select("*")
+    .select(
+      "id,name,owner_name,active,make,model,year,length_feet,home_port,photo_url,logo_url,website_url,facebook_url,instagram_url,youtube_url,notes,captain_name,profile_status",
+    )
     .order("name");
 
   const { data: catches } = await supabase
