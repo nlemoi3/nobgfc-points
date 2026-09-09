@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { unstable_noStore as noStore } from "next/cache";
-import { createAdminClient } from "../../../lib/supabase/admin";
+import { createClient } from "../../../lib/supabase/server";
 import { requireRole } from "../../../lib/auth";
 
 export default async function AdminBoatsPage({
@@ -14,11 +14,12 @@ export default async function AdminBoatsPage({
   const { q = "" } = await searchParams;
   const query = q.trim().toLowerCase();
 
-  const supabase = createAdminClient();
-  const { data: boats, error } = await supabase
-    .from("boats")
-    .select("*")
-    .order("name");
+  const supabase = await createClient();
+  const { data: boatsData, error } = await supabase.rpc(
+    "admin_get_boats",
+    { p_id: null },
+  );
+  const boats = Array.isArray(boatsData) ? boatsData : [];
 
   const filteredBoats = query
     ? (boats || []).filter((boat: any) => {

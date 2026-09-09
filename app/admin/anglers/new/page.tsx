@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { createAdminClient } from "../../../../lib/supabase/admin";
+import { createClient } from "../../../../lib/supabase/server";
 import { requireRole } from "../../../../lib/auth";
 
 async function createAngler(formData: FormData) {
@@ -7,27 +7,39 @@ async function createAngler(formData: FormData) {
 
   await requireRole("admin");
 
-  const supabase = createAdminClient();
+  const supabase = await createClient();
 
   const userId = String(formData.get("user_id") || "").trim() || null;
   const email = String(formData.get("email") || "").trim() || null;
   const phoneNumber = String(formData.get("phone_number") || "").trim() || null;
   const role = String(formData.get("role") || "").trim();
 
-  const { data: newAngler, error } = await supabase.from("anglers").insert({
-    first_name: String(formData.get("first_name") || ""),
-    last_name: String(formData.get("last_name") || ""),
-    is_member: formData.get("is_member") === "on",
-    is_youth: formData.get("is_youth") === "on",
-    date_of_birth: formData.get("date_of_birth") || null,
-    biography: String(formData.get("biography") || ""),
-    email: email,
-    phone_number: phoneNumber,
-    user_id: userId,
-  }).select().single();
+  const { data: newAnglerId, error } = await supabase.rpc(
+    "admin_upsert_angler",
+    {
+      p_id: null,
+      p_record: {
+        first_name: String(formData.get("first_name") || ""),
+        last_name: String(formData.get("last_name") || ""),
+        is_member: formData.get("is_member") === "on",
+        is_youth: formData.get("is_youth") === "on",
+        active: true,
+        date_of_birth: formData.get("date_of_birth") || null,
+        photo_url: null,
+        biography: String(formData.get("biography") || ""),
+        member_id: null,
+        email,
+        phone_number: phoneNumber,
+        address: null,
+        user_id: userId,
+      },
+    },
+  );
 
-  if (error) {
-    redirect(`/admin/anglers/new?error=${encodeURIComponent(error.message)}`);
+  if (error || !newAnglerId) {
+    redirect(
+      `/admin/anglers/new?error=${encodeURIComponent(error?.message || "Unable to create angler")}`,
+    );
   }
 
   // Assign role if user_id and role provided

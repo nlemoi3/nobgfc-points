@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { createAdminClient } from "../../../../lib/supabase/admin";
+import { createClient } from "../../../../lib/supabase/server";
 import { requireRole } from "../../../../lib/auth";
 
 async function updateAngler(formData: FormData) {
@@ -7,7 +7,7 @@ async function updateAngler(formData: FormData) {
 
   await requireRole("admin");
 
-  const supabase = createAdminClient();
+  const supabase = await createClient();
   const id = Number(formData.get("id"));
 
   const userId = String(formData.get("user_id") || "").trim() || null;
@@ -17,9 +17,9 @@ async function updateAngler(formData: FormData) {
 
   const role = String(formData.get("role") || "").trim();
 
-  const { error } = await supabase
-    .from("anglers")
-    .update({
+  const { error } = await supabase.rpc("admin_upsert_angler", {
+    p_id: id,
+    p_record: {
       first_name: String(formData.get("first_name") || ""),
       last_name: String(formData.get("last_name") || ""),
       is_member: formData.get("is_member") === "on",
@@ -27,12 +27,12 @@ async function updateAngler(formData: FormData) {
       photo_url: String(formData.get("photo_url") || ""),
       date_of_birth: formData.get("date_of_birth") || null,
       biography: String(formData.get("biography") || ""),
-      email: email,
+      email,
       phone_number: phoneNumber,
-      address: address,
+      address,
       user_id: userId,
-    })
-    .eq("id", id);
+    },
+  });
 
   if (error) {
     redirect(`/admin/anglers/${id}?error=${encodeURIComponent(error.message)}`);
@@ -65,13 +65,13 @@ export default async function EditAnglerPage({
   await requireRole("admin");
   const { id } = await params;
   const { error: saveError } = await searchParams;
-  const supabase = createAdminClient();
+  const supabase = await createClient();
 
-  const { data: angler, error } = await supabase
-    .from("anglers")
-    .select("*")
-    .eq("id", Number(id))
-    .single();
+  const { data: anglersData, error } = await supabase.rpc(
+    "admin_get_anglers",
+    { p_id: Number(id) },
+  );
+  const angler = Array.isArray(anglersData) ? anglersData[0] : null;
 
   const currentRole = angler?.user_id
     ? (await supabase
