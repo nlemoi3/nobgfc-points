@@ -1,8 +1,11 @@
 import { redirect } from "next/navigation";
 import { createClient } from "../../../../lib/supabase/server";
+import { requireRole } from "../../../../lib/auth";
 
 async function createHistoricalStanding(formData: FormData) {
   "use server";
+
+  await requireRole("admin");
 
   const supabase = await createClient();
   const { error } = await supabase
@@ -20,7 +23,8 @@ async function createHistoricalStanding(formData: FormData) {
   redirect("/admin/historical-standings");
 }
 
-export default function NewHistoricalStandingPage() {
+export default async function NewHistoricalStandingPage() {
+  await requireRole("admin");
   return (
     <main className="panel">
       <h1>Add Historical Standing</h1>

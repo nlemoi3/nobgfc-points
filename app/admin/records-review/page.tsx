@@ -12,7 +12,6 @@ export default async function RecordsReviewPage() {
       released,
       points_awarded,
       catch_datetime,
-      photo_url,
       boats(id,name),
       anglers(id,first_name,last_name),
       species(name),
@@ -23,7 +22,6 @@ export default async function RecordsReviewPage() {
   const issues =
     catches?.filter((c: any) => {
       return (
-        !c.photo_url ||
         !c.catch_datetime ||
         (!c.released && !c.weight) ||
         c.points_awarded === null
@@ -35,9 +33,10 @@ export default async function RecordsReviewPage() {
       <h1>Records Review</h1>
 
       <p>
-        Approved catches with missing data that may affect club records.
-        Estimated weights on released fish are allowed and do not qualify for
-        weighed-fish records.
+        Approved catches with missing scoring data that may affect club records.
+        Public website photos are optional and are not used as the verification
+        record. Estimated weights on released fish are allowed and do not
+        qualify for weighed-fish records.
       </p>
 
       {error && (
@@ -69,7 +68,6 @@ export default async function RecordsReviewPage() {
           {issues.map((c: any) => {
             const problems: string[] = [];
 
-            if (!c.photo_url) problems.push("Missing Photo");
             if (!c.catch_datetime) problems.push("Missing Date");
             if (!c.released && !c.weight) problems.push("Missing Weight");
             if (c.points_awarded === null) problems.push("Missing Points");

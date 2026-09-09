@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { supabase } from "../../../lib/supabase";
+import { requireRole } from "../../../lib/auth";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminHistoricalStandingsPage() {
+  await requireRole("admin");
   const { data: rows, error } = await supabase
     .from("historical_boat_standings")
     .select("*")

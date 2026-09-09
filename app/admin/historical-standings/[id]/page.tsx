@@ -1,8 +1,11 @@
 import { redirect } from "next/navigation";
 import { createClient } from "../../../../lib/supabase/server";
+import { requireRole } from "../../../../lib/auth";
 
 async function updateHistoricalStanding(formData: FormData) {
   "use server";
+
+  await requireRole("admin");
 
   const supabase = await createClient();
   const id = Number(formData.get("id"));
@@ -26,6 +29,8 @@ async function updateHistoricalStanding(formData: FormData) {
 async function deleteHistoricalStanding(formData: FormData) {
   "use server";
 
+  await requireRole("admin");
+
   const supabase = await createClient();
   const id = Number(formData.get("id"));
 
@@ -44,6 +49,7 @@ export default async function EditHistoricalStandingPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  await requireRole("admin");
   const { id } = await params;
   const supabase = await createClient();
 

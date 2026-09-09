@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { supabase } from "../../../lib/supabase";
+import { requireRole } from "../../../lib/auth";
 
 export default async function AdminAwardsPage() {
+  await requireRole("admin");
   const { data: awards, error: awardsError } = await supabase
     .from("angler_awards")
     .select("*")

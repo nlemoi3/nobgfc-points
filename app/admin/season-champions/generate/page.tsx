@@ -1,29 +1,23 @@
 import { redirect } from "next/navigation";
 import { createClient } from "../../../../lib/supabase/server";
 import { getOfficialEligiblePoints } from "../../../../lib/scoring";
+import { requireRole } from "../../../../lib/auth";
 
 async function generateAwards(formData: FormData) {
   "use server";
 
+  await requireRole("admin");
+
   const supabase = await createClient();
   const year = Number(formData.get("year"));
 
-  await supabase
-  .from("boat_awards")
-  .delete()
-  .eq("award_year", year)
-  .eq("award_name", "Boat Champion");
+  if (!Number.isInteger(year) || year < 1900 || year > 2100) {
+    redirect(
+      "/admin/season-champions/generate?error=Enter%20a%20valid%20season%20year",
+    );
+  }
 
-await supabase
-  .from("angler_awards")
-  .delete()
-  .eq("award_year", year)
-  .in("award_name", [
-    "Angling Champion",
-    "Dutch Prager Youth Champion",
-  ]);
-
-  const { data: catches } = await supabase
+  const { data: catches, error: catchesError } = await supabase
     .from("catches")
     .select(`
       id,
@@ -36,30 +30,33 @@ await supabase
       anglers(id,first_name,last_name,is_member,is_youth),
       species(name)
     `)
-    .eq("status", "approved");
+    .eq("status", "approved")
+    .gte("catch_datetime", `${year}-01-01T00:00:00.000Z`)
+    .lt("catch_datetime", `${year + 1}-01-01T00:00:00.000Z`);
 
-  const yearCatches =
-    catches?.filter((c: any) => {
-      const catchYear = new Date(
-        c.catch_datetime
-      ).getFullYear();
+  if (catchesError) {
+    redirect(
+      `/admin/season-champions/generate?error=${encodeURIComponent(catchesError.message)}`,
+    );
+  }
 
-      return catchYear === year;
-    }) || [];
+  const yearCatches = catches || [];
 
   const boatGroups: Record<string, any[]> = {};
   const anglerGroups: Record<string, any[]> = {};
   const youthGroups: Record<string, any[]> = {};
 
   yearCatches.forEach((c: any) => {
-    const boatName = c.boats?.name;
+    const boatId = c.boats?.id;
 
-    if (boatName) {
-      if (!boatGroups[boatName]) {
-        boatGroups[boatName] = [];
+    if (boatId) {
+      const boatKey = String(boatId);
+
+      if (!boatGroups[boatKey]) {
+        boatGroups[boatKey] = [];
       }
 
-      boatGroups[boatName].push(c);
+      boatGroups[boatKey].push(c);
     }
 
     if (c.anglers?.is_member) {
@@ -104,37 +101,43 @@ await supabase
     }))
     .sort((a, b) => b.points - a.points)[0];
 
-  if (boatChampion) {
-    await supabase.from("boat_awards").insert({
-      boat_id: boatChampion.boatId,
-      award_name: "Boat Champion",
-      award_year: year,
-    });
-  }
+  const { error: replaceError } = await supabase.rpc(
+    "replace_season_champions",
+    {
+      p_year: year,
+      p_boat_id: boatChampion?.boatId ?? null,
+      p_angler_id: anglerChampion?.anglerId ?? null,
+      p_youth_id: youthChampion?.anglerId ?? null,
+    },
+  );
 
-  if (anglerChampion) {
-    await supabase.from("angler_awards").insert({
-      angler_id: anglerChampion.anglerId,
-      award_name: "Angling Champion",
-      award_year: year,
-    });
-  }
-
-  if (youthChampion) {
-    await supabase.from("angler_awards").insert({
-      angler_id: youthChampion.anglerId,
-      award_name: "Dutch Prager Youth Champion",
-      award_year: year,
-    });
+  if (replaceError) {
+    redirect(
+      `/admin/season-champions/generate?error=${encodeURIComponent(replaceError.message)}`,
+    );
   }
 
   redirect("/admin/season-champions");
 }
 
-export default function GenerateSeasonAwardsPage() {
+export default async function GenerateSeasonAwardsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string }>;
+}) {
+  await requireRole("admin");
+  const { error } = await searchParams;
+
   return (
     <main className="panel">
       <h1>Generate Season Awards</h1>
+
+      <p>
+        This recalculates the selected year and replaces its three champion
+        awards together, so a failed update cannot leave a partial result.
+      </p>
+
+      {error && <p className="alert alert-danger">Unable to generate: {error}</p>}
 
       <form action={generateAwards}>
         <p>

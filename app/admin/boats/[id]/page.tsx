@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "../../../../lib/supabase/server";
 import SearchableMultiSelect from "../../../components/searchable-multi-select";
+import { requireRole } from "../../../../lib/auth";
 
 async function uploadBoatMedia(file: File | null, boatId: number, type: "photo" | "logo") {
   if (!file || file.size === 0) return null;
@@ -26,6 +27,7 @@ async function uploadBoatMedia(file: File | null, boatId: number, type: "photo" 
 
 async function updateBoat(formData: FormData) {
   "use server";
+  await requireRole("admin");
   const id = Number(formData.get("id"));
 
   try {
@@ -125,6 +127,7 @@ export default async function EditBoatPage({
   params: Promise<{ id: string }>;
   searchParams: Promise<{ error?: string }>;
 }) {
+  await requireRole("admin");
   const { id } = await params;
   const { error: saveError } = await searchParams;
 

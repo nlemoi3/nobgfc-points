@@ -4,6 +4,8 @@ import test from "node:test";
 import {
   calculateCatchPoints,
   formatCatchWeight,
+  getExcludedCatches,
+  getOfficialEligiblePoints,
   isWeighedCatch,
   validateCatchInput,
   validateEventAssignment,
@@ -67,6 +69,23 @@ test("release estimates are labeled and excluded from weighed records", () => {
   assert.equal(formatCatchWeight(releasedEstimate), "250 lbs (estimated)");
   assert.equal(isWeighedCatch(releasedEstimate), false);
   assert.equal(isWeighedCatch({ weight: 250, released: false }), true);
+});
+
+test("only three released Swordfish count toward an official total", () => {
+  const swordfishReleases = [1, 2, 3, 4].map((id) => ({
+    id,
+    points_awarded: 150,
+    released: true,
+    tagged: false,
+    weight: null,
+    species: { name: "Swordfish" },
+  }));
+
+  assert.equal(getOfficialEligiblePoints(swordfishReleases), 450);
+  assert.deepEqual(
+    getExcludedCatches(swordfishReleases).map((catchRecord) => catchRecord.id),
+    [4],
+  );
 });
 
 test("minimum weight and tag/release combinations are enforced", () => {

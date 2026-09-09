@@ -1,8 +1,11 @@
 import { redirect } from "next/navigation";
 import { createClient } from "../../../../lib/supabase/server";
+import { requireRole } from "../../../../lib/auth";
 
 async function createBoatAward(formData: FormData) {
   "use server";
+
+  await requireRole("admin");
 
   const supabase = await createClient();
   const { error } = await supabase
@@ -20,6 +23,7 @@ async function createBoatAward(formData: FormData) {
 }
 
 export default async function NewBoatAwardPage() {
+  await requireRole("admin");
   const supabase = await createClient();
   const { data: boats } = await supabase
     .from("boats")
