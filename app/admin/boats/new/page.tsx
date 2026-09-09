@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { createClient } from "../../../../lib/supabase/server";
+import { createAdminClient } from "../../../../lib/supabase/admin";
 import SearchableMultiSelect from "../../../components/searchable-multi-select";
 import { requireRole } from "../../../../lib/auth";
 
@@ -8,7 +8,7 @@ async function createBoat(formData: FormData) {
 
   await requireRole("admin");
 
-  const supabase = await createClient();
+  const supabase = createAdminClient();
   const ownerAnglerIds = formData
     .getAll("owner_angler_ids")
     .map((value) => Number(value))
@@ -71,7 +71,7 @@ export default async function NewBoatPage({
 }) {
   await requireRole("admin");
   const { error: saveError } = await searchParams;
-  const supabase = await createClient();
+  const supabase = createAdminClient();
 
   const { data: anglers } = await supabase
     .from("anglers")

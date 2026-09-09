@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "../../lib/auth";
 import { createClient } from "../../lib/supabase/server";
+import { createAdminClient } from "../../lib/supabase/admin";
 
 export async function updateAccount(formData: FormData) {
   const user = await getCurrentUser();
@@ -21,7 +22,8 @@ export async function updateAccount(formData: FormData) {
   }
 
   const supabase = await createClient();
-  const { data: angler, error: anglerError } = await supabase
+  const adminSupabase = createAdminClient();
+  const { data: angler, error: anglerError } = await adminSupabase
     .from("anglers")
     .update({
       email,

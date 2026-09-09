@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { unstable_noStore as noStore } from "next/cache";
-import { createClient } from "../../../lib/supabase/server";
+import { createAdminClient } from "../../../lib/supabase/admin";
 import { requireRole } from "../../../lib/auth";
 
 export default async function AdminAnglersPage({
@@ -14,7 +14,7 @@ export default async function AdminAnglersPage({
   const { q = "" } = await searchParams;
   const query = q.trim().toLowerCase();
 
-  const supabase = await createClient();
+  const supabase = createAdminClient();
   const { data: anglers, error } = await supabase
     .from("anglers")
     .select("*")

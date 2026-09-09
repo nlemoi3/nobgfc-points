@@ -27,7 +27,7 @@ export default async function AnglerProfilePage({
 
   const { data: angler } = await supabase
     .from("anglers")
-    .select("*")
+    .select("id,first_name,last_name,is_member,is_youth,active,photo_url,biography")
     .eq("id", anglerId)
     .single();
 

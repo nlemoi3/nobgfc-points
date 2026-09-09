@@ -102,8 +102,11 @@ export default async function CatchEntryPage() {
   const [{ data: events }, { data: boats }, { data: anglers }, { data: species }] =
     await Promise.all([
       supabase.from("events").select("*").order("start_date"),
-      supabase.from("boats").select("*").order("name"),
-      supabase.from("anglers").select("*").order("last_name"),
+      supabase.from("boats").select("id,name").order("name"),
+      supabase
+        .from("anglers")
+        .select("id,first_name,last_name")
+        .order("last_name"),
       supabase.from("species").select("*").order("name"),
     ]);
 
