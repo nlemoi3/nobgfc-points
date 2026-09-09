@@ -1,15 +1,8 @@
 import Link from "next/link";
 import { unstable_noStore as noStore } from "next/cache";
 import { requireRole } from "../../../lib/auth";
-import { createAdminClient } from "../../../lib/supabase/admin";
+import { getAdminUsers } from "../../../lib/admin-users";
 import { setMemberRole } from "./actions";
-
-type UserRow = {
-  id: string;
-  email: string | null;
-  created_at: string;
-  last_sign_in_at: string | null;
-};
 
 export default async function AdminMembersPage({
   searchParams,
@@ -20,31 +13,8 @@ export default async function AdminMembersPage({
   await requireRole("admin");
 
   const { error, sent } = await searchParams;
-  const supabase = createAdminClient();
-
-  const [usersResult, rolesResult] = await Promise.allSettled([
-    supabase.auth.admin.listUsers({ page: 1, perPage: 100 }),
-    supabase.from("user_roles").select("user_id, role"),
-  ]);
-
-  const usersData = usersResult.status === "fulfilled" ? usersResult.value.data : null;
-  const usersError = usersResult.status === "fulfilled" ? usersResult.value.error : usersResult.reason;
-  const rolesData = rolesResult.status === "fulfilled" ? rolesResult.value.data : [];
-  const rolesError = rolesResult.status === "fulfilled" ? rolesResult.value.error : null;
-
-  const rolesByUserId = new Map<string, string>();
-  (rolesData || []).forEach((row: { user_id: string; role: string }) => {
-    rolesByUserId.set(row.user_id, row.role);
-  });
-
-  const users = (usersData?.users || []).map((user) => ({
-    id: user.id,
-    email: user.email,
-    created_at: user.created_at,
-    last_sign_in_at: user.last_sign_in_at || null,
-  })) as UserRow[];
-
-  const pendingUsers = users.filter((user) => !rolesByUserId.has(user.id));
+  const { users, error: usersError } = await getAdminUsers();
+  const pendingUsers = users.filter((user) => !user.role);
 
   return (
     <main className="panel">
@@ -117,7 +87,7 @@ export default async function AdminMembersPage({
             {users.map((user) => (
               <tr key={user.id}>
                 <td>{user.email || "—"}</td>
-                <td>{rolesByUserId.get(user.id) || "pending"}</td>
+                <td>{user.role || "pending"}</td>
                 <td>{new Date(user.created_at).toLocaleDateString()}</td>
                 <td>{user.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleString() : "—"}</td>
               </tr>
