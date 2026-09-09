@@ -1,8 +1,11 @@
 import { redirect } from "next/navigation";
 import { createClient } from "../../../../lib/supabase/server";
+import { requireRole } from "../../../../lib/auth";
 
 async function updateAward(formData: FormData) {
   "use server";
+
+  await requireRole("admin");
 
   const supabase = await createClient();
   const id = Number(formData.get("id"));
@@ -25,6 +28,8 @@ async function updateAward(formData: FormData) {
 async function deleteAward(formData: FormData) {
   "use server";
 
+  await requireRole("admin");
+
   const supabase = await createClient();
   const id = Number(formData.get("id"));
 
@@ -43,6 +48,7 @@ export default async function EditAwardPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  await requireRole("admin");
   const { id } = await params;
   const supabase = await createClient();
 

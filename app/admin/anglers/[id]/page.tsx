@@ -1,8 +1,11 @@
 import { redirect } from "next/navigation";
 import { createClient } from "../../../../lib/supabase/server";
+import { requireRole } from "../../../../lib/auth";
 
 async function updateAngler(formData: FormData) {
   "use server";
+
+  await requireRole("admin");
 
   const supabase = await createClient();
   const id = Number(formData.get("id"));
@@ -59,6 +62,7 @@ export default async function EditAnglerPage({
   params: Promise<{ id: string }>;
   searchParams: Promise<{ error?: string }>;
 }) {
+  await requireRole("admin");
   const { id } = await params;
   const { error: saveError } = await searchParams;
   const supabase = await createClient();

@@ -1,12 +1,14 @@
 import Link from "next/link";
 import { unstable_noStore as noStore } from "next/cache";
 import { createClient } from "../../../lib/supabase/server";
+import { requireRole } from "../../../lib/auth";
 
 export default async function AdminBoatsPage({
   searchParams,
 }: {
   searchParams: Promise<{ q?: string }>;
 }) {
+  await requireRole("admin");
   noStore();
 
   const { q = "" } = await searchParams;

@@ -1,8 +1,11 @@
 import { redirect } from "next/navigation";
 import { createClient } from "../../../../lib/supabase/server";
+import { requireRole } from "../../../../lib/auth";
 
 async function applyToExistingBoat(formData: FormData) {
   "use server";
+
+  await requireRole("admin");
 
   const supabase = await createClient();
   const requestId = Number(formData.get("request_id"));
@@ -55,6 +58,8 @@ async function applyToExistingBoat(formData: FormData) {
 async function createNewBoatFromRequest(formData: FormData) {
   "use server";
 
+  await requireRole("admin");
+
   const supabase = await createClient();
   const requestId = Number(formData.get("request_id"));
 
@@ -105,6 +110,8 @@ async function createNewBoatFromRequest(formData: FormData) {
 async function updateRequestStatus(formData: FormData) {
   "use server";
 
+  await requireRole("admin");
+
   const supabase = await createClient();
   const requestId = Number(formData.get("request_id"));
   const status = String(formData.get("status") || "new");
@@ -124,6 +131,7 @@ export default async function BoatProfileRequestDetailPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  await requireRole("admin");
   const { id } = await params;
   const supabase = await createClient();
 

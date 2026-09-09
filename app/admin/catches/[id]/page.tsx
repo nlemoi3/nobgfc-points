@@ -428,7 +428,12 @@ export default async function EditCatchPage({
 
         <hr />
 
-        <h2>Catch Photo</h2>
+        <h2>Public Catch Photo (Optional)</h2>
+
+        <p>
+          This image is for the website and gallery. Club verification records
+          may be maintained separately by the Weighmaster.
+        </p>
 
         {catchRecord.photo_url && (
           <p>
@@ -443,7 +448,7 @@ export default async function EditCatchPage({
         )}
 
         <p>
-          <label>Upload New Catch Photo</label>
+          <label>Upload New Public Photo</label>
           <br />
           <input
             name="photo_file"

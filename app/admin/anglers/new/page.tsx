@@ -1,8 +1,11 @@
 import { redirect } from "next/navigation";
 import { createClient } from "../../../../lib/supabase/server";
+import { requireRole } from "../../../../lib/auth";
 
 async function createAngler(formData: FormData) {
   "use server";
+
+  await requireRole("admin");
 
   const supabase = await createClient();
 
@@ -42,6 +45,7 @@ export default async function NewAnglerPage({
 }: {
   searchParams: Promise<{ error?: string }>;
 }) {
+  await requireRole("admin");
   const { error: saveError } = await searchParams;
 
   return (

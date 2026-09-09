@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { supabase } from "../../../lib/supabase";
 import { getOfficialEligiblePoints } from "../../../lib/scoring";
+import { requireRole } from "../../../lib/auth";
 
 export default async function SeasonChampionsPage() {
+await requireRole("admin");
 const { data: catches, error } = await supabase
   .from("catches")
   .select(`

@@ -48,6 +48,7 @@ export const LINE_CLASS_MULTIPLIERS: Record<number, number> = {
 
 const BEST_THREE_WEIGHED_SPECIES = ["Dolphin", "Wahoo"] as const;
 const LIMITED_TUNA_SPECIES = ["Yellowfin Tuna", "Bigeye Tuna"] as const;
+const LIMITED_RELEASE_SPECIES = ["Swordfish"] as const;
 
 type PointCalculationInput = {
   speciesName: string;
@@ -181,11 +182,20 @@ function selectOfficialCatches(catches: CatchRecord[]) {
   );
   const weighedTuna: CatchRecord[] = [];
   const releasedTuna: CatchRecord[] = [];
+  const limitedReleases = new Map<string, CatchRecord[]>(
+    LIMITED_RELEASE_SPECIES.map((name) => [name, []])
+  );
 
   catches.forEach((catchRecord) => {
     const speciesName = catchRecord.species?.name;
 
-    if (speciesName && limitedWeighed.has(speciesName)) {
+    if (
+      catchRecord.released &&
+      speciesName &&
+      limitedReleases.has(speciesName)
+    ) {
+      limitedReleases.get(speciesName)?.push(catchRecord);
+    } else if (speciesName && limitedWeighed.has(speciesName)) {
       limitedWeighed.get(speciesName)?.push(catchRecord);
     } else if (
       speciesName &&
@@ -202,6 +212,10 @@ function selectOfficialCatches(catches: CatchRecord[]) {
   });
 
   limitedWeighed.forEach((items) => {
+    eligible.push(...[...items].sort(rankForEligibility).slice(0, 3));
+  });
+
+  limitedReleases.forEach((items) => {
     eligible.push(...[...items].sort(rankForEligibility).slice(0, 3));
   });
 

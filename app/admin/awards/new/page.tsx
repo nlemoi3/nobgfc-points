@@ -1,8 +1,11 @@
 import { redirect } from "next/navigation";
 import { createClient } from "../../../../lib/supabase/server";
+import { requireRole } from "../../../../lib/auth";
 
 async function createAward(formData: FormData) {
   "use server";
+
+  await requireRole("admin");
 
   const supabase = await createClient();
   const { error } = await supabase
@@ -22,6 +25,7 @@ async function createAward(formData: FormData) {
 }
 
 export default async function NewAwardPage() {
+  await requireRole("admin");
   const supabase = await createClient();
   const { data: anglers } = await supabase
     .from("anglers")
