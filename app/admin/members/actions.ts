@@ -2,7 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { requireRole } from "../../../lib/auth";
-import { createAdminClient } from "../../../lib/supabase/admin";
+import { createClient } from "../../../lib/supabase/server";
 
 export async function setMemberRole(formData: FormData) {
   await requireRole("admin");
@@ -18,10 +18,11 @@ export async function setMemberRole(formData: FormData) {
     redirect("/admin/members?error=Invalid role selected");
   }
 
-  const supabase = createAdminClient();
-  const { error } = await supabase
-    .from("user_roles")
-    .upsert({ user_id: userId, role }, { onConflict: "user_id" });
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("admin_set_user_role", {
+    p_user_id: userId,
+    p_role: role,
+  });
 
   if (error) {
     redirect(`/admin/members?error=${encodeURIComponent(error.message)}`);
