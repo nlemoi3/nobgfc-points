@@ -48,6 +48,7 @@ export const LINE_CLASS_MULTIPLIERS: Record<number, number> = {
 
 const BEST_THREE_WEIGHED_SPECIES = ["Dolphin", "Wahoo"] as const;
 const LIMITED_TUNA_SPECIES = ["Yellowfin Tuna", "Bigeye Tuna"] as const;
+const ANNUAL_LIMITED_TUNA_SPECIES = "Yellowfin Tuna";
 const LIMITED_RELEASE_SPECIES = ["Swordfish"] as const;
 
 type PointCalculationInput = {
@@ -219,8 +220,27 @@ function selectOfficialCatches(catches: CatchRecord[]) {
     eligible.push(...[...items].sort(rankForEligibility).slice(0, 3));
   });
 
-  eligible.push(...weighedTuna.sort(rankForEligibility).slice(0, 3));
-  eligible.push(...releasedTuna.sort(rankForEligibility).slice(0, 3));
+  // Rules 6 and 11 first limit the combined Yellowfin/Bigeye category to
+  // three weighed and three tag-and-release entries. Annual award Rules
+  // 13(d) and 13(f) add a second limit: only the three highest-point
+  // Yellowfin count across both weighed and tag-and-release entries.
+  const generallyEligibleTuna = [
+    ...weighedTuna.sort(rankForEligibility).slice(0, 3),
+    ...releasedTuna.sort(rankForEligibility).slice(0, 3),
+  ];
+  const annualLimitedTuna = generallyEligibleTuna
+    .filter(
+      (catchRecord) =>
+        catchRecord.species?.name === ANNUAL_LIMITED_TUNA_SPECIES,
+    )
+    .sort(rankForEligibility)
+    .slice(0, 3);
+  const otherTuna = generallyEligibleTuna.filter(
+    (catchRecord) =>
+      catchRecord.species?.name !== ANNUAL_LIMITED_TUNA_SPECIES,
+  );
+
+  eligible.push(...annualLimitedTuna, ...otherTuna);
 
   return eligible;
 }
