@@ -458,6 +458,34 @@ hr {
   gap: 14px;
 }
 
+.nav-links {
+  display: contents;
+}
+
+.nav-group {
+  display: inline-block;
+  margin-right: 18px;
+  position: relative;
+}
+
+.admin-nav-link {
+  margin-right: 18px;
+}
+
+.mobile-nav-toggle {
+  align-items: center;
+  background: #fff;
+  border: 1px solid #c5d4e3;
+  border-radius: 10px;
+  color: #234663;
+  cursor: pointer;
+  display: none;
+  font: inherit;
+  font-weight: 700;
+  gap: 7px;
+  padding: 9px 12px;
+}
+
 .brand-link {
   display: inline-flex;
   align-items: center;
@@ -615,6 +643,66 @@ hr {
   border: 0;
   font: inherit;
   cursor: pointer;
+}
+
+/* Member portal landing page */
+.portal-home {
+  overflow: hidden;
+}
+
+.portal-hero {
+  align-items: center;
+  background: linear-gradient(135deg, #eef7fd 0%, #fff 62%, #f7fbfe 100%);
+  border: 1px solid #d6e3ee;
+  border-radius: var(--radius-lg);
+  display: grid;
+  gap: 28px;
+  grid-template-columns: auto 1fr;
+  padding: clamp(24px, 5vw, 52px);
+}
+
+.portal-hero-logo {
+  height: auto;
+  width: clamp(96px, 14vw, 132px);
+}
+
+.portal-eyebrow {
+  color: var(--accent-600);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  margin: 0 0 8px;
+  text-transform: uppercase;
+}
+
+.portal-hero h1 {
+  margin-bottom: 12px;
+}
+
+.portal-intro {
+  color: #456277;
+  font-size: clamp(1rem, 2vw, 1.2rem);
+  margin: 0;
+  max-width: 680px;
+}
+
+.portal-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.portal-grid {
+  display: grid;
+  gap: 18px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: 24px;
+}
+
+.portal-grid h2 {
+  font-size: 1.25rem;
+  margin-top: 0;
 }
 
 /* Boat page hero styling */
@@ -937,9 +1025,51 @@ hr {
     flex-wrap: wrap;
   }
 
+  .mobile-nav-toggle {
+    display: inline-flex;
+    margin-left: auto;
+  }
+
+  .nav-links {
+    display: none;
+  }
+
+  .nav-links.mobile-open {
+    align-items: stretch;
+    border-top: 1px solid #dce6f0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding-top: 10px;
+    width: 100%;
+  }
+
+  .nav-group,
+  .admin-nav-link {
+    display: block;
+    margin-right: 0;
+  }
+
+  .nav-group-btn,
+  .admin-nav-link {
+    display: block;
+    padding: 11px 8px;
+    text-align: left;
+    width: 100%;
+  }
+
+  .nav-menu {
+    border-radius: 8px;
+    box-shadow: none;
+    margin: 0 0 6px;
+    min-width: 0;
+    position: static;
+  }
+
   .auth-controls {
     width: 100%;
-    justify-content: flex-end;
+    justify-content: flex-start;
+    padding: 8px;
   }
 
   .toolbar {
@@ -976,6 +1106,15 @@ hr {
 
   .dashboard-logo-secondary {
     height: 58px;
+  }
+
+  .portal-hero {
+    align-items: flex-start;
+    grid-template-columns: 1fr;
+  }
+
+  .portal-grid {
+    grid-template-columns: 1fr;
   }
 
   .boat-hero-logo {

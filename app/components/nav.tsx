@@ -21,13 +21,7 @@ function NavGroup({
   const menuId = useId();
 
   return (
-    <div
-      style={{
-        display: "inline-block",
-        marginRight: "18px",
-        position: "relative",
-      }}
-    >
+    <div className="nav-group">
       <button
         type="button"
         aria-expanded={isOpen}
@@ -60,11 +54,13 @@ export default function Nav({
   role: AppRole | null;
 }) {
   const [openGroup, setOpenGroup] = useState<string | null>(null);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const pathname = usePathname();
   const navRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     setOpenGroup(null);
+    setIsMobileMenuOpen(false);
   }, [pathname]);
 
   useEffect(() => {
@@ -82,6 +78,7 @@ export default function Nav({
         !navRef.current.contains(event.target)
       ) {
         setOpenGroup(null);
+        setIsMobileMenuOpen(false);
       }
     };
 
@@ -120,43 +117,59 @@ export default function Nav({
         <strong>NOBGFC</strong>
       </Link>
 
-      <NavGroup title="Competition" isOpen={openGroup === "Competition"} onToggle={() => toggleGroup("Competition")}>
-        <div><Link href="/events">Event Schedule</Link></div>
-        <div><Link href="/official-standings">Official Boat Standings</Link></div>
-        <div><Link href="/official-angler-standings">Official Angler Standings</Link></div>
-        <div><Link href="/official-youth-standings">Youth Standings</Link></div>
-        <div><Link href="/tournament-standings">Tournament Standings</Link></div>
-      </NavGroup>
+      <button
+        type="button"
+        className="mobile-nav-toggle"
+        aria-expanded={isMobileMenuOpen}
+        aria-controls="primary-navigation"
+        onClick={() => setIsMobileMenuOpen((current) => !current)}
+      >
+        <span aria-hidden="true">{isMobileMenuOpen ? "×" : "☰"}</span>
+        <span>Menu</span>
+      </button>
 
-      <NavGroup title="Directory" isOpen={openGroup === "Directory"} onToggle={() => toggleGroup("Directory")}>
-        <div><Link href="/boats">Boats</Link></div>
-        <div><Link href="/anglers">Anglers</Link></div>
-      </NavGroup>
+      <div
+        id="primary-navigation"
+        className={`nav-links${isMobileMenuOpen ? " mobile-open" : ""}`}
+      >
+        <NavGroup title="Competition" isOpen={openGroup === "Competition"} onToggle={() => toggleGroup("Competition")}>
+          <div><Link href="/events">Event Schedule</Link></div>
+          <div><Link href="/official-standings">Official Boat Standings</Link></div>
+          <div><Link href="/official-angler-standings">Official Angler Standings</Link></div>
+          <div><Link href="/official-youth-standings">Youth Standings</Link></div>
+          <div><Link href="/tournament-standings">Tournament Standings</Link></div>
+        </NavGroup>
 
-      <NavGroup title="History" isOpen={openGroup === "History"} onToggle={() => toggleGroup("History")}>
-        <div><Link href="/hall-of-fame">Hall of Fame</Link></div>
-        <div><Link href="/champions">Hall of Champions</Link></div>
-        <div><Link href="/historical-standings">Historical Standings</Link></div>
-        <div><Link href="/awards">Awards</Link></div>
-      </NavGroup>
+        <NavGroup title="Directory" isOpen={openGroup === "Directory"} onToggle={() => toggleGroup("Directory")}>
+          <div><Link href="/boats">Boats</Link></div>
+          <div><Link href="/anglers">Anglers</Link></div>
+        </NavGroup>
 
-      <NavGroup title="Records" isOpen={openGroup === "Records"} onToggle={() => toggleGroup("Records")}>
-        <div><Link href="/records">Club Records</Link></div>
-        <div><Link href="/record-progressions">Record Progressions</Link></div>
-        <div><Link href="/stats">Club Statistics</Link></div>
-      </NavGroup>
+        <NavGroup title="History" isOpen={openGroup === "History"} onToggle={() => toggleGroup("History")}>
+          <div><Link href="/hall-of-fame">Hall of Fame</Link></div>
+          <div><Link href="/champions">Hall of Champions</Link></div>
+          <div><Link href="/historical-standings">Historical Standings</Link></div>
+          <div><Link href="/awards">Awards</Link></div>
+        </NavGroup>
 
-      <NavGroup title="Media" isOpen={openGroup === "Media"} onToggle={() => toggleGroup("Media")}>
-        <div><Link href="/gallery">Photo Gallery</Link></div>
-      </NavGroup>
+        <NavGroup title="Records" isOpen={openGroup === "Records"} onToggle={() => toggleGroup("Records")}>
+          <div><Link href="/records">Club Records</Link></div>
+          <div><Link href="/record-progressions">Record Progressions</Link></div>
+          <div><Link href="/stats">Club Statistics</Link></div>
+        </NavGroup>
 
-      {(role === "weighmaster" || role === "admin") && (
-        <Link href="/admin" className="nav-link" style={{ marginRight: "18px" }}>
-          {role === "admin" ? "Admin" : "Weighmaster"}
-        </Link>
-      )}
+        <NavGroup title="Media" isOpen={openGroup === "Media"} onToggle={() => toggleGroup("Media")}>
+          <div><Link href="/gallery">Photo Gallery</Link></div>
+        </NavGroup>
 
-      {authControls}
+        {(role === "weighmaster" || role === "admin") && (
+          <Link href="/admin" className="nav-link admin-nav-link">
+            {role === "admin" ? "Admin" : "Weighmaster"}
+          </Link>
+        )}
+
+        {authControls}
+      </div>
       </div>
     </nav>
   );

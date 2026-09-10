@@ -1,46 +1,63 @@
+import Image from "next/image";
 import Link from "next/link";
+import { getCurrentUser } from "../lib/auth";
 
-export default function HomePage() {
+export default async function HomePage() {
+  const user = await getCurrentUser();
+
   return (
-    <main className="panel">
-      <h1>NOBGFC Standings</h1>
-      <p>Tournament scoring and standings system.</p>
+    <main className="panel portal-home">
+      <section className="portal-hero">
+        <Image
+          src="/nobgfc-logo.png"
+          alt="New Orleans Big Game Fishing Club"
+          width={132}
+          height={132}
+          priority
+          className="portal-hero-logo"
+        />
 
-      <h2>Pages</h2>
-      <ul>
-        <li><Link href="/boats">Boats</Link></li>
-        <li>Anglers - coming next</li>
-        <li>Events - coming next</li>
-        <li>Historical Rankings - coming next</li>
-        <li>Standings - coming next</li>
-        <li><Link href="/rosters">Rosters</Link></li>
-        <li><Link href="/catches">Catches</Link></li>
-        <li><Link href="/official-standings">Official Boat Standings</Link></li>
-        <li><Link href="/official-angler-standings">Official Angler Standings</Link></li>
-        <li><Link href="/awards">Awards</Link></li>
-        <li><Link href="/dashboard">Dashboard</Link></li>
-        <li><Link href="/tournament-standings">Tournament Standings</Link></li>
-        <li>
-  <Link href="/admin/boat-profile-requests">
-    Profile Requests
-  </Link>
-</li>
-<li><Link href="/admin">Admin</Link></li>
-<li><Link href="/historical-standings">Historical Boat Standings</Link></li>
-<li><Link href="/champions">Hall of Champions</Link></li>
-<li><Link href="/anglers">Anglers</Link></li>
-<li><Link href="/tournaments">Tournament Archive</Link></li>
-<li><Link href="/boats">Boats</Link></li>
-<li><Link href="/anglers">Anglers</Link></li>
-<li><Link href="/tournaments">Tournament Archive</Link></li>
-<li><Link href="/champions">Hall of Champions</Link></li>
-<li><Link href="/historical-standings">Historical Boat Standings</Link></li>
-<li><Link href="/records">Club Records</Link></li>
-<li><Link href="/record-progressions">Record Progressions</Link></li>
-<li><Link href="/stats">Club Statistics</Link></li>
-<li><Link href="/gallery">Photo Gallery</Link></li>
+        <div>
+          <p className="portal-eyebrow">Member &amp; Competition Portal</p>
+          <h1>New Orleans Big Game Fishing Club</h1>
+          <p className="portal-intro">
+            Follow the season, review official standings, and access club
+            competition tools in one place.
+          </p>
 
-      </ul>
+          <div className="portal-actions">
+            <Link href="/dashboard" className="btn">
+              View Season Dashboard
+            </Link>
+            <Link href="/events" className="btn btn-ghost">
+              Event Schedule
+            </Link>
+            <Link href={user ? "/account" : "/login"} className="btn btn-ghost">
+              {user ? "My Account" : "Club Member Sign In"}
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      <section className="portal-grid" aria-label="Portal sections">
+        <article className="feature-card">
+          <h2>Competition</h2>
+          <p>Official boat, angler, youth, and tournament standings.</p>
+          <Link href="/official-standings">View official standings</Link>
+        </article>
+
+        <article className="feature-card">
+          <h2>Club Directory</h2>
+          <p>Explore participating boats and anglers.</p>
+          <Link href="/boats">Browse the directory</Link>
+        </article>
+
+        <article className="feature-card">
+          <h2>History &amp; Records</h2>
+          <p>Past champions, historical standings, awards, and club records.</p>
+          <Link href="/champions">Explore club history</Link>
+        </article>
+      </section>
     </main>
   );
 }
