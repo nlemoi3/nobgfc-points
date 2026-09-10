@@ -41,6 +41,7 @@ async function updateEvent(formData: FormData) {
       start_date: String(formData.get("start_date") || ""),
       end_date: String(formData.get("end_date") || ""),
       status,
+      is_tournament: formData.get("is_tournament") === "true",
       notes: String(formData.get("notes") || ""),
     })
     .eq("id", id);
@@ -76,7 +77,7 @@ export default async function EditEventPage({
   if (error || !event) {
     return (
       <main className="panel">
-        <h1>Edit Tournament Schedule</h1>
+        <h1>Edit Event Schedule</h1>
         <p className="alert alert-danger">
           {error ? `Unable to load event: ${error.message}` : "Event not found."}
         </p>
@@ -87,7 +88,7 @@ export default async function EditEventPage({
   return (
     <main className="panel">
       <div className="toolbar">
-        <h1>Edit Tournament Schedule</h1>
+        <h1>Edit Event Schedule</h1>
         <a href="/admin/events" className="btn btn-ghost">Back to Events</a>
       </div>
 
@@ -100,7 +101,7 @@ export default async function EditEventPage({
         <div className="form-grid">
 
         <p className="field field-full">
-          <label>Tournament Name</label>
+          <label>Event Name</label>
           <input
             name="name"
             defaultValue={event.name}
@@ -126,6 +127,17 @@ export default async function EditEventPage({
             defaultValue={event.end_date}
             required
           />
+        </p>
+
+        <p className="field">
+          <label>Event Type</label>
+          <select
+            name="is_tournament"
+            defaultValue={event.is_tournament ? "true" : "false"}
+          >
+            <option value="true">Tournament</option>
+            <option value="false">Club Event</option>
+          </select>
         </p>
 
         <p className="field">

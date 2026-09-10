@@ -146,6 +146,7 @@ type EventAssignmentValidationInput = {
   eventStartDate: string | null;
   eventEndDate: string | null;
   eventStatus?: string | null;
+  eventIsTournament?: boolean | null;
 };
 
 export function isCatchWithinEventDates(
@@ -184,6 +185,10 @@ export function isCatchWithinEventDates(
 
 export function validateEventAssignment(input: EventAssignmentValidationInput) {
   const errors: string[] = [];
+
+  if (input.eventIsTournament === false) {
+    errors.push("Catches can only be assigned to tournament events.");
+  }
 
   if (!input.catchDateTime?.slice(0, 10)) {
     errors.push("Catch date and time are required.");

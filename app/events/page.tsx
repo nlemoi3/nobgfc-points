@@ -21,7 +21,7 @@ function formatDateRange(startDate: string | null, endDate: string | null) {
 export default async function EventsPage() {
   const { data: events, error } = await supabase
     .from("events")
-    .select("id,name,start_date,end_date,status,notes")
+    .select("id,name,start_date,end_date,status,notes,is_tournament")
     .order("start_date");
 
   const eventsByYear = new Map<string, typeof events>();
@@ -72,9 +72,13 @@ export default async function EventsPage() {
                     <tr key={event.id}>
                       <td>{formatDateRange(event.start_date, event.end_date)}</td>
                       <td>
-                        <Link href={`/tournaments/${event.id}`}>
-                          {event.name}
-                        </Link>
+                        {event.is_tournament ? (
+                          <Link href={`/tournaments/${event.id}`}>
+                            {event.name}
+                          </Link>
+                        ) : (
+                          event.name
+                        )}
                       </td>
                       <td>
                         <span className={`status-chip status-${status}`}>

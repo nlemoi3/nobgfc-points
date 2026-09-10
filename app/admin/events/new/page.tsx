@@ -18,6 +18,7 @@ async function createEvent(formData: FormData) {
       start_date: String(formData.get("start_date") || ""),
       end_date: String(formData.get("end_date") || ""),
       status: String(formData.get("status") || "scheduled"),
+      is_tournament: formData.get("is_tournament") === "true",
       notes: String(formData.get("notes") || ""),
     })
     .select("id")
@@ -51,7 +52,7 @@ export default async function NewEventPage({
       <form action={createEvent}>
         <div className="form-grid">
           <p className="field field-full">
-            <label>Tournament Name</label>
+            <label>Event Name</label>
             <input name="name" required />
           </p>
 
@@ -63,6 +64,14 @@ export default async function NewEventPage({
           <p className="field">
             <label>End Date</label>
             <input name="end_date" type="date" required />
+          </p>
+
+          <p className="field">
+            <label>Event Type</label>
+            <select name="is_tournament" defaultValue="true">
+              <option value="true">Tournament</option>
+              <option value="false">Club Event</option>
+            </select>
           </p>
 
           <p className="field">

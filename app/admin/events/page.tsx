@@ -28,7 +28,7 @@ export default async function AdminEventsPage() {
   return (
     <main className="panel">
       <div className="toolbar">
-        <h1>Manage Tournament Scheduling</h1>
+        <h1>Manage Event Schedule</h1>
         <Link href="/admin/events/new" className="btn">
           + Add Event
         </Link>
@@ -48,7 +48,8 @@ export default async function AdminEventsPage() {
         <table className="admin-table">
           <thead>
             <tr>
-              <th>Tournament</th>
+              <th>Event</th>
+              <th>Type</th>
               <th>Start</th>
               <th>End</th>
               <th>Status</th>
@@ -61,8 +62,13 @@ export default async function AdminEventsPage() {
             {events?.map((event: any) => (
               <tr key={event.id}>
                 <td>
-                  <Link href={`/tournaments/${event.id}`}>{event.name}</Link>
+                  {event.is_tournament ? (
+                    <Link href={`/tournaments/${event.id}`}>{event.name}</Link>
+                  ) : (
+                    event.name
+                  )}
                 </td>
+                <td>{event.is_tournament ? "Tournament" : "Club Event"}</td>
                 <td>{event.start_date}</td>
                 <td>{event.end_date}</td>
                 <td>
