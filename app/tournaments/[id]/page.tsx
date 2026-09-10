@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { supabase } from "../../../lib/supabase";
 import {
+  compareTournamentStandings,
   formatCatchWeight,
   isBillfishSpecies,
   isWeighedCatch,
+  laterValidTimestamp,
 } from "../../../lib/scoring";
 
 export const dynamic = "force-dynamic";
@@ -18,6 +20,19 @@ function formatDate(value: string | null) {
   });
 }
 
+function formatDateTime(value: string | null) {
+  if (!value) return "Not recorded";
+
+  return new Date(value).toLocaleString("en-US", {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    timeZone: "America/Chicago",
+    timeZoneName: "short",
+  });
+}
+
 export default async function TournamentPage({
   params,
 }: {
@@ -26,56 +41,91 @@ export default async function TournamentPage({
   const { id } = await params;
   const eventId = Number(id);
 
-  const { data: event } = await supabase
-    .from("events")
-    .select("id,name,start_date,end_date,status,notes")
-    .eq("id", eventId)
-    .single();
+  const [{ data: event }, { data: catches }] = await Promise.all([
+    supabase
+      .from("events")
+      .select("id,name,start_date,end_date,status,notes")
+      .eq("id", eventId)
+      .single(),
+    supabase
+      .from("catches")
+      .select(`
+        id,
+        weight,
+        points_awarded,
+        status,
+        catch_datetime,
+        photo_url,
+        boats(id,name),
+        anglers(id,first_name,last_name),
+        species(name)
+      `)
+      .eq("event_id", eventId)
+      .eq("status", "approved"),
+  ]);
 
-  const { data: catches } = await supabase
-    .from("catches")
-    .select(`
-      id,
-      weight,
-      points_awarded,
-      status,
-      catch_datetime,
-      photo_url,
-      boats(id,name),
-      anglers(id,first_name,last_name),
-      species(name)
-    `)
-    .eq("event_id", eventId)
-    .eq("status", "approved");
-
-  const boatScores: Record<string, { points: number; id?: number }> = {};
-  const anglerScores: Record<string, { id?: number; points: number }> = {};
+  const boatScores: Record<
+    string,
+    {
+      points: number;
+      id?: number;
+      name: string;
+      totalReachedAt: string | null;
+    }
+  > = {};
+  const anglerScores: Record<
+    string,
+    { id?: number; name: string; points: number }
+  > = {};
 
   catches?.forEach((c: any) => {
     // Rule 12: tournament point rankings include billfish points only.
     if (!isBillfishSpecies(c.species?.name)) return;
 
-    const boat = c.boats?.name || "Unknown Boat";
-    const angler = `${c.anglers?.first_name || ""} ${
-      c.anglers?.last_name || ""
-    }`.trim();
+    const boatName = c.boats?.name || "Unknown Boat";
+    const boatKey = c.boats?.id ? String(c.boats.id) : `unknown:${boatName}`;
+    const anglerName =
+      `${c.anglers?.first_name || ""} ${c.anglers?.last_name || ""}`.trim() ||
+      "Unknown Angler";
+    const anglerKey = c.anglers?.id
+      ? String(c.anglers.id)
+      : `unknown:${anglerName}`;
+    const points = Number(c.points_awarded || 0);
 
-    if (!boatScores[boat]) {
-  boatScores[boat] = { points: 0, id: c.boats?.id };
-}
-
-boatScores[boat].points += Number(c.points_awarded || 0);
-    if (!anglerScores[angler]) {
-      anglerScores[angler] = { id: c.anglers?.id, points: 0 };
+    if (!boatScores[boatKey]) {
+      boatScores[boatKey] = {
+        points: 0,
+        id: c.boats?.id,
+        name: boatName,
+        totalReachedAt: null,
+      };
     }
-    anglerScores[angler].points += Number(c.points_awarded || 0);
+
+    boatScores[boatKey].points += points;
+    if (points > 0) {
+      boatScores[boatKey].totalReachedAt = laterValidTimestamp(
+        boatScores[boatKey].totalReachedAt,
+        c.catch_datetime,
+      );
+    }
+
+    if (!anglerScores[anglerKey]) {
+      anglerScores[anglerKey] = {
+        id: c.anglers?.id,
+        name: anglerName,
+        points: 0,
+      };
+    }
+    anglerScores[anglerKey].points += points;
   });
 
   const boatStandings = Object.entries(boatScores).sort(
-  (a, b) => b[1].points - a[1].points
-);
+    (a, b) =>
+      compareTournamentStandings(a[1], b[1]) ||
+      a[1].name.localeCompare(b[1].name),
+  );
   const anglerStandings = Object.entries(anglerScores).sort(
-    (a, b) => b[1].points - a[1].points
+    (a, b) => b[1].points - a[1].points || a[1].name.localeCompare(b[1].name),
   );
 
   const firstPlaceBoat = boatStandings[0];
@@ -154,10 +204,10 @@ boatScores[boat].points += Number(c.points_awarded || 0);
               <strong>
                 {firstPlaceBoat[1].id ? (
                   <Link href={`/boats/${firstPlaceBoat[1].id}`}>
-                    {firstPlaceBoat[0]}
+                    {firstPlaceBoat[1].name}
                   </Link>
                 ) : (
-                  firstPlaceBoat[0]
+                  firstPlaceBoat[1].name
                 )}
               </strong>
               <br />
@@ -175,10 +225,10 @@ boatScores[boat].points += Number(c.points_awarded || 0);
               <strong>
                 {secondPlaceBoat[1].id ? (
                   <Link href={`/boats/${secondPlaceBoat[1].id}`}>
-                    {secondPlaceBoat[0]}
+                    {secondPlaceBoat[1].name}
                   </Link>
                 ) : (
-                  secondPlaceBoat[0]
+                  secondPlaceBoat[1].name
                 )}
               </strong>
               <br />
@@ -196,10 +246,10 @@ boatScores[boat].points += Number(c.points_awarded || 0);
               <strong>
                 {thirdPlaceBoat[1].id ? (
                   <Link href={`/boats/${thirdPlaceBoat[1].id}`}>
-                    {thirdPlaceBoat[0]}
+                    {thirdPlaceBoat[1].name}
                   </Link>
                 ) : (
-                  thirdPlaceBoat[0]
+                  thirdPlaceBoat[1].name
                 )}
               </strong>
               <br />
@@ -217,10 +267,10 @@ boatScores[boat].points += Number(c.points_awarded || 0);
               <strong>
                 {topAngler[1].id ? (
                   <Link href={`/anglers/${topAngler[1].id}`}>
-                    {topAngler[0]}
+                    {topAngler[1].name}
                   </Link>
                 ) : (
-                  topAngler[0]
+                  topAngler[1].name
                 )}
               </strong>
               <br />
@@ -245,25 +295,32 @@ boatScores[boat].points += Number(c.points_awarded || 0);
               <th>Rank</th>
               <th>Boat</th>
               <th>Points</th>
+              <th>Total Reached</th>
             </tr>
           </thead>
           <tbody>
-            {boatStandings.map(([boat, result], index) => (
-  <tr key={boat}>
-    <td>{index + 1}</td>
-    <td>
-      {result.id ? (
-        <Link href={`/boats/${result.id}`}>{boat}</Link>
-      ) : (
-        boat
-      )}
-    </td>
-    <td>{result.points.toFixed(1)}</td>
-  </tr>
-))}
+            {boatStandings.map(([boatKey, result], index) => (
+              <tr key={boatKey}>
+                <td>{index + 1}</td>
+                <td>
+                  {result.id ? (
+                    <Link href={`/boats/${result.id}`}>{result.name}</Link>
+                  ) : (
+                    result.name
+                  )}
+                </td>
+                <td>{result.points.toFixed(1)}</td>
+                <td>{formatDateTime(result.totalReachedAt)}</td>
+              </tr>
+            ))}
           </tbody>
         </table>
       )}
+
+      <p className="muted">
+        Tied boat totals are ranked by which boat reached the total first, as
+        required by tournament Rule 5.
+      </p>
 
       <h2 style={{ marginTop: "30px" }}>Angler Standings</h2>
 
@@ -279,14 +336,14 @@ boatScores[boat].points += Number(c.points_awarded || 0);
             </tr>
           </thead>
           <tbody>
-            {anglerStandings.map(([angler, result], index) => (
-              <tr key={angler}>
+            {anglerStandings.map(([anglerKey, result], index) => (
+              <tr key={anglerKey}>
                 <td>{index + 1}</td>
                 <td>
                   {result.id ? (
-                    <Link href={`/anglers/${result.id}`}>{angler}</Link>
+                    <Link href={`/anglers/${result.id}`}>{result.name}</Link>
                   ) : (
-                    angler
+                    result.name
                   )}
                 </td>
                 <td>{result.points.toFixed(1)}</td>

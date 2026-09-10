@@ -1,7 +1,11 @@
 import Link from "next/link";
 import { supabase } from "../../lib/supabase";
 import { getActiveSeasonRange } from "../../lib/season";
-import { isBillfishSpecies } from "../../lib/scoring";
+import {
+  compareTournamentStandings,
+  isBillfishSpecies,
+  laterValidTimestamp,
+} from "../../lib/scoring";
 
 function formatDate(value: string | null) {
   if (!value) return "No date";
@@ -13,25 +17,43 @@ function formatDate(value: string | null) {
   });
 }
 
+function formatDateTime(value: string | null) {
+  if (!value) return "Not recorded";
+
+  return new Date(value).toLocaleString("en-US", {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    timeZone: "America/Chicago",
+    timeZoneName: "short",
+  });
+}
+
 export default async function TournamentStandingsPage() {
-  const { start: seasonStart, end: seasonEnd } = await getActiveSeasonRange(supabase);
-const { data: catches, error } = await supabase
-  .from("catches")
-  .select(`
-    id,
-    points_awarded,
-    status,
-    events(id,name,start_date,end_date,status),
-    boats(id,name),
-    species(name)
-  `)
-  .eq("status", "approved")
-  .gte("catch_datetime", seasonStart)
-  .lt("catch_datetime", seasonEnd);
+  const { start: seasonStart, end: seasonEnd } =
+    await getActiveSeasonRange(supabase);
+  const { data: catches, error } = await supabase
+    .from("catches")
+    .select(`
+      id,
+      points_awarded,
+      catch_datetime,
+      status,
+      events(id,name,start_date,end_date,status),
+      boats(id,name),
+      species(name)
+    `)
+    .eq("status", "approved")
+    .gte("catch_datetime", seasonStart)
+    .lt("catch_datetime", seasonEnd);
 
   const eventStandings: Record<
     string,
-    Record<string, { id?: number; name: string; points: number }>
+    Record<
+      string,
+      { id?: number; name: string; points: number; totalReachedAt: string | null }
+    >
   > = {};
   const eventInfo: Record<string, any> = {};
 
@@ -59,9 +81,16 @@ const { data: catches, error } = await supabase
         id: boatId,
         name: boatName,
         points: 0,
+        totalReachedAt: null,
       };
     }
     eventStandings[eventId][boatKey].points += points;
+    if (points > 0) {
+      eventStandings[eventId][boatKey].totalReachedAt = laterValidTimestamp(
+        eventStandings[eventId][boatKey].totalReachedAt,
+        c.catch_datetime,
+      );
+    }
   });
 
   const eventEntries = Object.entries(eventStandings);
@@ -81,14 +110,17 @@ const { data: catches, error } = await supabase
       {error && <p style={{ color: "red" }}>Error: {error.message}</p>}
 
       {eventEntries.length === 0 && (
-        <p>No approved billfish catches entered for tournament boat standings yet.</p>
+        <p>
+          No approved billfish catches entered for tournament boat standings
+          yet.
+        </p>
       )}
 
       {eventEntries.map(([eventId, boatScores]) => {
         const event = eventInfo[eventId];
         const standings = Object.entries(boatScores).sort(
           (a, b) =>
-            b[1].points - a[1].points ||
+            compareTournamentStandings(a[1], b[1]) ||
             a[1].name.localeCompare(b[1].name),
         );
 
@@ -104,12 +136,17 @@ const { data: catches, error } = await supabase
               Status: {event?.status || "scheduled"}
             </p>
 
-            <table border={1} cellPadding={8} style={{ borderCollapse: "collapse" }}>
+            <table
+              border={1}
+              cellPadding={8}
+              style={{ borderCollapse: "collapse" }}
+            >
               <thead>
                 <tr>
                   <th>Rank</th>
                   <th>Boat</th>
                   <th>Points</th>
+                  <th>Total Reached</th>
                 </tr>
               </thead>
 
@@ -125,10 +162,15 @@ const { data: catches, error } = await supabase
                       )}
                     </td>
                     <td>{result.points.toFixed(1)}</td>
+                    <td>{formatDateTime(result.totalReachedAt)}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
+            <p className="muted">
+              Tied boat totals are ranked by which boat reached the total first,
+              as required by tournament Rule 5.
+            </p>
           </section>
         );
       })}
