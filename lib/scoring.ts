@@ -46,6 +46,18 @@ export const LINE_CLASS_MULTIPLIERS: Record<number, number> = {
   2: 6,
 };
 
+const BILLFISH_SPECIES = new Set([
+  "Blue Marlin",
+  "White Marlin",
+  "Sailfish",
+  "Spearfish",
+  "Swordfish",
+]);
+
+export function isBillfishSpecies(speciesName: string | null | undefined) {
+  return Boolean(speciesName && BILLFISH_SPECIES.has(speciesName));
+}
+
 const BEST_THREE_WEIGHED_SPECIES = ["Dolphin", "Wahoo"] as const;
 const LIMITED_TUNA_SPECIES = ["Yellowfin Tuna", "Bigeye Tuna"] as const;
 const ANNUAL_LIMITED_TUNA_SPECIES = "Yellowfin Tuna";

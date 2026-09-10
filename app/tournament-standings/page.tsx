@@ -1,14 +1,7 @@
 import Link from "next/link";
 import { supabase } from "../../lib/supabase";
 import { getActiveSeasonRange } from "../../lib/season";
-
-const BILLFISH_SPECIES = new Set([
-  "Blue Marlin",
-  "White Marlin",
-  "Sailfish",
-  "Spearfish",
-  "Swordfish",
-]);
+import { isBillfishSpecies } from "../../lib/scoring";
 
 function formatDate(value: string | null) {
   if (!value) return "No date";
@@ -44,7 +37,7 @@ const { data: catches, error } = await supabase
 
   catches?.forEach((c: any) => {
     // Rule 12: tournament boat awards are based on billfish points only.
-    if (!BILLFISH_SPECIES.has(c.species?.name)) return;
+    if (!isBillfishSpecies(c.species?.name)) return;
 
     const event = c.events;
     const eventId = event?.id;

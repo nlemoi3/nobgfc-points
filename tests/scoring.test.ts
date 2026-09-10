@@ -6,10 +6,32 @@ import {
   formatCatchWeight,
   getExcludedCatches,
   getOfficialEligiblePoints,
+  isBillfishSpecies,
   isWeighedCatch,
   validateCatchInput,
   validateEventAssignment,
 } from "../lib/scoring.ts";
+
+test("tournament point standings include billfish species only", () => {
+  for (const speciesName of [
+    "Blue Marlin",
+    "White Marlin",
+    "Sailfish",
+    "Spearfish",
+    "Swordfish",
+  ]) {
+    assert.equal(isBillfishSpecies(speciesName), true);
+  }
+
+  for (const speciesName of [
+    "Yellowfin Tuna",
+    "Bigeye Tuna",
+    "Dolphin",
+    "Wahoo",
+  ]) {
+    assert.equal(isBillfishSpecies(speciesName), false);
+  }
+});
 
 test("weighed points use whole pounds and line multiplier", () => {
   assert.equal(
