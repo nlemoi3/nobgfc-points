@@ -6,7 +6,7 @@ import {
   isCatchWithinEventDates,
 } from "../../lib/scoring";
 import { getActiveSeasonRange } from "../../lib/season";
-import { createClient } from "../../lib/supabase/server";
+import { createAdminClient } from "../../lib/supabase/admin";
 
 function isUnresolvedRequest(status: string | null) {
   return !["approved", "rejected", "closed"].includes(
@@ -34,7 +34,7 @@ export default async function AdminPage() {
     );
   }
 
-  const supabase = await createClient();
+  const supabase = createAdminClient();
   const { year, start: seasonStart, end: seasonEnd } =
     await getActiveSeasonRange(supabase);
   const seasonStartDate = `${year}-01-01`;
