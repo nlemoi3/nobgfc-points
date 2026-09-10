@@ -153,9 +153,26 @@ export function isCatchWithinEventDates(
   eventStartDate: string | null | undefined,
   eventEndDate: string | null | undefined,
 ) {
-  const catchDate = catchDateTime?.slice(0, 10) || "";
+  let catchDate = catchDateTime?.slice(0, 10) || "";
   const eventStart = eventStartDate || "";
   const eventEnd = eventEndDate || eventStart;
+
+  if (catchDateTime && /(?:Z|[+-]\d{2}:\d{2})$/.test(catchDateTime)) {
+    const parsed = new Date(catchDateTime);
+
+    if (!Number.isNaN(parsed.getTime())) {
+      const parts = new Intl.DateTimeFormat("en-US", {
+        timeZone: "America/Chicago",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+      }).formatToParts(parsed);
+      const values = Object.fromEntries(
+        parts.map((part) => [part.type, part.value]),
+      );
+      catchDate = `${values.year}-${values.month}-${values.day}`;
+    }
+  }
 
   return Boolean(
     catchDate &&
