@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { getAuthErrorMessage } from "../../lib/auth-error-message";
 import { createClient } from "../../lib/supabase/server";
 
 export async function requestPasswordReset(formData: FormData) {
@@ -16,7 +17,9 @@ export async function requestPasswordReset(formData: FormData) {
   });
 
   if (error) {
-    redirect(`/forgot-password?error=${encodeURIComponent(error.message)}`);
+    redirect(
+      `/forgot-password?error=${encodeURIComponent(getAuthErrorMessage(error, "password-reset"))}`,
+    );
   }
 
   redirect("/forgot-password?sent=1");
