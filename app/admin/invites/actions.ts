@@ -3,6 +3,7 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { requireRole } from "../../../lib/auth";
+import { getAuthErrorMessage } from "../../../lib/auth-error-message";
 import { createAdminClient } from "../../../lib/supabase/admin";
 
 function getSiteUrl(headerStore: Awaited<ReturnType<typeof headers>>) {
@@ -80,7 +81,9 @@ export async function sendInvite(formData: FormData) {
   });
 
   if (error) {
-    redirect(`/admin/invites?error=${encodeURIComponent(error.message)}`);
+    redirect(
+      `/admin/invites?error=${encodeURIComponent(getAuthErrorMessage(error, "invite"))}`,
+    );
   }
 
   redirect("/admin/invites?sent=email");
