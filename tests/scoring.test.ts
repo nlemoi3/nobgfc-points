@@ -251,11 +251,19 @@ test("event eligibility uses the catch date, not the later entry date", () => {
   );
   assert.equal(
     isCatchWithinEventDates(
-      "2027-05-17T00:01:00-05:00",
+      "2027-05-17T05:01:00Z",
       "2027-05-15",
       "2027-05-16",
     ),
     false,
+  );
+  assert.equal(
+    isCatchWithinEventDates(
+      "2027-05-17T04:30:00Z",
+      "2027-05-15",
+      "2027-05-16",
+    ),
+    true,
   );
 });
 
