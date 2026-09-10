@@ -16,15 +16,24 @@ export function MagicLinkHandler() {
       const params = new URLSearchParams(hash);
       const tokenType = params.get("type");
       const accessToken = params.get("access_token");
+      const refreshToken = params.get("refresh_token");
 
       if (!accessToken) {
+        return;
+      }
+
+      if (!refreshToken) {
+        router.replace("/login?error=Invite link is missing required session information");
         return;
       }
 
       try {
         const supabase = createClient();
 
-        const { data: sessionData, error } = await supabase.auth.getSession();
+        const { data: sessionData, error } = await supabase.auth.setSession({
+          access_token: accessToken,
+          refresh_token: refreshToken,
+        });
 
         if (error) {
           console.error("Failed to process auth callback:", error);
