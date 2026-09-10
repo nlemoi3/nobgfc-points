@@ -6,6 +6,7 @@ import {
   AUTH_SESSION_READY_EVENT,
   parseAuthCallback,
 } from "../../lib/auth-callback";
+import { getAuthLinkErrorMessage } from "../../lib/auth-error-message";
 import { createClient } from "../../lib/supabase/client";
 
 export function MagicLinkHandler() {
@@ -25,7 +26,7 @@ export function MagicLinkHandler() {
 
       if (callback.kind === "tokens" && !callback.refreshToken) {
         router.replace(
-          "/login?error=Sign-in link is missing required session information",
+          "/login?error=This authentication link is incomplete. Request one new link and use the newest email.",
         );
         return;
       }
@@ -43,13 +44,15 @@ export function MagicLinkHandler() {
 
         if (error) {
           console.error("Failed to process auth callback:", error);
-          router.replace(`/login?error=${encodeURIComponent(error.message)}`);
+          router.replace(
+            `/login?error=${encodeURIComponent(getAuthLinkErrorMessage(error))}`,
+          );
           return;
         }
 
         if (!sessionData.session?.user) {
           router.replace(
-            "/login?error=Failed to establish session from sign-in link",
+            "/login?error=We could not verify this authentication link. Request one new link and use the newest email.",
           );
           return;
         }
@@ -75,7 +78,9 @@ export function MagicLinkHandler() {
         router.replace("/dashboard");
       } catch (error) {
         console.error("Failed to process auth callback:", error);
-        router.replace("/login?error=Failed to process sign in link");
+        router.replace(
+          "/login?error=We could not verify this authentication link. Request one new link and use the newest email.",
+        );
       }
     }
 

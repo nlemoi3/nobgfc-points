@@ -29,6 +29,12 @@ export default async function LoginPage({
 
       {error && <p className="alert alert-danger">{error}</p>}
 
+      {error ? (
+        <p>
+          <Link href="/forgot-password">Request a new password-reset link</Link>
+        </p>
+      ) : null}
+
       <form action={login}>
         <input type="hidden" name="next" value={next} />
 

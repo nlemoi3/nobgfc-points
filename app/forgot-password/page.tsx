@@ -56,8 +56,9 @@ export default function ForgotPasswordPage() {
             color: "#1d5f3d",
           }}
         >
-          Reset email sent. Open it in this same browser to choose a new
-          password.
+          Reset email sent. Open the newest email on this device using this
+          same browser. Requesting another link makes the previous email
+          obsolete.
         </p>
       ) : null}
 

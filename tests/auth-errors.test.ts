@@ -2,7 +2,10 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { parseAuthCallback } from "../lib/auth-callback.ts";
-import { getAuthErrorMessage } from "../lib/auth-error-message.ts";
+import {
+  getAuthErrorMessage,
+  getAuthLinkErrorMessage,
+} from "../lib/auth-error-message.ts";
 import { getSafeAuthRedirect } from "../lib/auth-redirect.ts";
 
 test("authentication callbacks accept only local redirect paths", () => {
@@ -63,5 +66,21 @@ test("unexpected auth errors remain visible", () => {
   assert.equal(
     getAuthErrorMessage({ message: "Unexpected provider error" }, "invite"),
     "Unexpected provider error",
+  );
+});
+
+test("cross-browser PKCE failures receive recovery instructions", () => {
+  assert.equal(
+    getAuthLinkErrorMessage({
+      message: "PKCE code verifier not found in storage",
+    }),
+    "This link was opened in a different browser than the one used to request it. Return to Forgot password in this browser and request one new link.",
+  );
+});
+
+test("expired links tell users to use one new email", () => {
+  assert.equal(
+    getAuthLinkErrorMessage({ message: "Email link is invalid or has expired" }),
+    "This authentication link is invalid or has expired. Request one new link and use the newest email.",
   );
 });
