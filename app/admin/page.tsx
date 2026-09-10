@@ -23,6 +23,11 @@ export default async function AdminPage() {
     <main className="panel">
       <h1>NOBGFC Admin</h1>
 
+      <h2>Project Review</h2>
+      <p>
+        <Link href="/admin/review-guide">Open the club evaluation walkthrough</Link>
+      </p>
+
       <h2>Catches, Events, and Directory</h2>
       <ul>
         <li><Link href="/admin/catch-entry">Add Catch</Link></li>
