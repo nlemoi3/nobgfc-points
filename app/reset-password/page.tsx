@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -111,6 +112,14 @@ export default function ResetPasswordPage() {
       <p>Create a new password for your account.</p>
 
       {error && <p className="alert alert-danger">{error}</p>}
+
+      {error ? (
+        <p>
+          <Link href="/forgot-password">Request one new reset link</Link>
+        </p>
+      ) : null}
+
+      {!ready && !error ? <p>Verifying your reset link…</p> : null}
 
       {ready ? (
         <form onSubmit={handleSubmit}>

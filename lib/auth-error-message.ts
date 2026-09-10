@@ -27,3 +27,27 @@ export function getAuthErrorMessage(
 
   return message || "The authentication request could not be completed. Please try again.";
 }
+
+export function getAuthLinkErrorMessage(error: AuthErrorLike) {
+  const code = error.code?.toLowerCase() || "";
+  const message = error.message?.trim() || "";
+  const normalized = `${code} ${message}`.toLowerCase();
+
+  if (
+    normalized.includes("pkce") ||
+    normalized.includes("code verifier") ||
+    normalized.includes("flow state")
+  ) {
+    return "This link was opened in a different browser than the one used to request it. Return to Forgot password in this browser and request one new link.";
+  }
+
+  if (
+    normalized.includes("expired") ||
+    normalized.includes("invalid") ||
+    normalized.includes("otp")
+  ) {
+    return "This authentication link is invalid or has expired. Request one new link and use the newest email.";
+  }
+
+  return "We could not verify this authentication link. Request one new link and use the newest email.";
+}
