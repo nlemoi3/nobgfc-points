@@ -289,7 +289,13 @@ export default async function TournamentPage({
       {boatStandings.length === 0 ? (
         <p>No catches entered for this tournament.</p>
       ) : (
-        <table border={1} cellPadding={8}>
+        <div
+          className="table-wrap"
+          role="region"
+          aria-label="All tournament catches"
+          tabIndex={0}
+        >
+          <table className="admin-table">
           <thead>
             <tr>
               <th>Rank</th>
@@ -314,7 +320,8 @@ export default async function TournamentPage({
               </tr>
             ))}
           </tbody>
-        </table>
+          </table>
+        </div>
       )}
 
       <p className="muted">
