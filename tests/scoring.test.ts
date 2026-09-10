@@ -3,14 +3,50 @@ import test from "node:test";
 
 import {
   calculateCatchPoints,
+  compareTournamentStandings,
   formatCatchWeight,
   getExcludedCatches,
   getOfficialEligiblePoints,
   isBillfishSpecies,
   isWeighedCatch,
+  laterValidTimestamp,
   validateCatchInput,
   validateEventAssignment,
 } from "../lib/scoring.ts";
+
+test("tournament boat ties rank the boat that reached its total first", () => {
+  const earlier = {
+    points: 500,
+    totalReachedAt: "2026-06-12T10:00:00-05:00",
+  };
+  const later = {
+    points: 500,
+    totalReachedAt: "2026-06-12T11:00:00-05:00",
+  };
+
+  assert.ok(compareTournamentStandings(earlier, later) < 0);
+  assert.ok(compareTournamentStandings(later, earlier) > 0);
+  assert.ok(
+    compareTournamentStandings(
+      { points: 600, totalReachedAt: later.totalReachedAt },
+      earlier,
+    ) < 0,
+  );
+  assert.ok(
+    compareTournamentStandings(earlier, { points: 500, totalReachedAt: null }) <
+      0,
+  );
+});
+
+test("tournament attainment uses catch time even when timestamps have offsets", () => {
+  const earlier = "2026-06-12T10:30:00-05:00";
+  const later = "2026-06-12T16:00:00Z";
+
+  assert.equal(laterValidTimestamp(null, earlier), earlier);
+  assert.equal(laterValidTimestamp(earlier, later), later);
+  assert.equal(laterValidTimestamp(later, earlier), later);
+  assert.equal(laterValidTimestamp(later, "not-a-date"), later);
+});
 
 test("tournament point standings include billfish species only", () => {
   for (const speciesName of [

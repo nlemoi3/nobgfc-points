@@ -58,6 +58,39 @@ export function isBillfishSpecies(speciesName: string | null | undefined) {
   return Boolean(speciesName && BILLFISH_SPECIES.has(speciesName));
 }
 
+export type TournamentStanding = {
+  points: number;
+  totalReachedAt: string | null;
+};
+
+export function compareTournamentStandings(
+  a: TournamentStanding,
+  b: TournamentStanding,
+) {
+  const pointDifference = b.points - a.points;
+  if (pointDifference !== 0) return pointDifference;
+
+  const aTime = a.totalReachedAt ? Date.parse(a.totalReachedAt) : Number.NaN;
+  const bTime = b.totalReachedAt ? Date.parse(b.totalReachedAt) : Number.NaN;
+  const aHasTime = Number.isFinite(aTime);
+  const bHasTime = Number.isFinite(bTime);
+
+  if (aHasTime && bHasTime) return aTime - bTime;
+  if (aHasTime) return -1;
+  if (bHasTime) return 1;
+  return 0;
+}
+
+export function laterValidTimestamp(
+  current: string | null,
+  candidate: string | null | undefined,
+) {
+  if (!candidate || !Number.isFinite(Date.parse(candidate))) return current;
+  if (!current || !Number.isFinite(Date.parse(current))) return candidate;
+
+  return Date.parse(candidate) > Date.parse(current) ? candidate : current;
+}
+
 const BEST_THREE_WEIGHED_SPECIES = ["Dolphin", "Wahoo"] as const;
 const LIMITED_TUNA_SPECIES = ["Yellowfin Tuna", "Bigeye Tuna"] as const;
 const ANNUAL_LIMITED_TUNA_SPECIES = "Yellowfin Tuna";
