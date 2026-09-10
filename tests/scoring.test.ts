@@ -8,6 +8,7 @@ import {
   getExcludedCatches,
   getOfficialEligiblePoints,
   isBillfishSpecies,
+  isCatchWithinEventDates,
   isWeighedCatch,
   laterValidTimestamp,
   validateCatchInput,
@@ -236,6 +237,25 @@ test("catch date must fall inside an unlocked event", () => {
       eventStatus: "locked",
     }),
     ["The selected event is locked."],
+  );
+});
+
+test("event eligibility uses the catch date, not the later entry date", () => {
+  assert.equal(
+    isCatchWithinEventDates(
+      "2027-05-15T23:30:00-05:00",
+      "2027-05-15",
+      "2027-05-16",
+    ),
+    true,
+  );
+  assert.equal(
+    isCatchWithinEventDates(
+      "2027-05-17T00:01:00-05:00",
+      "2027-05-15",
+      "2027-05-16",
+    ),
+    false,
   );
 });
 
