@@ -1,7 +1,11 @@
 import Link from "next/link";
 import { unstable_noStore as noStore } from "next/cache";
 import { createClient } from "../../../lib/supabase/server";
-import { calculateCatchPoints, formatCatchWeight } from "../../../lib/scoring";
+import {
+  calculateCatchPoints,
+  formatCatchWeight,
+  isCatchWithinEventDates,
+} from "../../../lib/scoring";
 
 function formatDateTime(value: string | null) {
   if (!value) return "No date";
@@ -34,7 +38,7 @@ export default async function ScoringAuditPage() {
       boats(id,name),
       anglers(id,first_name,last_name),
       species(name),
-      events(id,name,status)
+      events(id,name,status,start_date,end_date)
     `)
     .order("catch_datetime", { ascending: false });
 
@@ -49,6 +53,11 @@ export default async function ScoringAuditPage() {
       });
       const stored = Number(c.points_awarded || 0);
       const difference = stored - expected;
+      const eventDateMatches = isCatchWithinEventDates(
+        c.catch_datetime,
+        c.events?.start_date,
+        c.events?.end_date,
+      );
 
       return {
         ...c,
@@ -56,10 +65,12 @@ export default async function ScoringAuditPage() {
         stored,
         difference,
         matches: Math.abs(difference) < 0.01,
+        eventDateMatches,
       };
     }) || [];
 
   const mismatches = rows.filter((r: any) => !r.matches);
+  const eventDateMismatches = rows.filter((r: any) => !r.eventDateMatches);
 
   return (
     <main className="panel">
@@ -84,12 +95,18 @@ export default async function ScoringAuditPage() {
           <br />
           {mismatches.length}
         </div>
+        <div style={{ border: "1px solid #ccc", padding: "15px" }}>
+          <strong>Event-Date Mismatches</strong>
+          <br />
+          {eventDateMismatches.length}
+        </div>
       </div>
 
       <table border={1} cellPadding={8} style={{ borderCollapse: "collapse" }}>
         <thead>
           <tr>
             <th>Score Check</th>
+            <th>Event-Date Check</th>
             <th>Catch Status</th>
             <th>Review Notes</th>
             <th>Date</th>
@@ -114,10 +131,12 @@ export default async function ScoringAuditPage() {
             <tr
               key={c.id}
               style={{
-                backgroundColor: c.matches ? "white" : "#ffd6d6",
+                backgroundColor:
+                  c.matches && c.eventDateMatches ? "white" : "#ffd6d6",
               }}
             >
               <td>{c.matches ? "OK" : "CHECK"}</td>
+              <td>{c.eventDateMatches ? "OK" : "CHECK"}</td>
               <td>{c.status || "-"}</td>
               <td>{c.eligibility_notes || "-"}</td>
               <td>

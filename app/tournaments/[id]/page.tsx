@@ -4,6 +4,7 @@ import {
   compareTournamentStandings,
   formatCatchWeight,
   isBillfishSpecies,
+  isCatchWithinEventDates,
   isWeighedCatch,
   laterValidTimestamp,
 } from "../../../lib/scoring";
@@ -64,6 +65,16 @@ export default async function TournamentPage({
       .eq("status", "approved"),
   ]);
 
+  const eligibleCatches =
+    catches?.filter((catchRecord: any) =>
+      isCatchWithinEventDates(
+        catchRecord.catch_datetime,
+        event?.start_date,
+        event?.end_date,
+      ),
+    ) || [];
+  const excludedCatchCount = (catches?.length || 0) - eligibleCatches.length;
+
   const boatScores: Record<
     string,
     {
@@ -78,7 +89,7 @@ export default async function TournamentPage({
     { id?: number; name: string; points: number }
   > = {};
 
-  catches?.forEach((c: any) => {
+  eligibleCatches.forEach((c: any) => {
     // Rule 12: tournament point rankings include billfish points only.
     if (!isBillfishSpecies(c.species?.name)) return;
 
@@ -133,24 +144,24 @@ export default async function TournamentPage({
   const thirdPlaceBoat = boatStandings[2];
   const topAngler = anglerStandings[0];
 
-  const largestBlueMarlin = catches
-    ?.filter((c: any) => c.species?.name === "Blue Marlin" && isWeighedCatch(c))
+  const largestBlueMarlin = eligibleCatches
+    .filter((c: any) => c.species?.name === "Blue Marlin" && isWeighedCatch(c))
     .sort((a: any, b: any) => b.weight - a.weight)[0];
 
-  const largestTuna = catches
-    ?.filter(
+  const largestTuna = eligibleCatches
+    .filter(
       (c: any) =>
         c.species?.name === "Yellowfin Tuna" &&
         isWeighedCatch(c)
     )
     .sort((a: any, b: any) => b.weight - a.weight)[0];
 
-  const largestWahoo = catches
-    ?.filter((c: any) => c.species?.name === "Wahoo" && isWeighedCatch(c))
+  const largestWahoo = eligibleCatches
+    .filter((c: any) => c.species?.name === "Wahoo" && isWeighedCatch(c))
     .sort((a: any, b: any) => b.weight - a.weight)[0];
 
-  const largestDolphin = catches
-    ?.filter((c: any) => c.species?.name === "Dolphin" && isWeighedCatch(c))
+  const largestDolphin = eligibleCatches
+    .filter((c: any) => c.species?.name === "Dolphin" && isWeighedCatch(c))
     .sort((a: any, b: any) => b.weight - a.weight)[0];
 
   const statusClass = (status: string | null) => {
@@ -191,6 +202,13 @@ export default async function TournamentPage({
       {event?.notes && event?.status !== "cancelled" && event?.status !== "rescheduled" && (
         <p>
           <strong>Notes:</strong> {event.notes}
+        </p>
+      )}
+
+      {excludedCatchCount > 0 && (
+        <p className="schedule-notice">
+          {excludedCatchCount} legacy {excludedCatchCount === 1 ? "catch was" : "catches were"}{" "}
+          excluded because the recorded catch date falls outside this event.
         </p>
       )}
 
@@ -289,13 +307,7 @@ export default async function TournamentPage({
       {boatStandings.length === 0 ? (
         <p>No catches entered for this tournament.</p>
       ) : (
-        <div
-          className="table-wrap"
-          role="region"
-          aria-label="All tournament catches"
-          tabIndex={0}
-        >
-          <table className="admin-table">
+        <table border={1} cellPadding={8}>
           <thead>
             <tr>
               <th>Rank</th>
@@ -320,8 +332,7 @@ export default async function TournamentPage({
               </tr>
             ))}
           </tbody>
-          </table>
-        </div>
+        </table>
       )}
 
       <p className="muted">
@@ -407,10 +418,11 @@ export default async function TournamentPage({
 
       <h2>All Tournament Catches</h2>
 
-      {catches?.length === 0 ? (
+      {eligibleCatches.length === 0 ? (
         <p>No catches entered for this tournament.</p>
       ) : (
-        <table border={1} cellPadding={8}>
+        <div className="table-wrap" role="region" aria-label="All tournament catches" tabIndex={0}>
+        <table className="admin-table">
           <thead>
             <tr>
               <th>Photo</th>
@@ -422,7 +434,7 @@ export default async function TournamentPage({
             </tr>
           </thead>
           <tbody>
-            {catches?.map((c: any) => (
+            {eligibleCatches.map((c: any) => (
               <tr key={c.id}>
                 <td>
                   {c.photo_url ? (
@@ -472,6 +484,7 @@ export default async function TournamentPage({
             ))}
           </tbody>
         </table>
+        </div>
       )}
     </main>
   );

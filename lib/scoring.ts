@@ -148,15 +148,35 @@ type EventAssignmentValidationInput = {
   eventStatus?: string | null;
 };
 
+export function isCatchWithinEventDates(
+  catchDateTime: string | null | undefined,
+  eventStartDate: string | null | undefined,
+  eventEndDate: string | null | undefined,
+) {
+  const catchDate = catchDateTime?.slice(0, 10) || "";
+  const eventStart = eventStartDate || "";
+  const eventEnd = eventEndDate || eventStart;
+
+  return Boolean(
+    catchDate &&
+      eventStart &&
+      catchDate >= eventStart &&
+      catchDate <= eventEnd,
+  );
+}
+
 export function validateEventAssignment(input: EventAssignmentValidationInput) {
   const errors: string[] = [];
-  const catchDate = input.catchDateTime?.slice(0, 10) || "";
-  const eventStart = input.eventStartDate || "";
-  const eventEnd = input.eventEndDate || eventStart;
 
-  if (!catchDate) {
+  if (!input.catchDateTime?.slice(0, 10)) {
     errors.push("Catch date and time are required.");
-  } else if (!eventStart || catchDate < eventStart || catchDate > eventEnd) {
+  } else if (
+    !isCatchWithinEventDates(
+      input.catchDateTime,
+      input.eventStartDate,
+      input.eventEndDate,
+    )
+  ) {
     errors.push("Catch date must fall within the selected event dates.");
   }
 
