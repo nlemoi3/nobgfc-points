@@ -1,6 +1,10 @@
 import Link from "next/link";
 import { supabase } from "../../../lib/supabase";
-import { formatCatchWeight, isWeighedCatch } from "../../../lib/scoring";
+import {
+  formatCatchWeight,
+  isBillfishSpecies,
+  isWeighedCatch,
+} from "../../../lib/scoring";
 
 export const dynamic = "force-dynamic";
 
@@ -48,6 +52,9 @@ export default async function TournamentPage({
   const anglerScores: Record<string, { id?: number; points: number }> = {};
 
   catches?.forEach((c: any) => {
+    // Rule 12: tournament point rankings include billfish points only.
+    if (!isBillfishSpecies(c.species?.name)) return;
+
     const boat = c.boats?.name || "Unknown Boat";
     const angler = `${c.anglers?.first_name || ""} ${
       c.anglers?.last_name || ""
@@ -83,7 +90,7 @@ boatScores[boat].points += Number(c.points_awarded || 0);
   const largestTuna = catches
     ?.filter(
       (c: any) =>
-        ["Yellowfin Tuna", "Bigeye Tuna"].includes(c.species?.name) &&
+        c.species?.name === "Yellowfin Tuna" &&
         isWeighedCatch(c)
     )
     .sort((a: any, b: any) => b.weight - a.weight)[0];
@@ -204,7 +211,7 @@ boatScores[boat].points += Number(c.points_awarded || 0);
         </div>
 
         <div style={{ border: "1px solid #ccc", padding: "15px", minWidth: "250px" }}>
-          <h3>Top Angler</h3>
+          <h3>Top Billfish Angler</h3>
           {topAngler ? (
             <>
               <strong>
@@ -226,6 +233,8 @@ boatScores[boat].points += Number(c.points_awarded || 0);
       </div>
 
       <h2>Boat Standings</h2>
+
+      <p>Only billfish points count toward tournament rankings.</p>
 
       {boatStandings.length === 0 ? (
         <p>No catches entered for this tournament.</p>
@@ -301,7 +310,7 @@ boatScores[boat].points += Number(c.points_awarded || 0);
           )}
         </li>
         <li>
-          Tuna:{" "}
+          Yellowfin Tuna:{" "}
           {largestTuna ? (
             <Link href={`/catches/${largestTuna.id}`}>
               {largestTuna.weight} lbs
