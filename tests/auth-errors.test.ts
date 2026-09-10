@@ -1,7 +1,31 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
+import { parseAuthCallback } from "../lib/auth-callback.ts";
 import { getAuthErrorMessage } from "../lib/auth-error-message.ts";
+
+test("password recovery callbacks accept PKCE authorization codes", () => {
+  assert.deepEqual(parseAuthCallback("", "?code=recovery-code"), {
+    kind: "pkce",
+    code: "recovery-code",
+    tokenType: null,
+  });
+});
+
+test("password recovery callbacks accept implicit session tokens", () => {
+  assert.deepEqual(
+    parseAuthCallback(
+      "#access_token=access&refresh_token=refresh&type=recovery",
+      "",
+    ),
+    {
+      kind: "tokens",
+      accessToken: "access",
+      refreshToken: "refresh",
+      tokenType: "recovery",
+    },
+  );
+});
 
 test("email rate limits receive a useful retry message", () => {
   assert.equal(

@@ -2,6 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import {
+  AUTH_SESSION_READY_EVENT,
+  parseAuthCallback,
+} from "../../lib/auth-callback";
 import { createClient } from "../../lib/supabase/client";
 
 export default function ResetPasswordPage() {
@@ -12,19 +16,50 @@ export default function ResetPasswordPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
 
   useEffect(() => {
-    async function checkSession() {
-      const supabase = createClient();
-      const { data } = await supabase.auth.getSession();
+    let active = true;
+    const supabase = createClient();
 
-      if (!data.session?.user) {
-        setError("Open your reset link again so we can verify the request.");
-        return;
-      }
-
+    function markReady() {
+      if (!active) return;
+      setError(null);
       setReady(true);
     }
 
+    window.addEventListener(AUTH_SESSION_READY_EVENT, markReady);
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) markReady();
+    });
+
+    async function checkSession() {
+      const { data } = await supabase.auth.getSession();
+
+      if (!active) return;
+
+      if (data.session?.user) {
+        markReady();
+        return;
+      }
+
+      const callback = parseAuthCallback(
+        window.location.hash,
+        window.location.search,
+      );
+
+      if (!callback) {
+        setError("Open your reset link again so we can verify the request.");
+      }
+    }
+
     checkSession();
+
+    return () => {
+      active = false;
+      subscription.unsubscribe();
+      window.removeEventListener(AUTH_SESSION_READY_EVENT, markReady);
+    };
   }, []);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
