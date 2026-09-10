@@ -1,7 +1,22 @@
 import Link from "next/link";
+import { unstable_noStore as noStore } from "next/cache";
 import { requireRole } from "../../lib/auth";
+import {
+  calculateCatchPoints,
+  isCatchWithinEventDates,
+} from "../../lib/scoring";
+import { getActiveSeasonRange } from "../../lib/season";
+import { createClient } from "../../lib/supabase/server";
+
+function isUnresolvedRequest(status: string | null) {
+  return !["approved", "rejected", "closed"].includes(
+    (status || "new").toLowerCase(),
+  );
+}
 
 export default async function AdminPage() {
+  noStore();
+
   const { role } = await requireRole("weighmaster");
   const isAdmin = role === "admin";
 
@@ -19,9 +34,157 @@ export default async function AdminPage() {
     );
   }
 
+  const supabase = await createClient();
+  const { year, start: seasonStart, end: seasonEnd } =
+    await getActiveSeasonRange(supabase);
+  const seasonStartDate = `${year}-01-01`;
+  const seasonEndDate = `${year}-12-31`;
+
+  const [catchesResult, eventsResult, requestsResult] = await Promise.all([
+    supabase
+      .from("catches")
+      .select(`
+        id,
+        weight,
+        line_class,
+        released,
+        tagged,
+        status,
+        points_awarded,
+        catch_datetime,
+        species(name),
+        events(start_date,end_date)
+      `)
+      .gte("catch_datetime", seasonStart)
+      .lt("catch_datetime", seasonEnd),
+    supabase
+      .from("events")
+      .select("id,name,start_date,end_date,status,is_tournament")
+      .lte("start_date", seasonEndDate)
+      .gte("end_date", seasonStartDate)
+      .order("start_date"),
+    supabase
+      .from("boat_profile_requests")
+      .select("id,status"),
+  ]);
+
+  const catches = catchesResult.data || [];
+  const events = eventsResult.data || [];
+  const requests = requestsResult.data || [];
+  const pendingCatches = catches.filter(
+    (catchRecord: any) => (catchRecord.status || "approved") === "pending",
+  ).length;
+  const scoringExceptions = catches.filter((catchRecord: any) => {
+    const expected = calculateCatchPoints({
+      speciesName: catchRecord.species?.name || "",
+      weight:
+        catchRecord.weight === null ? null : Number(catchRecord.weight),
+      lineClass: Number(catchRecord.line_class || 130),
+      released: Boolean(catchRecord.released),
+      tagged: Boolean(catchRecord.tagged),
+    });
+    const scoreMatches =
+      Math.abs(Number(catchRecord.points_awarded || 0) - expected) < 0.01;
+    const eventDateMatches = isCatchWithinEventDates(
+      catchRecord.catch_datetime,
+      catchRecord.events?.start_date,
+      catchRecord.events?.end_date,
+    );
+
+    return !scoreMatches || !eventDateMatches;
+  }).length;
+  const today = new Date().toLocaleDateString("en-CA", {
+    timeZone: "America/Chicago",
+  });
+  const upcomingEvents = events.filter(
+    (event: any) =>
+      event.end_date >= today &&
+      (event.status || "scheduled").toLowerCase() !== "cancelled",
+  ).length;
+  const pastOpenEvents = events.filter((event: any) => {
+    const status = (event.status || "scheduled").toLowerCase();
+    return (
+      event.end_date < today &&
+      !["cancelled", "completed", "locked"].includes(status)
+    );
+  }).length;
+  const pendingRequests = requests.filter((request: any) =>
+    isUnresolvedRequest(request.status),
+  ).length;
+  const hasQueryError = Boolean(
+    catchesResult.error || eventsResult.error || requestsResult.error,
+  );
+  const attentionChecks =
+    pendingCatches + scoringExceptions + pastOpenEvents + pendingRequests;
+  const readinessLabel = hasQueryError
+    ? "Data check needed"
+    : attentionChecks === 0
+      ? "Ready for review"
+      : `${attentionChecks} operational check${attentionChecks === 1 ? "" : "s"} need attention`;
+
   return (
-    <main className="panel">
-      <h1>NOBGFC Admin</h1>
+    <main className="panel dashboard-page">
+      <p className="eyebrow">{year} season operations</p>
+      <h1>Admin Command Center</h1>
+      <p className="portal-intro">
+        Review current work, resolve exceptions, and keep published results
+        reliable from one place.
+      </p>
+
+      {hasQueryError ? (
+        <p className="alert alert-danger">
+          Some dashboard totals could not be loaded. Open the related tool
+          below before relying on the readiness summary.
+        </p>
+      ) : null}
+
+      <div className="kpi-grid" style={{ marginTop: "24px" }}>
+        <Link className="stat-card" href="/admin/catches">
+          <h3>Pending catches</h3>
+          <div className="stat-card-value">{pendingCatches}</div>
+        </Link>
+        <Link className="stat-card" href="/admin/scoring-audit">
+          <h3>Scoring exceptions</h3>
+          <div className="stat-card-value">{scoringExceptions}</div>
+        </Link>
+        <Link className="stat-card" href="/admin/events">
+          <h3>Upcoming events</h3>
+          <div className="stat-card-value">{upcomingEvents}</div>
+        </Link>
+        <Link className="stat-card" href="/admin/boat-profile-requests">
+          <h3>Profile requests</h3>
+          <div className="stat-card-value">{pendingRequests}</div>
+        </Link>
+      </div>
+
+      <section className="feature-card" style={{ marginTop: "18px" }}>
+        <h2>Season readiness</h2>
+        <p><strong>{readinessLabel}</strong></p>
+        <ul>
+          {pendingCatches > 0 ? (
+            <li><Link href="/admin/catches">Review {pendingCatches} pending catch{pendingCatches === 1 ? "" : "es"}</Link></li>
+          ) : null}
+          {scoringExceptions > 0 ? (
+            <li><Link href="/admin/scoring-audit">Resolve {scoringExceptions} scoring or event-date exception{scoringExceptions === 1 ? "" : "s"}</Link></li>
+          ) : null}
+          {pastOpenEvents > 0 ? (
+            <li><Link href="/admin/events">Update {pastOpenEvents} past event status{pastOpenEvents === 1 ? "" : "es"}</Link></li>
+          ) : null}
+          {pendingRequests > 0 ? (
+            <li><Link href="/admin/boat-profile-requests">Review {pendingRequests} boat profile request{pendingRequests === 1 ? "" : "s"}</Link></li>
+          ) : null}
+          {!hasQueryError && attentionChecks === 0 ? (
+            <li>No unresolved operational items were found.</li>
+          ) : null}
+        </ul>
+      </section>
+
+      <div className="portal-actions">
+        <Link href="/admin/catch-entry" className="btn">+ Add Catch</Link>
+        <Link href="/admin/catches" className="btn btn-ghost">Review Catches</Link>
+        <Link href="/admin/events" className="btn btn-ghost">Manage Schedule</Link>
+        <Link href="/admin/scoring-audit" className="btn btn-ghost">Run Audit</Link>
+      </div>
 
       <h2>Project Review</h2>
       <p>
