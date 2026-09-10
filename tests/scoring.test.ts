@@ -60,6 +60,38 @@ test("released tuna receives 100 points without a line bonus", () => {
   );
 });
 
+test("only the three highest-point Yellowfin count across weighed and released entries", () => {
+  const yellowfin = [
+    { id: 1, points_awarded: 90, released: false, tagged: false, weight: 90 },
+    { id: 2, points_awarded: 80, released: false, tagged: false, weight: 80 },
+    { id: 3, points_awarded: 70, released: false, tagged: false, weight: 70 },
+    { id: 4, points_awarded: 100, released: true, tagged: true, weight: null },
+    { id: 5, points_awarded: 100, released: true, tagged: true, weight: null },
+    { id: 6, points_awarded: 100, released: true, tagged: true, weight: null },
+  ].map((catchRecord) => ({
+    ...catchRecord,
+    species: { name: "Yellowfin Tuna" },
+  }));
+
+  assert.equal(getOfficialEligiblePoints(yellowfin), 300);
+  assert.deepEqual(
+    getExcludedCatches(yellowfin).map((catchRecord) => catchRecord.id),
+    [1, 2, 3],
+  );
+});
+
+test("Bigeye does not consume the annual three-Yellowfin limit", () => {
+  const tuna = [
+    { id: 1, points_awarded: 100, released: true, tagged: true, weight: null, species: { name: "Yellowfin Tuna" } },
+    { id: 2, points_awarded: 100, released: true, tagged: true, weight: null, species: { name: "Yellowfin Tuna" } },
+    { id: 3, points_awarded: 100, released: true, tagged: true, weight: null, species: { name: "Yellowfin Tuna" } },
+    { id: 4, points_awarded: 200, released: false, tagged: false, weight: 200, species: { name: "Bigeye Tuna" } },
+  ];
+
+  assert.equal(getOfficialEligiblePoints(tuna), 500);
+  assert.deepEqual(getExcludedCatches(tuna), []);
+});
+
 test("release estimates are labeled and excluded from weighed records", () => {
   const releasedEstimate = {
     weight: 250,
