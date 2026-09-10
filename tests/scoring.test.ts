@@ -280,3 +280,16 @@ test("locked and cancelled events reject catch assignment", () => {
     );
   }
 });
+
+test("non-tournament club events reject catch assignment", () => {
+  assert.deepEqual(
+    validateEventAssignment({
+      catchDateTime: "2027-04-18T18:00",
+      eventStartDate: "2027-04-18",
+      eventEndDate: "2027-04-18",
+      eventStatus: "completed",
+      eventIsTournament: false,
+    }),
+    ["Catches can only be assigned to tournament events."],
+  );
+});

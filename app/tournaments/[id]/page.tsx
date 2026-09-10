@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { notFound } from "next/navigation";
 import { supabase } from "../../../lib/supabase";
 import {
   compareTournamentStandings,
@@ -45,7 +46,7 @@ export default async function TournamentPage({
   const [{ data: event }, { data: catches }] = await Promise.all([
     supabase
       .from("events")
-      .select("id,name,start_date,end_date,status,notes")
+      .select("id,name,start_date,end_date,status,notes,is_tournament")
       .eq("id", eventId)
       .single(),
     supabase
@@ -64,6 +65,10 @@ export default async function TournamentPage({
       .eq("event_id", eventId)
       .eq("status", "approved"),
   ]);
+
+  if (!event?.is_tournament) {
+    notFound();
+  }
 
   const eligibleCatches =
     catches?.filter((catchRecord: any) =>

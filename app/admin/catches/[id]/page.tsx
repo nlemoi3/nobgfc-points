@@ -98,7 +98,7 @@ async function updateCatch(formData: FormData) {
   if (status === "approved") {
     const { data: eventRow } = await authenticatedSupabase
       .from("events")
-      .select("start_date,end_date,status")
+      .select("start_date,end_date,status,is_tournament")
       .eq("id", event_id)
       .single();
 
@@ -117,6 +117,7 @@ async function updateCatch(formData: FormData) {
         eventStartDate: eventRow?.start_date || null,
         eventEndDate: eventRow?.end_date || null,
         eventStatus: eventRow?.status || null,
+        eventIsTournament: eventRow?.is_tournament ?? null,
       })
     );
 
@@ -238,7 +239,11 @@ export default async function EditCatchPage({
     { data: species },
   ] = await Promise.all([
     supabase.from("catches").select("*").eq("id", catchId).single(),
-    supabase.from("events").select("*").order("start_date"),
+    supabase
+      .from("events")
+      .select("*")
+      .eq("is_tournament", true)
+      .order("start_date"),
     supabase.from("boats").select("id,name").order("name"),
     supabase
       .from("anglers")

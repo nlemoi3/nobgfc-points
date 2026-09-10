@@ -17,6 +17,7 @@ export default async function TournamentsPage() {
   const { data: events, error } = await supabase
     .from("events")
     .select("*")
+    .eq("is_tournament", true)
     .order("start_date", { ascending: false });
 
   const statusClass = (status: string | null) => {

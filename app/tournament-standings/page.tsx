@@ -40,7 +40,7 @@ export default async function TournamentStandingsPage() {
       points_awarded,
       catch_datetime,
       status,
-      events(id,name,start_date,end_date,status),
+      events(id,name,start_date,end_date,status,is_tournament),
       boats(id,name),
       species(name)
     `)
@@ -62,6 +62,7 @@ export default async function TournamentStandingsPage() {
     if (!isBillfishSpecies(c.species?.name)) return;
 
     const event = c.events;
+    if (!event?.is_tournament) return;
     const eventId = event?.id;
     const boatId = c.boats?.id;
     const boatName = c.boats?.name || "Unknown Boat";
