@@ -3,6 +3,18 @@ import test from "node:test";
 
 import { parseAuthCallback } from "../lib/auth-callback.ts";
 import { getAuthErrorMessage } from "../lib/auth-error-message.ts";
+import { getSafeAuthRedirect } from "../lib/auth-redirect.ts";
+
+test("authentication callbacks accept only local redirect paths", () => {
+  assert.equal(getSafeAuthRedirect("/reset-password"), "/reset-password");
+  assert.equal(
+    getSafeAuthRedirect("/dashboard?welcome=1"),
+    "/dashboard?welcome=1",
+  );
+  assert.equal(getSafeAuthRedirect("https://attacker.example"), "/dashboard");
+  assert.equal(getSafeAuthRedirect("//attacker.example"), "/dashboard");
+  assert.equal(getSafeAuthRedirect(null, "/reset-password"), "/reset-password");
+});
 
 test("password recovery callbacks accept PKCE authorization codes", () => {
   assert.deepEqual(parseAuthCallback("", "?code=recovery-code"), {
