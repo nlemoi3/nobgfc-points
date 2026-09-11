@@ -6,7 +6,7 @@ import {
   isCatchWithinEventDates,
 } from "../../lib/scoring";
 import { getActiveSeasonRange } from "../../lib/season";
-import { createAdminClient } from "../../lib/supabase/admin";
+import { createClient } from "../../lib/supabase/server";
 
 function isUnresolvedRequest(status: string | null) {
   return !["approved", "rejected", "closed"].includes(
@@ -34,7 +34,7 @@ export default async function AdminPage() {
     );
   }
 
-  const supabase = createAdminClient();
+  const supabase = await createClient();
   const { year, start: seasonStart, end: seasonEnd } =
     await getActiveSeasonRange(supabase);
   const seasonStartDate = `${year}-01-01`;
@@ -63,9 +63,7 @@ export default async function AdminPage() {
       .lte("start_date", seasonEndDate)
       .gte("end_date", seasonStartDate)
       .order("start_date"),
-    supabase
-      .from("boat_profile_requests")
-      .select("id,status"),
+    supabase.rpc("admin_get_boat_profile_requests", { p_id: null }),
   ]);
 
   const catches = catchesResult.data || [];
