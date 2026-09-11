@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation";
 import { createClient } from "../../../../lib/supabase/server";
-import { createAdminClient } from "../../../../lib/supabase/admin";
 import { requireRole } from "../../../../lib/auth";
 
 async function applyToExistingBoat(formData: FormData) {
@@ -9,7 +8,6 @@ async function applyToExistingBoat(formData: FormData) {
   await requireRole("admin");
 
   const supabase = await createClient();
-  const adminSupabase = createAdminClient();
   const requestId = Number(formData.get("request_id"));
   const boatId = Number(formData.get("boat_id"));
   const status = String(formData.get("status") || "applied");
@@ -18,11 +16,11 @@ async function applyToExistingBoat(formData: FormData) {
     throw new Error("Please select a boat.");
   }
 
-  const { data: request } = await adminSupabase
-    .from("boat_profile_requests")
-    .select("*")
-    .eq("id", requestId)
-    .single();
+  const { data: requestRows } = await supabase.rpc(
+    "admin_get_boat_profile_requests",
+    { p_id: requestId },
+  );
+  const request = Array.isArray(requestRows) ? requestRows[0] : null;
 
   if (!request) {
     throw new Error("Request not found.");
@@ -58,10 +56,10 @@ async function applyToExistingBoat(formData: FormData) {
 
   if (boatError) throw new Error(boatError.message);
 
-  const { error: requestError } = await adminSupabase
-    .from("boat_profile_requests")
-    .update({ status })
-    .eq("id", requestId);
+  const { error: requestError } = await supabase.rpc(
+    "admin_update_boat_profile_request_status",
+    { p_id: requestId, p_status: status },
+  );
 
   if (requestError) throw new Error(requestError.message);
 
@@ -74,14 +72,13 @@ async function createNewBoatFromRequest(formData: FormData) {
   await requireRole("admin");
 
   const supabase = await createClient();
-  const adminSupabase = createAdminClient();
   const requestId = Number(formData.get("request_id"));
 
-  const { data: request } = await adminSupabase
-    .from("boat_profile_requests")
-    .select("*")
-    .eq("id", requestId)
-    .single();
+  const { data: requestRows } = await supabase.rpc(
+    "admin_get_boat_profile_requests",
+    { p_id: requestId },
+  );
+  const request = Array.isArray(requestRows) ? requestRows[0] : null;
 
   if (!request) {
     throw new Error("Request not found.");
@@ -120,10 +117,10 @@ async function createNewBoatFromRequest(formData: FormData) {
     throw new Error(boatError?.message || "Unable to create boat.");
   }
 
-  const { error: requestError } = await adminSupabase
-    .from("boat_profile_requests")
-    .update({ status: "applied" })
-    .eq("id", requestId);
+  const { error: requestError } = await supabase.rpc(
+    "admin_update_boat_profile_request_status",
+    { p_id: requestId, p_status: "applied" },
+  );
 
   if (requestError) throw new Error(requestError.message);
 
@@ -135,14 +132,14 @@ async function updateRequestStatus(formData: FormData) {
 
   await requireRole("admin");
 
-  const supabase = createAdminClient();
+  const supabase = await createClient();
   const requestId = Number(formData.get("request_id"));
   const status = String(formData.get("status") || "new");
 
-  const { error } = await supabase
-    .from("boat_profile_requests")
-    .update({ status })
-    .eq("id", requestId);
+  const { error } = await supabase.rpc(
+    "admin_update_boat_profile_request_status",
+    { p_id: requestId, p_status: status },
+  );
 
   if (error) throw new Error(error.message);
 
@@ -157,13 +154,12 @@ export default async function BoatProfileRequestDetailPage({
   await requireRole("admin");
   const { id } = await params;
   const supabase = await createClient();
-  const adminSupabase = createAdminClient();
 
-  const { data: request } = await adminSupabase
-    .from("boat_profile_requests")
-    .select("*")
-    .eq("id", Number(id))
-    .single();
+  const { data: requestRows } = await supabase.rpc(
+    "admin_get_boat_profile_requests",
+    { p_id: Number(id) },
+  );
+  const request = Array.isArray(requestRows) ? requestRows[0] : null;
 
   const { data: boats } = await supabase.rpc("admin_get_boats", {
     p_id: null,
