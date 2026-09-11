@@ -1056,6 +1056,260 @@ hr {
   color: var(--accent-600);
 }
 
+.admin-kpi-grid {
+  margin-top: 2px;
+}
+
+.stat-card span {
+  color: #567287;
+  display: block;
+  font-size: 0.82rem;
+  margin-top: 4px;
+}
+
+.stat-card-danger {
+  border-color: #e7b9b9;
+  background: linear-gradient(135deg, #fff, #fff4f4);
+}
+
+.stat-card-danger .stat-card-value {
+  color: #a93030;
+}
+
+.stat-card-warning {
+  border-color: #e8d3a7;
+  background: linear-gradient(135deg, #fff, #fff9eb);
+}
+
+.stat-card-warning .stat-card-value {
+  color: #9a6813;
+}
+
+.stat-card-info {
+  border-color: #bad5e8;
+}
+
+.stat-card-clear {
+  border-color: #bcdcc9;
+  background: linear-gradient(135deg, #fff, #f1fbf5);
+}
+
+.stat-card-clear .stat-card-value {
+  color: var(--success-500);
+}
+
+.readiness-card h2,
+.admin-section h2,
+.setup-step h2 {
+  margin-top: 0;
+}
+
+.readiness-list {
+  display: grid;
+  gap: 9px;
+  margin-top: 14px;
+}
+
+.readiness-item {
+  align-items: center;
+  background: #f4f8fc;
+  border-left: 4px solid #72a8cc;
+  border-radius: 8px;
+  color: #244d69;
+  display: flex;
+  gap: 14px;
+  justify-content: space-between;
+  padding: 11px 13px;
+}
+
+.readiness-item:visited {
+  color: #244d69;
+}
+
+.readiness-danger {
+  background: #fff2f2;
+  border-left-color: #c44040;
+}
+
+.readiness-warning {
+  background: #fff8e8;
+  border-left-color: #c67a15;
+}
+
+.empty-state {
+  background: #f5f9fc;
+  border: 1px dashed #b8cbd9;
+  border-radius: 10px;
+  color: #4e6b80;
+  display: grid;
+  gap: 4px;
+  padding: 16px;
+}
+
+.admin-section {
+  border-top: 1px solid #d9e4ef;
+  padding-top: 22px;
+}
+
+.section-heading {
+  align-items: end;
+  display: flex;
+  gap: 18px;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.section-heading .eyebrow {
+  margin-bottom: 4px;
+}
+
+.outcome-list {
+  border: 1px solid #d8e2ec;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.outcome-row {
+  align-items: center;
+  background: #fff;
+  border-bottom: 1px solid #e6edf3;
+  color: #234663;
+  display: grid;
+  gap: 12px;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  padding: 12px 14px;
+}
+
+.outcome-row:last-child {
+  border-bottom: 0;
+}
+
+.outcome-row small {
+  color: #61798c;
+  display: block;
+  font-weight: 500;
+}
+
+.status-approved {
+  background: #edf9f2;
+  border-color: #b9ddc8;
+  color: #17643f;
+}
+
+.status-rejected {
+  background: #fff0f0;
+  border-color: #e8bcbc;
+  color: #8c2c2c;
+}
+
+.admin-tool-grid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.admin-tool-card {
+  background: linear-gradient(145deg, #fff, #f6faff);
+  border: 1px solid #d5e1ec;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  padding: 18px;
+}
+
+.admin-tool-card h3 {
+  margin: 0 0 5px;
+}
+
+.admin-tool-card p {
+  font-size: 0.9rem;
+  margin: 0 0 12px;
+}
+
+.admin-tool-card a {
+  border-top: 1px solid #e1eaf2;
+  padding: 8px 0;
+}
+
+.season-setup-page {
+  display: grid;
+  gap: 22px;
+}
+
+.setup-progress {
+  align-items: center;
+  background: linear-gradient(135deg, #eef7fd, #f8fbfe);
+  border: 1px solid #cfe0ed;
+  border-radius: 12px;
+  display: grid;
+  gap: 14px;
+  grid-template-columns: minmax(0, 1fr) minmax(180px, 0.45fr);
+  padding: 16px;
+}
+
+.setup-progress span {
+  color: #577186;
+  display: block;
+  font-size: 0.88rem;
+}
+
+.setup-progress progress {
+  accent-color: var(--success-500);
+  height: 12px;
+  width: 100%;
+}
+
+.setup-step-list {
+  display: grid;
+  gap: 12px;
+}
+
+.setup-step {
+  background: #fff;
+  border: 1px solid #d8e2ec;
+  border-radius: 12px;
+  display: grid;
+  gap: 14px;
+  grid-template-columns: 38px minmax(0, 1fr);
+  padding: 16px;
+}
+
+.setup-step-complete {
+  background: #f3fbf6;
+  border-color: #bcdcc9;
+}
+
+.setup-step-number {
+  align-items: center;
+  background: #e9f3fa;
+  border-radius: 999px;
+  color: var(--accent-600);
+  display: inline-flex;
+  font-weight: 800;
+  height: 34px;
+  justify-content: center;
+  width: 34px;
+}
+
+.setup-step-complete .setup-step-number {
+  background: #dff3e7;
+  color: #17643f;
+}
+
+.setup-step h2 {
+  font-size: 1.08rem;
+  margin-bottom: 4px;
+}
+
+.setup-step p {
+  margin: 0 0 10px;
+}
+
+.text-action {
+  display: inline-flex;
+  padding: 3px 0;
+}
+
 @media (max-width: 900px) {
   .top-nav-inner {
     flex-wrap: wrap;
@@ -1161,6 +1415,26 @@ hr {
 
   .admin-quick-actions {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .admin-tool-grid,
+  .setup-progress {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .outcome-row {
+    align-items: start;
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .outcome-row > small {
+    grid-column: 1 / -1;
+  }
+
+  .section-heading {
+    align-items: start;
+    flex-direction: column;
+    gap: 4px;
   }
 
   .boat-hero-logo {
