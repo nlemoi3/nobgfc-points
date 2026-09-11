@@ -275,11 +275,19 @@ hr {
   transform: translateY(-1px);
 }
 
+.btn:visited {
+  color: white;
+}
+
 .btn-ghost {
   border: 1px solid #c5d4e3;
   background: #fff;
   color: #29506b;
   box-shadow: none;
+}
+
+.btn-ghost:visited {
+  color: #29506b;
 }
 
 .searchbar {
@@ -700,6 +708,17 @@ hr {
   flex-wrap: wrap;
   gap: 10px;
   margin-top: 24px;
+}
+
+.admin-quick-actions {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.admin-quick-actions .btn {
+  justify-content: center;
+  min-height: 48px;
+  text-align: center;
 }
 
 .portal-grid {
@@ -1138,6 +1157,10 @@ hr {
 
   .portal-grid {
     grid-template-columns: 1fr;
+  }
+
+  .admin-quick-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .boat-hero-logo {
