@@ -177,7 +177,7 @@ export default async function AdminPage() {
         </ul>
       </section>
 
-      <div className="portal-actions">
+      <div className="portal-actions admin-quick-actions">
         <Link href="/admin/catch-entry" className="btn">+ Add Catch</Link>
         <Link href="/admin/catches" className="btn btn-ghost">Review Catches</Link>
         <Link href="/admin/events" className="btn btn-ghost">Manage Schedule</Link>
