@@ -377,6 +377,51 @@ hr {
   gap: 8px;
 }
 
+.connection-notice {
+  align-items: start;
+  border: 1px solid;
+  border-radius: 12px;
+  display: flex;
+  gap: 6px;
+  margin: 16px 0;
+  padding: 12px 14px;
+}
+
+.connection-online {
+  background: #edf9f2;
+  border-color: #b9ddc8;
+  color: #17643f;
+}
+
+.connection-offline {
+  background: #fff8e8;
+  border-color: #ecd39b;
+  color: #7a5614;
+}
+
+.draft-notice {
+  color: #506d82;
+  font-size: 0.9rem;
+  margin: 8px 0;
+}
+
+.catch-entry-form {
+  max-width: 720px;
+}
+
+.catch-entry-form input:not([type="checkbox"]),
+.catch-entry-form select {
+  max-width: 100%;
+  width: min(100%, 440px);
+}
+
+.catch-entry-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 20px;
+}
+
 .searchbar {
   display: flex;
   align-items: center;

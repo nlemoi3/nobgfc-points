@@ -2,6 +2,11 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { createCsv, escapeCsvValue } from "../lib/csv.ts";
 import {
+  CATCH_DRAFT_MAX_AGE_MS,
+  isValidSubmissionToken,
+  parseCatchEntryDraft,
+} from "../lib/catch-entry.ts";
+import {
   canRunCompetitionOperations,
   isRoleAuthorized,
 } from "../lib/role-access.ts";
@@ -59,4 +64,48 @@ test("competition operations remain limited to weighmasters and admins", () => {
   assert.equal(canRunCompetitionOperations("admin"), true);
   assert.equal(isRoleAuthorized("admin", "weighmaster"), true);
   assert.equal(isRoleAuthorized("weighmaster", "admin"), false);
+});
+
+test("catch submission tokens must be UUIDs", () => {
+  assert.equal(
+    isValidSubmissionToken("123e4567-e89b-42d3-a456-426614174000"),
+    true,
+  );
+  assert.equal(isValidSubmissionToken("same-catch"), false);
+  assert.equal(isValidSubmissionToken(null), false);
+});
+
+test("a valid catch draft can be restored", () => {
+  const now = Date.UTC(2026, 8, 12);
+  const restored = parseCatchEntryDraft(
+    JSON.stringify({
+      savedAt: now - 1000,
+      entry_token: "123e4567-e89b-42d3-a456-426614174000",
+      event_id: "12",
+      boat_id: "4",
+      angler_id: "8",
+      species_id: "2",
+      weight: "25.6",
+      line_class: "50",
+      released: false,
+      tagged: false,
+      catch_datetime: "2026-09-04T16:30",
+    }),
+    now,
+  );
+
+  assert.equal(restored?.event_id, "12");
+  assert.equal(restored?.weight, "25.6");
+  assert.equal(restored?.catch_datetime, "2026-09-04T16:30");
+});
+
+test("expired or corrupt catch drafts are discarded", () => {
+  const now = Date.UTC(2026, 8, 12);
+  const expired = JSON.stringify({
+    savedAt: now - CATCH_DRAFT_MAX_AGE_MS - 1,
+    entry_token: "123e4567-e89b-42d3-a456-426614174000",
+  });
+
+  assert.equal(parseCatchEntryDraft(expired, now), null);
+  assert.equal(parseCatchEntryDraft("not-json", now), null);
 });
