@@ -312,7 +312,8 @@ export default async function TournamentPage({
       {boatStandings.length === 0 ? (
         <p>No catches entered for this tournament.</p>
       ) : (
-        <table border={1} cellPadding={8}>
+        <div className="table-wrap mobile-card-wrap" role="region" aria-label="Tournament boat standings" tabIndex={0}>
+        <table className="admin-table mobile-card-table">
           <thead>
             <tr>
               <th>Rank</th>
@@ -324,20 +325,21 @@ export default async function TournamentPage({
           <tbody>
             {boatStandings.map(([boatKey, result], index) => (
               <tr key={boatKey}>
-                <td>{index + 1}</td>
-                <td>
+                <td data-label="Rank">{index + 1}</td>
+                <td data-label="Boat">
                   {result.id ? (
                     <Link href={`/boats/${result.id}`}>{result.name}</Link>
                   ) : (
                     result.name
                   )}
                 </td>
-                <td>{result.points.toFixed(1)}</td>
-                <td>{formatDateTime(result.totalReachedAt)}</td>
+                <td data-label="Points">{result.points.toFixed(1)}</td>
+                <td data-label="Total Reached">{formatDateTime(result.totalReachedAt)}</td>
               </tr>
             ))}
           </tbody>
         </table>
+        </div>
       )}
 
       <p className="muted">
@@ -350,7 +352,8 @@ export default async function TournamentPage({
       {anglerStandings.length === 0 ? (
         <p>No angler points entered for this tournament.</p>
       ) : (
-        <table border={1} cellPadding={8}>
+        <div className="table-wrap mobile-card-wrap" role="region" aria-label="Tournament angler standings" tabIndex={0}>
+        <table className="admin-table mobile-card-table">
           <thead>
             <tr>
               <th>Rank</th>
@@ -361,19 +364,20 @@ export default async function TournamentPage({
           <tbody>
             {anglerStandings.map(([anglerKey, result], index) => (
               <tr key={anglerKey}>
-                <td>{index + 1}</td>
-                <td>
+                <td data-label="Rank">{index + 1}</td>
+                <td data-label="Angler">
                   {result.id ? (
                     <Link href={`/anglers/${result.id}`}>{result.name}</Link>
                   ) : (
                     result.name
                   )}
                 </td>
-                <td>{result.points.toFixed(1)}</td>
+                <td data-label="Points">{result.points.toFixed(1)}</td>
               </tr>
             ))}
           </tbody>
         </table>
+        </div>
       )}
 
       <h2 style={{ marginTop: "30px" }}>Largest Fish</h2>
@@ -426,8 +430,8 @@ export default async function TournamentPage({
       {eligibleCatches.length === 0 ? (
         <p>No catches entered for this tournament.</p>
       ) : (
-        <div className="table-wrap" role="region" aria-label="All tournament catches" tabIndex={0}>
-        <table className="admin-table">
+        <div className="table-wrap mobile-card-wrap" role="region" aria-label="All tournament catches" tabIndex={0}>
+        <table className="admin-table mobile-card-table">
           <thead>
             <tr>
               <th>Photo</th>
@@ -441,7 +445,7 @@ export default async function TournamentPage({
           <tbody>
             {eligibleCatches.map((c: any) => (
               <tr key={c.id}>
-                <td>
+                <td data-label="Photo">
                   {c.photo_url ? (
                     <a href={c.photo_url} target="_blank">
                       <img
@@ -459,7 +463,7 @@ export default async function TournamentPage({
                   )}
                 </td>
 
-                <td>
+                <td data-label="Boat">
                   {c.boats?.id ? (
                     <Link href={`/boats/${c.boats.id}`}>{c.boats?.name}</Link>
                   ) : (
@@ -467,7 +471,7 @@ export default async function TournamentPage({
                   )}
                 </td>
 
-                <td>
+                <td data-label="Angler">
                   {c.anglers?.id ? (
                     <Link href={`/anglers/${c.anglers.id}`}>
                       {c.anglers?.first_name} {c.anglers?.last_name}
@@ -478,13 +482,11 @@ export default async function TournamentPage({
                     </>
                   )}
                 </td>
-                <td>
-  <Link href={`/catches/${c.id}`}>
-    {c.species?.name}
-  </Link>
-</td>
-                <td>{formatCatchWeight(c)}</td>
-                <td>{c.points_awarded}</td>
+                <td data-label="Species">
+                  <Link href={`/catches/${c.id}`}>{c.species?.name}</Link>
+                </td>
+                <td data-label="Weight">{formatCatchWeight(c)}</td>
+                <td data-label="Points">{c.points_awarded}</td>
               </tr>
             ))}
           </tbody>

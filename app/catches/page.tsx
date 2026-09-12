@@ -53,8 +53,8 @@ const { data: catches, error } = await supabase
       {!error && (!catches || catches.length === 0) ? (
         <p>No approved catches have been recorded for {seasonYear}.</p>
       ) : (
-      <div className="table-wrap" role="region" aria-label={`${seasonYear} approved catches`} tabIndex={0}>
-      <table className="admin-table">
+      <div className="table-wrap mobile-card-wrap" role="region" aria-label={`${seasonYear} approved catches`} tabIndex={0}>
+      <table className="admin-table mobile-card-table">
         <thead>
           <tr>
             <th>Photo</th>
@@ -74,7 +74,7 @@ const { data: catches, error } = await supabase
         <tbody>
           {catches?.map((c: any) => (
             <tr key={c.id}>
-              <td>
+              <td data-label="Photo">
                 {c.photo_url ? (
                   <a href={c.photo_url} target="_blank">
                     <img
@@ -91,12 +91,12 @@ const { data: catches, error } = await supabase
                   "-"
                 )}
               </td>
-              <td>
+              <td data-label="Date/Time">
                 <Link href={`/catches/${c.id}`}>
                   {formatDateTime(c.catch_datetime)}
                 </Link>
               </td>
-              <td>
+              <td data-label="Event">
                 {c.events?.id ? (
                   <Link href={`/tournaments/${c.events.id}`}>
                     {c.events?.name}
@@ -105,14 +105,14 @@ const { data: catches, error } = await supabase
                   c.events?.name
                 )}
               </td>
-              <td>
+              <td data-label="Boat">
                 {c.boats?.id ? (
                   <Link href={`/boats/${c.boats.id}`}>{c.boats?.name}</Link>
                 ) : (
                   c.boats?.name
                 )}
               </td>
-              <td>
+              <td data-label="Angler">
                 {c.anglers?.id ? (
                   <Link href={`/anglers/${c.anglers.id}`}>
                     {c.anglers?.first_name} {c.anglers?.last_name}
@@ -123,14 +123,14 @@ const { data: catches, error } = await supabase
                   </>
                 )}
               </td>
-              <td>
+              <td data-label="Species">
                 <Link href={`/catches/${c.id}`}>{c.species?.name}</Link>
               </td>
-              <td>{formatCatchWeight(c)}</td>
-              <td>{c.line_class || "-"}</td>
-              <td>{c.released ? "Yes" : "No"}</td>
-              <td>{c.tagged ? "Yes" : "No"}</td>
-              <td>{c.points_awarded}</td>
+              <td data-label="Weight">{formatCatchWeight(c)}</td>
+              <td data-label="Line">{c.line_class || "-"}</td>
+              <td data-label="Released">{c.released ? "Yes" : "No"}</td>
+              <td data-label="Tagged">{c.tagged ? "Yes" : "No"}</td>
+              <td data-label="Points">{c.points_awarded}</td>
             </tr>
           ))}
         </tbody>

@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "../../../lib/supabase/server";
 import { calculateCatchPoints } from "../../../lib/scoring";
 import { requireRole } from "../../../lib/auth";
+import ConfirmSubmitButton from "../../components/confirm-submit-button";
 
 async function recalculateScores() {
   "use server";
@@ -70,10 +71,20 @@ export default function RecalculateScoresPage() {
         Use this after rule updates, bug fixes, or manual database corrections.
       </p>
 
+      <p className="alert alert-warning">
+        This affects every unlocked catch whose stored score differs from the
+        current rules. Locked events are preserved, and each changed score is
+        recorded in the catch audit history.
+      </p>
+
       <form action={recalculateScores}>
-        <button type="submit" style={{ padding: "10px 20px" }}>
+        <ConfirmSubmitButton
+          className="btn btn-danger"
+          pendingLabel="Recalculating…"
+          confirmation="Recalculate every unlocked catch now? Stored scores that differ from the current rules will be overwritten and recorded in the audit history."
+        >
           Recalculate All Scores
-        </button>
+        </ConfirmSubmitButton>
       </form>
     </main>
   );

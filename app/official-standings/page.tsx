@@ -53,7 +53,8 @@ const { data, error } = await supabase
 
       {error && <p style={{ color: "red" }}>Error: {error.message}</p>}
 
-      <table border={1} cellPadding={8} style={{ borderCollapse: "collapse" }}>
+      <div className="table-wrap mobile-card-wrap" role="region" aria-label="Official boat standings" tabIndex={0}>
+      <table className="admin-table mobile-card-table">
         <thead>
           <tr>
             <th>Rank</th>
@@ -65,19 +66,20 @@ const { data, error } = await supabase
         <tbody>
           {standings.map((row, index) => (
             <tr key={row.boatId ?? row.boatName}>
-              <td>{index + 1}</td>
-              <td>
+              <td data-label="Rank">{index + 1}</td>
+              <td data-label="Boat">
                 {row.boatId ? (
                   <Link href={`/boats/${row.boatId}`}>{row.boatName}</Link>
                 ) : (
                   row.boatName
                 )}
               </td>
-              <td>{row.points.toFixed(1)}</td>
+              <td data-label="Official Points">{row.points.toFixed(1)}</td>
             </tr>
           ))}
         </tbody>
       </table>
+      </div>
     </main>
   );
 }

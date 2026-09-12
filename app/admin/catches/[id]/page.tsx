@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import CatchEventFields from "../../../components/catch-event-fields";
+import ConfirmSubmitButton from "../../../components/confirm-submit-button";
 import { createClient } from "../../../../lib/supabase/server";
 import { requireRole } from "../../../../lib/auth";
 import {
@@ -558,9 +559,13 @@ export default async function EditCatchPage({
       {!isLocked && (
         <form action={deleteCatch}>
           <input type="hidden" name="id" value={catchRecord.id} />
-          <button type="submit" style={{ color: "red" }}>
+          <ConfirmSubmitButton
+            className="btn btn-danger"
+            pendingLabel="Deleting…"
+            confirmation={`Delete catch #${catchRecord.id} (${catchRecord.species?.name || "catch"})? It will immediately disappear from standings. Its previous values will remain in the audit history for administrator-assisted recovery.`}
+          >
             Delete Catch
-          </button>
+          </ConfirmSubmitButton>
         </form>
       )}
     </main>
