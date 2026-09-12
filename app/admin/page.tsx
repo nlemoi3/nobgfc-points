@@ -1,10 +1,7 @@
 import Link from "next/link";
 import { unstable_noStore as noStore } from "next/cache";
 import { requireRole } from "../../lib/auth";
-import {
-  calculateCatchPoints,
-  isCatchWithinEventDates,
-} from "../../lib/scoring";
+import { getCatchChecks } from "../../lib/reconciliation";
 import { getActiveSeasonRange } from "../../lib/season";
 import { createClient } from "../../lib/supabase/server";
 
@@ -86,25 +83,9 @@ export default async function AdminPage() {
   const pendingCatches = catches.filter(
     (catchRecord: any) => (catchRecord.status || "approved") === "pending",
   ).length;
-  const scoringExceptions = catches.filter((catchRecord: any) => {
-    const expected = calculateCatchPoints({
-      speciesName: catchRecord.species?.name || "",
-      weight:
-        catchRecord.weight === null ? null : Number(catchRecord.weight),
-      lineClass: Number(catchRecord.line_class || 130),
-      released: Boolean(catchRecord.released),
-      tagged: Boolean(catchRecord.tagged),
-    });
-    const scoreMatches =
-      Math.abs(Number(catchRecord.points_awarded || 0) - expected) < 0.01;
-    const eventDateMatches = isCatchWithinEventDates(
-      catchRecord.catch_datetime,
-      catchRecord.events?.start_date,
-      catchRecord.events?.end_date,
-    );
-
-    return !scoreMatches || !eventDateMatches;
-  }).length;
+  const scoringExceptions = catches.filter(
+    (catchRecord: any) => getCatchChecks(catchRecord).hasException,
+  ).length;
   const today = new Date().toLocaleDateString("en-CA", {
     timeZone: "America/Chicago",
   });
@@ -305,6 +286,9 @@ export default async function AdminPage() {
             <h3>Scoring and closeout</h3>
             <p>Validate results before publishing champions and awards.</p>
             <Link href="/admin/scoring-audit">Scoring audit</Link>
+            <Link href="/admin/exports">Reconciliation exports</Link>
+            <Link href="/admin/workflow-check">Role workflow check</Link>
+            <Link href="/admin/audit-log">Catch audit history</Link>
             <Link href="/admin/recalculate-scores">Recalculate scores</Link>
             <Link href="/admin/season-champions">Season champions</Link>
             <Link href="/admin/season-champions/generate">Generate awards</Link>

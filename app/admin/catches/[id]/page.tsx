@@ -7,6 +7,10 @@ import {
   validateCatchInput,
   validateEventAssignment,
 } from "../../../../lib/scoring";
+import {
+  formatClubDate,
+  getSubmissionTiming,
+} from "../../../../lib/submission-timing";
 
 async function uploadCatchPhoto(file: File | null, catchId: number) {
   if (!file || file.size === 0) return null;
@@ -49,6 +53,14 @@ async function getCatchEventStatus(catchId: number) {
     .single();
 
   return event?.status || null;
+}
+
+function formatAuditDate(value: string) {
+  return new Intl.DateTimeFormat("en-US", {
+    dateStyle: "medium",
+    timeStyle: "short",
+    timeZone: "America/Chicago",
+  }).format(new Date(value));
 }
 
 async function updateCatch(formData: FormData) {
@@ -237,6 +249,7 @@ export default async function EditCatchPage({
     { data: boats },
     { data: anglers },
     { data: species },
+    { data: auditRows },
   ] = await Promise.all([
     supabase.from("catches").select("*").eq("id", catchId).single(),
     supabase
@@ -250,6 +263,13 @@ export default async function EditCatchPage({
       .select("id,first_name,last_name")
       .order("last_name"),
     supabase.from("species").select("*").order("name"),
+    supabase
+      .from("catch_audit_log")
+      .select(
+        "id,action,actor_email,actor_role,changed_fields,occurred_at",
+      )
+      .eq("catch_id", catchId)
+      .order("occurred_at", { ascending: false }),
   ]);
 
   if (!catchRecord) {
@@ -264,6 +284,13 @@ export default async function EditCatchPage({
   const currentEvent = events?.find(
     (event: any) => event.id === catchRecord.event_id
   );
+
+  const submissionTiming = getSubmissionTiming({
+    released: Boolean(catchRecord.released),
+    tagged: Boolean(catchRecord.tagged),
+    submittedAt: catchRecord.created_at,
+    eventEndDate: currentEvent?.end_date || null,
+  });
 
   const isLocked = currentEvent?.status === "locked";
 
@@ -280,6 +307,12 @@ export default async function EditCatchPage({
       {isLocked && (
         <p style={{ color: "red", fontWeight: "bold" }}>
           This catch belongs to a locked event. Editing and deleting are blocked.
+        </p>
+      )}
+
+      {submissionTiming.isLate && (
+        <p className="alert alert-warning">
+          Review timing: this tag/release record was submitted {submissionTiming.daysLate} day{submissionTiming.daysLate === 1 ? "" : "s"} after the {formatClubDate(submissionTiming.deadlineDate)} deadline. Late entry remains allowed; the Weighmaster should document the eligibility decision.
         </p>
       )}
 
@@ -479,6 +512,46 @@ export default async function EditCatchPage({
 
         {!isLocked && <button type="submit">Save Catch</button>}
       </form>
+
+      <hr style={{ margin: "30px 0" }} />
+
+      <section>
+        <h2>Audit History</h2>
+        <p>
+          This record is append-only and shows submissions, edits, review
+          decisions, and score recalculations.
+        </p>
+        <div className="table-wrap">
+          <table className="admin-table">
+            <thead>
+              <tr>
+                <th>When</th>
+                <th>Action</th>
+                <th>Actor</th>
+                <th>Changed fields</th>
+              </tr>
+            </thead>
+            <tbody>
+              {(auditRows || []).map((row: any) => (
+                <tr key={row.id}>
+                  <td>{formatAuditDate(row.occurred_at)}</td>
+                  <td>{row.action}</td>
+                  <td>
+                    {row.actor_email || "System baseline"}
+                    {row.actor_role ? ` (${row.actor_role})` : ""}
+                  </td>
+                  <td>{(row.changed_fields || []).join(", ") || "—"}</td>
+                </tr>
+              ))}
+              {(auditRows || []).length === 0 ? (
+                <tr>
+                  <td colSpan={4}>No audit entries are available.</td>
+                </tr>
+              ) : null}
+            </tbody>
+          </table>
+        </div>
+      </section>
 
       <hr style={{ margin: "30px 0" }} />
 

@@ -1,7 +1,8 @@
 import { redirect } from "next/navigation";
 import { createClient } from "./supabase/server";
+import { isRoleAuthorized, type AppRole } from "./role-access";
 
-export type AppRole = "member" | "boat" | "weighmaster" | "admin";
+export type { AppRole } from "./role-access";
 
 export async function getCurrentUser() {
   const supabase = await createClient();
@@ -102,10 +103,7 @@ export async function requireRole(requiredRole: AppRole) {
   }
 
   const role = await getCurrentUserRole();
-  const authorized =
-    role === "admin" ||
-    role === requiredRole ||
-    (requiredRole === "weighmaster" && role === "weighmaster");
+  const authorized = isRoleAuthorized(role, requiredRole);
 
   if (!authorized) {
     redirect("/unauthorized");

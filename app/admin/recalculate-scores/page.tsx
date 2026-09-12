@@ -9,26 +9,27 @@ async function recalculateScores() {
   await requireRole("weighmaster");
 
   const supabase = await createClient();
-const { data: catches, error } = await supabase
-  .from("catches")
-  .select(`
+  const { data: catches, error } = await supabase
+    .from("catches")
+    .select(`
     id,
     weight,
     line_class,
     released,
     tagged,
+    points_awarded,
     species(name),
     events(status)
-  `);
+    `);
 
   if (error) throw new Error(error.message);
 
   for (const catchRecord of catches || []) {
-const eventStatus = (catchRecord as any).events?.status;
+    const eventStatus = (catchRecord as any).events?.status;
 
-if (eventStatus === "locked") {
-  continue;
-}
+    if (eventStatus === "locked") {
+      continue;
+    }
     const points = calculateCatchPoints({
       speciesName: (catchRecord as any).species?.name || "",
       weight:
@@ -37,6 +38,10 @@ if (eventStatus === "locked") {
       released: Boolean(catchRecord.released),
       tagged: Boolean(catchRecord.tagged),
     });
+
+    if (Math.abs(Number(catchRecord.points_awarded || 0) - points) < 0.01) {
+      continue;
+    }
 
     const { error: updateError } = await supabase
       .from("catches")
