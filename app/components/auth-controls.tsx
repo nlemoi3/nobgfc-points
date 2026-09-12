@@ -22,7 +22,7 @@ export default function AuthControls({
   return (
     <div className="auth-controls">
       <div className="auth-menu">
-        <Link href="/account" className="auth-email-link">
+        <Link href={anglerId ? "/my-season" : "/account"} className="auth-email-link">
           <span className="auth-email">
             {email} {role ? `(${role})` : "(pending approval)"}
           </span>
@@ -30,6 +30,9 @@ export default function AuthControls({
         <details className="auth-menu-dropdown">
           <summary className="auth-menu-toggle" aria-label="Open account menu" />
           <div className="auth-menu-panel">
+            {anglerId && (
+              <Link href="/my-season">My Season</Link>
+            )}
             <Link href="/account">Account Settings</Link>
             {anglerId && (
               <Link href={`/anglers/${anglerId}`}>My Profile</Link>

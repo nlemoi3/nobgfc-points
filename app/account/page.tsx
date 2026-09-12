@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentUser, getCurrentUserAngler } from "../../lib/auth";
 import { updateAccount, updateAccountPassword } from "./actions";
@@ -31,6 +32,17 @@ export default async function AccountPage({
           Your account is not linked to an angler profile yet. Contact an admin if
           you need profile fields synced.
         </p>
+      )}
+
+      {angler && (
+        <div className="account-season-card">
+          <div>
+            <p className="eyebrow">Profile connected</p>
+            <h2>My Season</h2>
+            <p>See your official points, rank, approved catches, and next tournament.</p>
+          </div>
+          <Link className="btn" href="/my-season">Open My Season</Link>
+        </div>
       )}
 
       <form action={updateAccount}>
