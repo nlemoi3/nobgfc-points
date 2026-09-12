@@ -2,6 +2,10 @@ import Link from "next/link";
 import { unstable_noStore as noStore } from "next/cache";
 import { createClient } from "../../../lib/supabase/server";
 import { formatCatchWeight } from "../../../lib/scoring";
+import {
+  formatClubDate,
+  getSubmissionTiming,
+} from "../../../lib/submission-timing";
 
 function formatDateTime(value: string | null) {
   if (!value) return "No date";
@@ -35,11 +39,12 @@ export default async function AdminCatchesPage({
       tagged,
       status,
       catch_datetime,
+      created_at,
       eligibility_notes,
       boats(id,name),
       anglers(id,first_name,last_name),
       species(name),
-      events(id,name)
+      events(id,name,end_date)
     `)
     .order("id", { ascending: false });
 
@@ -58,9 +63,15 @@ export default async function AdminCatchesPage({
 
       {error && <p style={{ color: "red" }}>Error: {error.message}</p>}
 
-      <table border={1} cellPadding={8} style={{ borderCollapse: "collapse" }}>
-        <thead>
-          <tr>
+      <div
+        className="table-wrap"
+        role="region"
+        aria-label="Catch review queue"
+        tabIndex={0}
+      >
+        <table className="admin-table">
+          <thead>
+            <tr>
             <th>Date/Time</th>
             <th>Event</th>
             <th>Boat</th>
@@ -70,15 +81,27 @@ export default async function AdminCatchesPage({
             <th>Released</th>
             <th>Tagged</th>
             <th>Status</th>
+            <th>Submission Timing</th>
             <th>Review Notes</th>
             <th>Points</th>
             <th>Action</th>
-          </tr>
-        </thead>
+            </tr>
+          </thead>
 
-        <tbody>
-          {catches?.map((c: any) => (
-            <tr key={c.id}>
+          <tbody>
+            {catches?.map((c: any) => {
+              const timing = getSubmissionTiming({
+                released: Boolean(c.released),
+                tagged: Boolean(c.tagged),
+                submittedAt: c.created_at,
+                eventEndDate: c.events?.end_date || null,
+              });
+
+              return (
+                <tr
+                  key={c.id}
+                  className={timing.isLate ? "row-warning" : undefined}
+                >
               <td>
                 <Link href={`/admin/catches/${c.id}`}>
                   {formatDateTime(c.catch_datetime)}
@@ -132,16 +155,30 @@ export default async function AdminCatchesPage({
               {c.status || "approved"}
             </td>
 
+            <td>
+              {!timing.applies ? (
+                "Not applicable"
+              ) : timing.isLate ? (
+                <strong className="text-warning">
+                  Review: {timing.daysLate} day{timing.daysLate === 1 ? "" : "s"} late
+                </strong>
+              ) : (
+                <>On time · due {formatClubDate(timing.deadlineDate)}</>
+              )}
+            </td>
+
             <td>{c.eligibility_notes || "-"}</td>
 
             <td>{c.points_awarded}</td>
               <td>
                 <Link href={`/admin/catches/${c.id}`}>Edit / Delete</Link>
               </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
     </main>
   );
 }

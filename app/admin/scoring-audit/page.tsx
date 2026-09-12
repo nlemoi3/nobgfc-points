@@ -1,11 +1,9 @@
 import Link from "next/link";
 import { unstable_noStore as noStore } from "next/cache";
 import { createClient } from "../../../lib/supabase/server";
-import {
-  calculateCatchPoints,
-  formatCatchWeight,
-  isCatchWithinEventDates,
-} from "../../../lib/scoring";
+import { formatCatchWeight } from "../../../lib/scoring";
+import { getCatchChecks } from "../../../lib/reconciliation";
+import { formatClubDate } from "../../../lib/submission-timing";
 
 function formatDateTime(value: string | null) {
   if (!value) return "No date";
@@ -35,6 +33,7 @@ export default async function ScoringAuditPage() {
       eligibility_notes,
       points_awarded,
       catch_datetime,
+      created_at,
       boats(id,name),
       anglers(id,first_name,last_name),
       species(name),
@@ -44,33 +43,22 @@ export default async function ScoringAuditPage() {
 
   const rows =
     catches?.map((c: any) => {
-      const expected = calculateCatchPoints({
-        speciesName: c.species?.name || "",
-        weight: c.weight === null ? null : Number(c.weight),
-        lineClass: Number(c.line_class || 130),
-        released: Boolean(c.released),
-        tagged: Boolean(c.tagged),
-      });
-      const stored = Number(c.points_awarded || 0);
-      const difference = stored - expected;
-      const eventDateMatches = isCatchWithinEventDates(
-        c.catch_datetime,
-        c.events?.start_date,
-        c.events?.end_date,
-      );
+      const checks = getCatchChecks(c);
 
       return {
         ...c,
-        expected,
-        stored,
-        difference,
-        matches: Math.abs(difference) < 0.01,
-        eventDateMatches,
+        expected: checks.expectedPoints,
+        stored: checks.storedPoints,
+        difference: checks.difference,
+        matches: checks.scoreMatches,
+        eventDateMatches: checks.eventDateMatches,
+        submissionTiming: checks.submissionTiming,
       };
     }) || [];
 
   const mismatches = rows.filter((r: any) => !r.matches);
   const eventDateMismatches = rows.filter((r: any) => !r.eventDateMatches);
+  const lateSubmissions = rows.filter((r: any) => r.submissionTiming.isLate);
 
   return (
     <main className="panel">
@@ -100,13 +88,31 @@ export default async function ScoringAuditPage() {
           <br />
           {eventDateMismatches.length}
         </div>
+        <div style={{ border: "1px solid #ccc", padding: "15px" }}>
+          <strong>Late Tag/Release Warnings</strong>
+          <br />
+          {lateSubmissions.length}
+        </div>
       </div>
 
-      <table border={1} cellPadding={8} style={{ borderCollapse: "collapse" }}>
-        <thead>
-          <tr>
+      <div className="portal-actions">
+        <a className="btn btn-ghost" href="/admin/exports/exceptions" download>
+          Download Exceptions CSV
+        </a>
+      </div>
+
+      <div
+        className="table-wrap"
+        role="region"
+        aria-label="Scoring audit results"
+        tabIndex={0}
+      >
+        <table className="admin-table">
+          <thead>
+            <tr>
             <th>Score Check</th>
             <th>Event-Date Check</th>
+            <th>Submission Timing</th>
             <th>Catch Status</th>
             <th>Review Notes</th>
             <th>Date</th>
@@ -123,20 +129,31 @@ export default async function ScoringAuditPage() {
             <th>Expected</th>
             <th>Difference</th>
             <th>Action</th>
-          </tr>
-        </thead>
+            </tr>
+          </thead>
 
-        <tbody>
-          {rows.map((c: any) => (
-            <tr
+          <tbody>
+            {rows.map((c: any) => (
+              <tr
               key={c.id}
               style={{
                 backgroundColor:
-                  c.matches && c.eventDateMatches ? "white" : "#ffd6d6",
+                  !c.matches || !c.eventDateMatches
+                    ? "#ffd6d6"
+                    : c.submissionTiming.isLate
+                      ? "#fff4d6"
+                      : "white",
               }}
             >
               <td>{c.matches ? "OK" : "CHECK"}</td>
               <td>{c.eventDateMatches ? "OK" : "CHECK"}</td>
+              <td>
+                {!c.submissionTiming.applies
+                  ? "Not applicable"
+                  : c.submissionTiming.isLate
+                    ? `REVIEW — ${c.submissionTiming.daysLate} day${c.submissionTiming.daysLate === 1 ? "" : "s"} late`
+                    : `On time — due ${formatClubDate(c.submissionTiming.deadlineDate)}`}
+              </td>
               <td>{c.status || "-"}</td>
               <td>{c.eligibility_notes || "-"}</td>
               <td>
@@ -185,10 +202,11 @@ export default async function ScoringAuditPage() {
               <td>
   <Link href={`/admin/catches/${c.id}`}>Edit</Link>
 </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </main>
   );
 }

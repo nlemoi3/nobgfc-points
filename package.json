@@ -7,6 +7,7 @@
     "start": "next start",
     "typecheck": "tsc --noEmit",
     "test:auth": "node --experimental-strip-types --test tests/auth-errors.test.ts",
+    "test:operations": "node --experimental-strip-types --test tests/operations.test.ts",
     "test:scoring": "node --experimental-strip-types --test tests/scoring.test.ts"
   },
   "dependencies": {
