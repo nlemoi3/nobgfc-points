@@ -1,10 +1,13 @@
 import Link from "next/link";
+import { unstable_noStore as noStore } from "next/cache";
 import { supabase } from "../../../lib/supabase";
 import {
   formatCatchWeight,
+  getExcludedCatches,
   getOfficialEligiblePoints,
   isWeighedCatch,
 } from "../../../lib/scoring";
+import { getActiveSeasonRange } from "../../../lib/season";
 
 function formatDateTime(value: string | null) {
   if (!value) return "No date";
@@ -99,8 +102,11 @@ export default async function BoatProfilePage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  noStore();
   const { id } = await params;
   const boatId = Number(id);
+  const { year: seasonYear, start: seasonStart, end: seasonEnd } =
+    await getActiveSeasonRange(supabase);
 
   const { data: boat } = await supabase
     .from("boats")
@@ -132,7 +138,9 @@ export default async function BoatProfilePage({
     anglers(id,first_name,last_name),
     events(id,name)
   `)
-  .eq("status", "approved");
+  .eq("status", "approved")
+  .gte("catch_datetime", seasonStart)
+  .lt("catch_datetime", seasonEnd);
 
   if (!boat) {
     return <main className="panel">Boat not found.</main>;
@@ -148,7 +156,11 @@ const { data: boatAwards } = await supabase
   .select("*")
   .order("season_year", { ascending: false });
 
-  const boatCatches = (allCatches || []).filter((c: any) => c.boat_id === boatId);
+  const seasonCatches: any[] = allCatches || [];
+  const boatCatches = seasonCatches.filter((c: any) => c.boat_id === boatId);
+  const excludedCatchIds = new Set(
+    getExcludedCatches(boatCatches).map((catchRecord: any) => catchRecord.id),
+  );
 
   function normalizeBoatName(name: string) {
   return name
@@ -167,25 +179,27 @@ const historicalResults =
       normalizeBoatName(boat.name)
   ) || [];
 
-  const groupedByBoat: Record<string, any[]> = {};
+  const groupedByBoat: Record<number, any[]> = {};
 
-  allCatches?.forEach((c: any) => {
-    const boatName = c.boats?.name || "Unknown Boat";
+  seasonCatches.forEach((c: any) => {
+    if (!c.boat_id) return;
 
-    if (!groupedByBoat[boatName]) {
-      groupedByBoat[boatName] = [];
+    if (!groupedByBoat[c.boat_id]) {
+      groupedByBoat[c.boat_id] = [];
     }
 
-    groupedByBoat[boatName].push(c);
+    groupedByBoat[c.boat_id].push(c);
   });
 
   const boatStandings = Object.entries(groupedByBoat)
-    .map(([name, catches]) => ({
-      name,
-      id: catches[0]?.boats?.id,
+    .map(([groupedBoatId, catches]) => ({
+      id: Number(groupedBoatId),
+      name: catches[0]?.boats?.name || "Unknown Boat",
       points: getOfficialEligiblePoints(catches),
     }))
-    .sort((a, b) => b.points - a.points);
+    .sort(
+      (a, b) => b.points - a.points || a.name.localeCompare(b.name),
+    );
 
   const rankIndex = boatStandings.findIndex((b) => b.id === boatId);
   const currentRank = rankIndex >= 0 ? rankIndex + 1 : null;
@@ -195,12 +209,6 @@ const historicalResults =
     (c: any) => c.species?.name === "Blue Marlin"
   ).length;
 const totalApprovedCatches = boatCatches.length;
-
-const careerPoints = boatCatches.reduce(
-  (total: number, c: any) => total + Number(c.points_awarded || 0),
-  0
-);
-
 
   const largestBlueMarlin = boatCatches
     .filter((c: any) => c.species?.name === "Blue Marlin" && isWeighedCatch(c))
@@ -305,12 +313,12 @@ const careerPoints = boatCatches.reduce(
       )}
 
       <div className="stats-grid">
-        <StatCard title="Current Rank" value={currentRank ? `#${currentRank}` : "Unranked"} />
-        <StatCard title="Official Points" value={officialPoints.toFixed(1)} />
-        <StatCard title="Blue Marlin Count" value={blueMarlinCount} />
-        <StatCard title="Tournament Appearances" value={tournamentAppearances} />
-        <StatCard title="Career Points" value={careerPoints.toFixed(1)} />
-        <StatCard title="Approved Catches" value={totalApprovedCatches} />
+        <StatCard title={`${seasonYear} Rank`} value={currentRank ? `#${currentRank}` : "Unranked"} />
+        <StatCard title={`${seasonYear} Official Points`} value={officialPoints.toFixed(1)} />
+        <StatCard title={`${seasonYear} Blue Marlin`} value={blueMarlinCount} />
+        <StatCard title={`${seasonYear} Tournament Appearances`} value={tournamentAppearances} />
+        <StatCard title="Counting Catches" value={totalApprovedCatches - excludedCatchIds.size} />
+        <StatCard title={`${seasonYear} Approved Catches`} value={totalApprovedCatches} />
       </div>
 
       <h2>Boat Details</h2>
@@ -353,7 +361,7 @@ const careerPoints = boatCatches.reduce(
 
       {boat.notes && <p>{boat.notes}</p>}
 
-      <h2>Largest Fish</h2>
+      <h2>{seasonYear} Largest Fish</h2>
 
       <div className="stats-grid">
         <LargestFishCard title="Largest Blue Marlin" catchRecord={largestBlueMarlin} />
@@ -418,7 +426,11 @@ const careerPoints = boatCatches.reduce(
         <p>No historical season results found.</p>
       )}
 
-      <h2>Tournament History</h2>
+      <h2>{seasonYear} Tournament Activity</h2>
+      <p>
+        Approved catch points by event. Official season points above apply the
+        club&apos;s annual scoring limits.
+      </p>
 
       {tournamentHistory.length === 0 ? (
         <p>No tournament points yet.</p>
@@ -449,12 +461,13 @@ const careerPoints = boatCatches.reduce(
         </div>
       )}
 
-      <h2 style={{ marginTop: "30px" }}>Catch History</h2>
+      <h2 style={{ marginTop: "30px" }}>{seasonYear} Approved Catches</h2>
 
       {boatCatches.length === 0 ? (
-        <p>No catches entered for this boat.</p>
+        <p>No approved catches recorded for this boat in {seasonYear}.</p>
       ) : (
-        <table border={1} cellPadding={8} style={{ borderCollapse: "collapse" }}>
+        <div className="table-wrap" role="region" aria-label={`${seasonYear} approved catches`} tabIndex={0}>
+        <table className="admin-table">
           <thead>
             <tr>
               <th>Photo</th>
@@ -528,11 +541,19 @@ const careerPoints = boatCatches.reduce(
                   <td>{formatCatchWeight(c)}</td>
                   <td>{c.released ? "Yes" : "No"}</td>
                   <td>{c.tagged ? "Yes" : "No"}</td>
-                  <td>{c.points_awarded}</td>
+                  <td>
+                    {c.points_awarded}
+                    {excludedCatchIds.has(c.id) && (
+                      <small style={{ display: "block", color: "#5a7387" }}>
+                        Not counting toward official total
+                      </small>
+                    )}
+                  </td>
                 </tr>
               ))}
           </tbody>
         </table>
+        </div>
       )}
       </main>
     </>
