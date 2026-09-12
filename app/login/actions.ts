@@ -1,13 +1,16 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { getSafeAuthRedirect } from "../../lib/auth-redirect";
 import { createClient } from "../../lib/supabase/server";
 
 export async function login(formData: FormData) {
   const email = String(formData.get("email") || "").trim();
   const password = String(formData.get("password") || "");
-  const nextPath = String(formData.get("next") || "");
-  const safeNextPath = nextPath.startsWith("/") ? nextPath : "";
+  const safeNextPath = getSafeAuthRedirect(
+    String(formData.get("next") || "") || null,
+    "",
+  );
 
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword({ email, password });

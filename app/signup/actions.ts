@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { getConfiguredSiteUrl } from "../../lib/site-url";
 import { createClient } from "../../lib/supabase/server";
 
 export async function signup(formData: FormData) {
@@ -25,7 +26,7 @@ export async function signup(formData: FormData) {
     email,
     password,
     options: {
-      emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || "https://nobgfc-points.vercel.app"}/login`,
+      emailRedirectTo: `${getConfiguredSiteUrl()}/login`,
     },
   });
 

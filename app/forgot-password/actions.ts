@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { getAuthErrorMessage } from "../../lib/auth-error-message";
+import { getConfiguredSiteUrl } from "../../lib/site-url";
 import { createClient } from "../../lib/supabase/server";
 
 export async function requestPasswordReset(formData: FormData) {
@@ -13,7 +14,7 @@ export async function requestPasswordReset(formData: FormData) {
 
   const supabase = await createClient();
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || "https://nobgfc-points.vercel.app"}/reset-password`,
+    redirectTo: `${getConfiguredSiteUrl()}/reset-password`,
   });
 
   if (error) {

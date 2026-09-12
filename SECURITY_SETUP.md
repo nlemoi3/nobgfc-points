@@ -60,7 +60,15 @@ The Twilio values are only required if you plan to send text-message invites.
 3. A weighmaster can use `/admin/catch-entry` and `/admin/catches`.
 4. A weighmaster cannot open other admin routes.
 5. An admin can use all admin routes.
-6. Direct database writes with the public key are rejected by RLS.
+6. Direct catch, role, roster, schedule, and standings mutations with the public
+   key are rejected by RLS. Boat profile requests are the one intentional
+   anonymous insert workflow, and their status is always forced to `new`.
+
+In **Authentication > Settings > Password security**, enable leaked-password
+protection for production after upgrading the Supabase organization to Pro.
+Supabase does not offer this control on the current Free plan. Password sign-up
+and password reset are supported by this application, so compromised-password
+screening is recommended as soon as the plan supports it.
 
 ## 5. Review existing Storage policies
 

@@ -1,18 +1,10 @@
 "use server";
 
-import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { requireRole } from "../../../lib/auth";
 import { getAuthErrorMessage } from "../../../lib/auth-error-message";
+import { getConfiguredSiteUrl } from "../../../lib/site-url";
 import { createAdminClient } from "../../../lib/supabase/admin";
-
-function getSiteUrl(headerStore: Awaited<ReturnType<typeof headers>>) {
-  return (
-    headerStore.get("origin") ||
-    process.env.NEXT_PUBLIC_SITE_URL ||
-    "https://nobgfc-points.vercel.app"
-  );
-}
 
 async function sendSmsInvite(phoneNumber: string, message: string) {
   const accountSid = process.env.TWILIO_ACCOUNT_SID;
@@ -55,8 +47,7 @@ export async function sendInvite(formData: FormData) {
   const email = String(formData.get("email") || "").trim();
   const phone = String(formData.get("phone") || "").trim();
 
-  const headerStore = await headers();
-  const siteUrl = getSiteUrl(headerStore);
+  const siteUrl = getConfiguredSiteUrl();
   const signupUrl = `${siteUrl}/signup`;
   const invitationMessage =
     `NOBGFC invite for ${name || "you"}. Create your account here: ${signupUrl}`;
