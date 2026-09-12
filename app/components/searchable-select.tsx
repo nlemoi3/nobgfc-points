@@ -11,13 +11,15 @@ export default function SearchableSelect({
   label,
   name,
   options,
+  defaultValue = "",
 }: {
   label: string;
   name: string;
   options: SearchableSelectOption[];
+  defaultValue?: string;
 }) {
   const [query, setQuery] = useState("");
-  const [selectedValue, setSelectedValue] = useState("");
+  const [selectedValue, setSelectedValue] = useState(defaultValue);
 
   const filteredOptions = useMemo(() => {
     const normalizedQuery = query.trim().toLocaleLowerCase();

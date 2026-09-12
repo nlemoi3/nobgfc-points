@@ -40,11 +40,16 @@ export default function CatchEventFields({
   defaultDateTime = "",
   defaultEventId = "",
   disabled = false,
+  onValuesChange,
 }: {
   events: CatchEventOption[];
   defaultDateTime?: string;
   defaultEventId?: number | string | null;
   disabled?: boolean;
+  onValuesChange?: (values: {
+    catchDateTime: string;
+    eventId: string;
+  }) => void;
 }) {
   const [catchDateTime, setCatchDateTime] = useState(defaultDateTime);
   const [eventId, setEventId] = useState(defaultEventId ? String(defaultEventId) : "");
@@ -53,17 +58,24 @@ export default function CatchEventFields({
   return (
     <>
       <p>
-        <label>Catch Date & Time</label>
+        <label htmlFor="catch-datetime">Catch Date & Time</label>
         <br />
         <input
+          id="catch-datetime"
           name="catch_datetime"
           type="datetime-local"
           required
           value={catchDateTime}
           onChange={(event) => {
+            event.stopPropagation();
             const nextCatchDateTime = event.target.value;
+            const nextEventId = findMatchingEventId(events, nextCatchDateTime);
             setCatchDateTime(nextCatchDateTime);
-            setEventId(findMatchingEventId(events, nextCatchDateTime));
+            setEventId(nextEventId);
+            onValuesChange?.({
+              catchDateTime: nextCatchDateTime,
+              eventId: nextEventId,
+            });
           }}
           disabled={disabled}
         />
@@ -74,13 +86,19 @@ export default function CatchEventFields({
       </p>
 
       <p>
-        <label>Event</label>
+        <label htmlFor="catch-event">Event</label>
         <br />
         <select
+          id="catch-event"
           name="event_id"
           required
           value={eventId}
-          onChange={(event) => setEventId(event.target.value)}
+          onChange={(event) => {
+            event.stopPropagation();
+            const nextEventId = event.target.value;
+            setEventId(nextEventId);
+            onValuesChange?.({ catchDateTime, eventId: nextEventId });
+          }}
           disabled={disabled}
         >
           <option value="">Select event</option>
