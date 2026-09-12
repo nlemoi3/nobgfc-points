@@ -2,6 +2,7 @@ import Link from "next/link";
 import { unstable_noStore as noStore } from "next/cache";
 import { supabase } from "../../lib/supabase";
 import { formatCatchWeight } from "../../lib/scoring";
+import { getActiveSeasonRange } from "../../lib/season";
 
 function formatDateTime(value: string | null) {
   if (!value) return "No date";
@@ -17,6 +18,8 @@ function formatDateTime(value: string | null) {
 
 export default async function CatchesPage() {
   noStore();
+  const { year: seasonYear, start: seasonStart, end: seasonEnd } =
+    await getActiveSeasonRange(supabase);
 
 const { data: catches, error } = await supabase
   .from("catches")
@@ -36,15 +39,22 @@ const { data: catches, error } = await supabase
     events(id,name)
   `)
   .eq("status", "approved")
+  .gte("catch_datetime", seasonStart)
+  .lt("catch_datetime", seasonEnd)
   .order("catch_datetime", { ascending: false });
 
   return (
     <main className="panel">
-      <h1>Catches</h1>
+      <h1>{seasonYear} Approved Catches</h1>
+      <p>Approved catch records for the active club season.</p>
 
       {error && <p style={{ color: "red" }}>Error: {error.message}</p>}
 
-      <table border={1} cellPadding={8} style={{ borderCollapse: "collapse" }}>
+      {!error && (!catches || catches.length === 0) ? (
+        <p>No approved catches have been recorded for {seasonYear}.</p>
+      ) : (
+      <div className="table-wrap" role="region" aria-label={`${seasonYear} approved catches`} tabIndex={0}>
+      <table className="admin-table">
         <thead>
           <tr>
             <th>Photo</th>
@@ -125,6 +135,8 @@ const { data: catches, error } = await supabase
           ))}
         </tbody>
       </table>
+      </div>
+      )}
     </main>
   );
 }

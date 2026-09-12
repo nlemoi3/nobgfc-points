@@ -1,7 +1,14 @@
 // Angler profile type fix
 import Link from "next/link";
+import { unstable_noStore as noStore } from "next/cache";
 import { supabase } from "../../../lib/supabase";
-import { formatCatchWeight, isWeighedCatch } from "../../../lib/scoring";
+import {
+  formatCatchWeight,
+  getExcludedCatches,
+  getOfficialEligiblePoints,
+  isWeighedCatch,
+} from "../../../lib/scoring";
+import { getActiveSeasonRange } from "../../../lib/season";
 
 function formatDateTime(value: string | null) {
   if (!value) return "No date";
@@ -22,8 +29,11 @@ export default async function AnglerProfilePage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  noStore();
   const { id } = await params;
   const anglerId = Number(id);
+  const { year: seasonYear, start: seasonStart, end: seasonEnd } =
+    await getActiveSeasonRange(supabase);
 
   const { data: angler } = await supabase
     .from("anglers")
@@ -47,6 +57,8 @@ export default async function AnglerProfilePage({
     `)
     .eq("angler_id", anglerId)
     .eq("status", "approved")
+    .gte("catch_datetime", seasonStart)
+    .lt("catch_datetime", seasonEnd)
     .order("catch_datetime", { ascending: false });
 
   if (!angler) {
@@ -59,23 +71,23 @@ export default async function AnglerProfilePage({
   .eq("angler_id", anglerId)
   .order("award_year", { ascending: false });
   
-  const totalPoints =
-    catches?.reduce(
-      (total: number, c: any) => total + Number(c.points_awarded || 0),
-      0
-    ) || 0;
+  const seasonCatches: any[] = catches || [];
+  const officialPoints = getOfficialEligiblePoints(seasonCatches);
+  const excludedCatchIds = new Set(
+    getExcludedCatches(seasonCatches).map((catchRecord: any) => catchRecord.id),
+  );
 
   const blueMarlinCount =
-    catches?.filter((c: any) => relationName(c.species) === "Blue Marlin")
+    seasonCatches.filter((c: any) => relationName(c.species) === "Blue Marlin")
       .length || 0;
 
-  const largestFish = [...(catches || [])]
+  const largestFish = [...seasonCatches]
     .filter((c: any) => isWeighedCatch(c))
     .sort((a: any, b: any) => b.weight - a.weight)[0];
 
   const boatsFished = Array.from(
     new Map(
-      (catches || [])
+      seasonCatches
         .filter((c: any) => relationName(c.boats))
         .map((c: any) => [
           c.boats?.id || relationName(c.boats),
@@ -115,22 +127,24 @@ export default async function AnglerProfilePage({
 
       <div style={{ display: "flex", gap: "20px", flexWrap: "wrap", marginBottom: "30px" }}>
         <div style={{ border: "1px solid #ccc", padding: "15px", minWidth: "220px" }}>
-          <h3>Total Points</h3>
-          <p><strong>{totalPoints.toFixed(1)}</strong></p>
+          <h3>
+            {seasonYear} {angler.is_member ? "Official" : "Eligible"} Points
+          </h3>
+          <p><strong>{officialPoints.toFixed(1)}</strong></p>
         </div>
 
         <div style={{ border: "1px solid #ccc", padding: "15px", minWidth: "220px" }}>
-          <h3>Total Catches</h3>
-          <p><strong>{catches?.length || 0}</strong></p>
+          <h3>{seasonYear} Approved Catches</h3>
+          <p><strong>{seasonCatches.length}</strong></p>
         </div>
 
         <div style={{ border: "1px solid #ccc", padding: "15px", minWidth: "220px" }}>
-          <h3>Blue Marlin Count</h3>
+          <h3>{seasonYear} Blue Marlin</h3>
           <p><strong>{blueMarlinCount}</strong></p>
         </div>
       </div>
 
-      <h2>Largest Fish</h2>
+      <h2>{seasonYear} Largest Fish</h2>
 
       {largestFish ? (
         <div style={{ border: "1px solid #ccc", padding: "15px", maxWidth: "320px" }}>
@@ -161,11 +175,8 @@ export default async function AnglerProfilePage({
       <h2>Awards</h2>
 
 {awards && awards.length > 0 ? (
-  <table
-    border={1}
-    cellPadding={8}
-    style={{ borderCollapse: "collapse", marginBottom: "30px" }}
-  >
+  <div className="table-wrap">
+  <table className="admin-table">
     <thead>
       <tr>
         <th>Year</th>
@@ -184,11 +195,12 @@ export default async function AnglerProfilePage({
       ))}
     </tbody>
   </table>
+  </div>
 ) : (
   <p>No awards recorded.</p>
 )}
 
-<h2>Boats Fished</h2>
+<h2>Boats Fished in {seasonYear}</h2>
 
       {boatsFished.length > 0 ? (
         <ul>
@@ -206,12 +218,13 @@ export default async function AnglerProfilePage({
         <p>No boats recorded yet.</p>
       )}
 
-      <h2>Catch History</h2>
+      <h2>{seasonYear} Approved Catches</h2>
 
-      {catches?.length === 0 ? (
-        <p>No approved catches yet.</p>
+      {seasonCatches.length === 0 ? (
+        <p>No approved catches recorded for {seasonYear}.</p>
       ) : (
-        <table border={1} cellPadding={8} style={{ borderCollapse: "collapse" }}>
+        <div className="table-wrap" role="region" aria-label={`${seasonYear} approved catches`} tabIndex={0}>
+        <table className="admin-table">
           <thead>
             <tr>
               <th>Photo</th>
@@ -227,7 +240,7 @@ export default async function AnglerProfilePage({
           </thead>
 
           <tbody>
-            {catches?.map((c: any) => (
+            {seasonCatches.map((c: any) => (
               <tr key={c.id}>
                 <td>
                   {c.photo_url ? (
@@ -271,11 +284,19 @@ export default async function AnglerProfilePage({
                 <td>{formatCatchWeight(c)}</td>
                 <td>{c.released ? "Yes" : "No"}</td>
                 <td>{c.tagged ? "Yes" : "No"}</td>
-                <td>{c.points_awarded}</td>
+                <td>
+                  {c.points_awarded}
+                  {excludedCatchIds.has(c.id) && (
+                    <small style={{ display: "block", color: "#5a7387" }}>
+                      Not counting toward official total
+                    </small>
+                  )}
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
+        </div>
       )}
     </main>
   );
