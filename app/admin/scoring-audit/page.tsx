@@ -102,12 +102,12 @@ export default async function ScoringAuditPage() {
       </div>
 
       <div
-        className="table-wrap"
+        className="table-wrap mobile-card-wrap"
         role="region"
         aria-label="Scoring audit results"
         tabIndex={0}
       >
-        <table className="admin-table">
+        <table className="admin-table mobile-card-table">
           <thead>
             <tr>
             <th>Score Check</th>
@@ -136,32 +136,31 @@ export default async function ScoringAuditPage() {
             {rows.map((c: any) => (
               <tr
               key={c.id}
-              style={{
-                backgroundColor:
-                  !c.matches || !c.eventDateMatches
-                    ? "#ffd6d6"
-                    : c.submissionTiming.isLate
-                      ? "#fff4d6"
-                      : "white",
-              }}
+              className={
+                !c.matches || !c.eventDateMatches
+                  ? "row-danger"
+                  : c.submissionTiming.isLate
+                    ? "row-warning"
+                    : undefined
+              }
             >
-              <td>{c.matches ? "OK" : "CHECK"}</td>
-              <td>{c.eventDateMatches ? "OK" : "CHECK"}</td>
-              <td>
+              <td data-label="Score Check">{c.matches ? "OK" : "CHECK"}</td>
+              <td data-label="Event-Date Check">{c.eventDateMatches ? "OK" : "CHECK"}</td>
+              <td data-label="Submission Timing">
                 {!c.submissionTiming.applies
                   ? "Not applicable"
                   : c.submissionTiming.isLate
                     ? `REVIEW — ${c.submissionTiming.daysLate} day${c.submissionTiming.daysLate === 1 ? "" : "s"} late`
                     : `On time — due ${formatClubDate(c.submissionTiming.deadlineDate)}`}
               </td>
-              <td>{c.status || "-"}</td>
-              <td>{c.eligibility_notes || "-"}</td>
-              <td>
+              <td data-label="Catch Status">{c.status || "-"}</td>
+              <td data-label="Review Notes">{c.eligibility_notes || "-"}</td>
+              <td data-label="Date">
                 <Link href={`/admin/catches/${c.id}`}>
                   {formatDateTime(c.catch_datetime)}
                 </Link>
               </td>
-              <td>
+              <td data-label="Event">
                 {c.events?.id ? (
                   <Link href={`/tournaments/${c.events.id}`}>
                     {c.events?.name}
@@ -170,15 +169,15 @@ export default async function ScoringAuditPage() {
                   c.events?.name
                 )}
               </td>
-              <td>{c.events?.status || "-"}</td>
-              <td>
+              <td data-label="Event Status">{c.events?.status || "-"}</td>
+              <td data-label="Boat">
                 {c.boats?.id ? (
                   <Link href={`/boats/${c.boats.id}`}>{c.boats?.name}</Link>
                 ) : (
                   c.boats?.name
                 )}
               </td>
-              <td>
+              <td data-label="Angler">
                 {c.anglers?.id ? (
                   <Link href={`/anglers/${c.anglers.id}`}>
                     {c.anglers?.first_name} {c.anglers?.last_name}
@@ -189,19 +188,19 @@ export default async function ScoringAuditPage() {
                   </>
                 )}
               </td>
-              <td>
+              <td data-label="Species">
                 <Link href={`/catches/${c.id}`}>{c.species?.name}</Link>
               </td>
-              <td>{formatCatchWeight(c)}</td>
-              <td>{c.line_class || "-"}</td>
-              <td>{c.released ? "Yes" : "No"}</td>
-              <td>{c.tagged ? "Yes" : "No"}</td>
-              <td>{c.stored.toFixed(1)}</td>
-              <td>{c.expected.toFixed(1)}</td>
-              <td>{c.difference.toFixed(1)}</td>
-              <td>
-  <Link href={`/admin/catches/${c.id}`}>Edit</Link>
-</td>
+              <td data-label="Weight">{formatCatchWeight(c)}</td>
+              <td data-label="Line">{c.line_class || "-"}</td>
+              <td data-label="Released">{c.released ? "Yes" : "No"}</td>
+              <td data-label="Tagged">{c.tagged ? "Yes" : "No"}</td>
+              <td data-label="Stored">{c.stored.toFixed(1)}</td>
+              <td data-label="Expected">{c.expected.toFixed(1)}</td>
+              <td data-label="Difference">{c.difference.toFixed(1)}</td>
+              <td data-label="Action">
+                <Link href={`/admin/catches/${c.id}`}>Review Catch</Link>
+              </td>
               </tr>
             ))}
           </tbody>

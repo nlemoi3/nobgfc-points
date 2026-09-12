@@ -137,11 +137,8 @@ export default async function TournamentStandingsPage() {
               Status: {event?.status || "scheduled"}
             </p>
 
-            <table
-              border={1}
-              cellPadding={8}
-              style={{ borderCollapse: "collapse" }}
-            >
+            <div className="table-wrap mobile-card-wrap" role="region" aria-label={`${event?.name} boat standings`} tabIndex={0}>
+            <table className="admin-table mobile-card-table">
               <thead>
                 <tr>
                   <th>Rank</th>
@@ -154,20 +151,21 @@ export default async function TournamentStandingsPage() {
               <tbody>
                 {standings.map(([boatKey, result], index) => (
                   <tr key={boatKey}>
-                    <td>{index + 1}</td>
-                    <td>
+                    <td data-label="Rank">{index + 1}</td>
+                    <td data-label="Boat">
                       {result.id ? (
                         <Link href={`/boats/${result.id}`}>{result.name}</Link>
                       ) : (
                         result.name
                       )}
                     </td>
-                    <td>{result.points.toFixed(1)}</td>
-                    <td>{formatDateTime(result.totalReachedAt)}</td>
+                    <td data-label="Points">{result.points.toFixed(1)}</td>
+                    <td data-label="Total Reached">{formatDateTime(result.totalReachedAt)}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
+            </div>
             <p className="muted">
               Tied boat totals are ranked by which boat reached the total first,
               as required by tournament Rule 5.

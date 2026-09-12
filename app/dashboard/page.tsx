@@ -382,8 +382,8 @@ export default async function DashboardPage() {
 
       <section>
         <h2>Recent Catches</h2>
-        <div className="table-wrap">
-          <table className="admin-table">
+        <div className="table-wrap mobile-card-wrap">
+          <table className="admin-table mobile-card-table">
             <thead>
               <tr>
                 <th>Date/Time</th>
@@ -397,19 +397,19 @@ export default async function DashboardPage() {
             <tbody>
               {recentCatches.map((c: any) => (
                 <tr key={c.id}>
-                  <td>
+                  <td data-label="Date/Time">
                     <Link href={`/catches/${c.id}`}>
                       {formatDateTime(c.catch_datetime)}
                     </Link>
                   </td>
-                  <td>
+                  <td data-label="Boat">
                     {c.boats?.id ? (
                       <Link href={`/boats/${c.boats.id}`}>{c.boats?.name}</Link>
                     ) : (
                       c.boats?.name
                     )}
                   </td>
-                  <td>
+                  <td data-label="Angler">
                     {c.anglers?.id ? (
                       <Link href={`/anglers/${c.anglers.id}`}>
                         {c.anglers?.first_name} {c.anglers?.last_name}
@@ -420,11 +420,11 @@ export default async function DashboardPage() {
                       </>
                     )}
                   </td>
-                  <td>
+                  <td data-label="Species">
                     <Link href={`/catches/${c.id}`}>{c.species?.name}</Link>
                   </td>
-                  <td>{formatCatchWeight(c)}</td>
-                  <td>{c.points_awarded}</td>
+                  <td data-label="Weight">{formatCatchWeight(c)}</td>
+                  <td data-label="Points">{c.points_awarded}</td>
                 </tr>
               ))}
             </tbody>
@@ -434,8 +434,8 @@ export default async function DashboardPage() {
 
       <section>
         <h2>Boat Standings</h2>
-        <div className="table-wrap">
-          <table className="admin-table">
+        <div className="table-wrap mobile-card-wrap">
+          <table className="admin-table mobile-card-table">
             <thead>
               <tr>
                 <th>Rank</th>
@@ -446,15 +446,15 @@ export default async function DashboardPage() {
             <tbody>
               {boatStandings.map((boat, index) => (
                 <tr key={boat.id ?? boat.name}>
-                  <td>{index + 1}</td>
-                  <td>
+                  <td data-label="Rank">{index + 1}</td>
+                  <td data-label="Boat">
                     {boat.id ? (
                       <Link href={`/boats/${boat.id}`}>{boat.name}</Link>
                     ) : (
                       boat.name
                     )}
                   </td>
-                  <td>{boat.points.toFixed(1)}</td>
+                  <td data-label="Official Points">{boat.points.toFixed(1)}</td>
                 </tr>
               ))}
             </tbody>

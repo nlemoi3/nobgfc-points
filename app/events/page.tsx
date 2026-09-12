@@ -54,8 +54,8 @@ export default async function EventsPage() {
       {Array.from(eventsByYear.entries()).map(([year, yearEvents]) => (
         <section key={year} style={{ marginBottom: "32px" }}>
           <h2>{year}</h2>
-          <div className="table-wrap">
-            <table className="admin-table">
+          <div className="table-wrap mobile-card-wrap">
+            <table className="admin-table mobile-card-table">
               <thead>
                 <tr>
                   <th>Date</th>
@@ -70,8 +70,8 @@ export default async function EventsPage() {
 
                   return (
                     <tr key={event.id}>
-                      <td>{formatDateRange(event.start_date, event.end_date)}</td>
-                      <td>
+                      <td data-label="Date">{formatDateRange(event.start_date, event.end_date)}</td>
+                      <td data-label="Event">
                         {event.is_tournament ? (
                           <Link href={`/tournaments/${event.id}`}>
                             {event.name}
@@ -80,12 +80,12 @@ export default async function EventsPage() {
                           event.name
                         )}
                       </td>
-                      <td>
+                      <td data-label="Status">
                         <span className={`status-chip status-${status}`}>
                           {status}
                         </span>
                       </td>
-                      <td>{event.notes || "—"}</td>
+                      <td data-label="Notes">{event.notes || "—"}</td>
                     </tr>
                   );
                 })}

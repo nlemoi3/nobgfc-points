@@ -69,7 +69,8 @@ const { data, error } = await supabase
         </p>
       )}
 
-      <table border={1} cellPadding={8} style={{ borderCollapse: "collapse" }}>
+      <div className="table-wrap mobile-card-wrap" role="region" aria-label="Official youth standings" tabIndex={0}>
+      <table className="admin-table mobile-card-table">
         <thead>
           <tr>
             <th>Rank</th>
@@ -81,8 +82,8 @@ const { data, error } = await supabase
         <tbody>
           {standings.map((row, index) => (
             <tr key={row.anglerId ?? row.anglerName}>
-              <td>{index + 1}</td>
-              <td>
+              <td data-label="Rank">{index + 1}</td>
+              <td data-label="Youth Angler">
                 {row.anglerId ? (
                   <Link href={`/anglers/${row.anglerId}`}>
                     {row.anglerName}
@@ -91,11 +92,12 @@ const { data, error } = await supabase
                   row.anglerName
                 )}
               </td>
-              <td>{row.points.toFixed(1)}</td>
+              <td data-label="Official Points">{row.points.toFixed(1)}</td>
             </tr>
           ))}
         </tbody>
       </table>
+      </div>
 
       {standings.length === 0 && (
         <p>No youth anglers have qualifying catches yet.</p>

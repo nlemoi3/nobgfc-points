@@ -49,14 +49,20 @@ export default async function CatchAuditLogPage() {
         recalculations, and deletions. The newest activity appears first.
       </p>
 
+      <p className="alert alert-warning">
+        Deleted catches are removed from standings immediately, but their last
+        complete record remains here. An administrator can use that snapshot
+        to reconstruct a catch if one was deleted by mistake.
+      </p>
+
       {error ? (
         <p className="alert alert-danger">
           Audit history could not be loaded: {error.message}
         </p>
       ) : null}
 
-      <div className="table-wrap" style={{ marginTop: "24px" }}>
-        <table className="admin-table">
+      <div className="table-wrap mobile-card-wrap" style={{ marginTop: "24px" }}>
+        <table className="admin-table mobile-card-table">
           <thead>
             <tr>
               <th>When</th>
@@ -84,13 +90,13 @@ export default async function CatchAuditLogPage() {
 
               return (
                 <tr key={row.id}>
-                  <td>{formatAuditDate(row.occurred_at)}</td>
-                  <td>
+                  <td data-label="When">{formatAuditDate(row.occurred_at)}</td>
+                  <td data-label="Action">
                     <span className={`status-chip status-${row.action}`}>
                       {row.action}
                     </span>
                   </td>
-                  <td>
+                  <td data-label="Catch">
                     {catchRecord ? (
                       <Link href={`/admin/catches/${row.catch_id}`}>
                         {catchLabel}
@@ -99,9 +105,9 @@ export default async function CatchAuditLogPage() {
                       catchLabel
                     )}
                   </td>
-                  <td>{row.actor_email || "System baseline"}</td>
-                  <td>{row.actor_role || "—"}</td>
-                  <td>{(row.changed_fields || []).join(", ") || "—"}</td>
+                  <td data-label="Actor">{row.actor_email || "System baseline"}</td>
+                  <td data-label="Role">{row.actor_role || "—"}</td>
+                  <td data-label="Changed Fields">{(row.changed_fields || []).join(", ") || "—"}</td>
                 </tr>
               );
             })}
