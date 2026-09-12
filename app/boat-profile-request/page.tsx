@@ -20,7 +20,6 @@ async function submitBoatProfileRequest(formData: FormData) {
     instagram_url: String(formData.get("instagram_url") || ""),
     youtube_url: String(formData.get("youtube_url") || ""),
     notes: String(formData.get("notes") || ""),
-    status: "new",
   });
 
   if (error) throw new Error(error.message);
