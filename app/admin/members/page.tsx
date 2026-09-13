@@ -3,6 +3,15 @@ import { unstable_noStore as noStore } from "next/cache";
 import { requireRole } from "../../../lib/auth";
 import { getAdminUsers } from "../../../lib/admin-users";
 import { setMemberRole } from "./actions";
+import ConfirmSubmitButton from "../../components/confirm-submit-button";
+
+function formatAdminDate(value: string, dateOnly = false) {
+  return new Intl.DateTimeFormat("en-US", {
+    dateStyle: "medium",
+    ...(dateOnly ? {} : { timeStyle: "short" as const }),
+    timeZone: "America/Chicago",
+  }).format(new Date(value));
+}
 
 export default async function AdminMembersPage({
   searchParams,
@@ -49,8 +58,8 @@ export default async function AdminMembersPage({
               {pendingUsers.map((user) => (
                 <tr key={user.id}>
                   <td>{user.email || "—"}</td>
-                  <td>{new Date(user.created_at).toLocaleDateString()}</td>
-                  <td>{user.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleString() : "—"}</td>
+                  <td>{formatAdminDate(user.created_at, true)}</td>
+                  <td>{user.last_sign_in_at ? formatAdminDate(user.last_sign_in_at) : "—"}</td>
                   <td>
                     <form action={setMemberRole} className="role-assign-form">
                       <input type="hidden" name="user_id" value={user.id} />
@@ -60,7 +69,12 @@ export default async function AdminMembersPage({
                         <option value="weighmaster">Weighmaster</option>
                         <option value="admin">Admin</option>
                       </select>
-                      <button type="submit" className="btn btn-ghost">Save</button>
+                      <ConfirmSubmitButton
+                        className="btn btn-ghost"
+                        confirmation={`Assign the selected role to ${user.email || "this account"}?`}
+                      >
+                        Save
+                      </ConfirmSubmitButton>
                     </form>
                   </td>
                 </tr>
@@ -88,8 +102,8 @@ export default async function AdminMembersPage({
               <tr key={user.id}>
                 <td>{user.email || "—"}</td>
                 <td>{user.role || "pending"}</td>
-                <td>{new Date(user.created_at).toLocaleDateString()}</td>
-                <td>{user.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleString() : "—"}</td>
+                <td>{formatAdminDate(user.created_at, true)}</td>
+                <td>{user.last_sign_in_at ? formatAdminDate(user.last_sign_in_at) : "—"}</td>
               </tr>
             ))}
           </tbody>

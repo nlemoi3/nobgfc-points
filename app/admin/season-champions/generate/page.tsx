@@ -1,7 +1,9 @@
 import { redirect } from "next/navigation";
 import { createClient } from "../../../../lib/supabase/server";
-import { getOfficialEligiblePoints } from "../../../../lib/scoring";
+import { compareOfficialStandings, getOfficialStandingScore } from "../../../../lib/scoring";
 import { requireRole } from "../../../../lib/auth";
+import { getClubSeasonRange } from "../../../../lib/club-time";
+import ConfirmSubmitButton from "../../../components/confirm-submit-button";
 
 async function generateAwards(formData: FormData) {
   "use server";
@@ -17,6 +19,8 @@ async function generateAwards(formData: FormData) {
     );
   }
 
+  const { start, end } = getClubSeasonRange(year);
+
   const { data: catches, error: catchesError } = await supabase
     .from("catches")
     .select(`
@@ -26,13 +30,14 @@ async function generateAwards(formData: FormData) {
       released,
       tagged,
       weight,
+      line_class,
       boats(id,name),
       anglers(id,first_name,last_name,is_member,is_youth),
       species(name)
     `)
     .eq("status", "approved")
-    .gte("catch_datetime", `${year}-01-01T00:00:00.000Z`)
-    .lt("catch_datetime", `${year + 1}-01-01T00:00:00.000Z`);
+    .gte("catch_datetime", start)
+    .lt("catch_datetime", end);
 
   if (catchesError) {
     redirect(
@@ -83,23 +88,23 @@ async function generateAwards(formData: FormData) {
   const boatChampion = Object.values(boatGroups)
     .map((group: any[]) => ({
       boatId: group[0].boats.id,
-      points: getOfficialEligiblePoints(group),
+      ...getOfficialStandingScore(group),
     }))
-    .sort((a, b) => b.points - a.points)[0];
+    .sort(compareOfficialStandings)[0];
 
   const anglerChampion = Object.values(anglerGroups)
     .map((group: any[]) => ({
       anglerId: group[0].anglers.id,
-      points: getOfficialEligiblePoints(group),
+      ...getOfficialStandingScore(group),
     }))
-    .sort((a, b) => b.points - a.points)[0];
+    .sort(compareOfficialStandings)[0];
 
   const youthChampion = Object.values(youthGroups)
     .map((group: any[]) => ({
       anglerId: group[0].anglers.id,
-      points: getOfficialEligiblePoints(group),
+      ...getOfficialStandingScore(group),
     }))
-    .sort((a, b) => b.points - a.points)[0];
+    .sort(compareOfficialStandings)[0];
 
   const { error: replaceError } = await supabase.rpc(
     "replace_season_champions",
@@ -151,9 +156,9 @@ export default async function GenerateSeasonAwardsPage({
           />
         </p>
 
-        <button type="submit">
+        <ConfirmSubmitButton confirmation="Replace the selected season's three generated champion awards with the current standings results?">
           Generate Champions
-        </button>
+        </ConfirmSubmitButton>
       </form>
     </main>
   );

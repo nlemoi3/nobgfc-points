@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { supabase } from "../../lib/supabase";
-import { getOfficialEligiblePoints } from "../../lib/scoring";
+import { compareOfficialStandings, getOfficialStandingScore } from "../../lib/scoring";
 import { getActiveSeasonRange } from "../../lib/season";
 
 export default async function OfficialAnglerStandingsPage() {
@@ -14,6 +14,7 @@ const { data, error } = await supabase
     tagged,
     status,
     weight,
+    line_class,
     anglers(id,first_name,last_name,is_member),
     species(name)
   `)
@@ -47,11 +48,11 @@ const { data, error } = await supabase
     .map(({ anglerId, anglerName, catches }) => ({
       anglerId,
       anglerName,
-      points: getOfficialEligiblePoints(catches),
+      ...getOfficialStandingScore(catches),
     }))
     .sort(
       (a, b) =>
-        b.points - a.points || a.anglerName.localeCompare(b.anglerName)
+        compareOfficialStandings(a, b) || a.anglerName.localeCompare(b.anglerName)
     );
 
   return (

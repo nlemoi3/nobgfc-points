@@ -11,6 +11,11 @@ import {
   isRoleAuthorized,
 } from "../lib/role-access.ts";
 import { getSubmissionTiming } from "../lib/submission-timing.ts";
+import {
+  clubDateTimeToIso,
+  getClubSeasonRange,
+  isoToClubDateTimeInput,
+} from "../lib/club-time.ts";
 
 test("tag and release submissions are due seven days after tournament end", () => {
   const onTime = getSubmissionTiming({
@@ -108,4 +113,31 @@ test("expired or corrupt catch drafts are discarded", () => {
 
   assert.equal(parseCatchEntryDraft(expired, now), null);
   assert.equal(parseCatchEntryDraft("not-json", now), null);
+});
+
+test("catch datetime-local values are stored as Central Time", () => {
+  assert.equal(
+    clubDateTimeToIso("2026-09-04T16:30"),
+    "2026-09-04T21:30:00.000Z",
+  );
+  assert.equal(
+    clubDateTimeToIso("2026-12-04T16:30"),
+    "2026-12-04T22:30:00.000Z",
+  );
+  assert.equal(
+    isoToClubDateTimeInput("2026-09-04T21:30:00.000Z"),
+    "2026-09-04T16:30",
+  );
+});
+
+test("invalid and nonexistent Central Time values are rejected", () => {
+  assert.equal(clubDateTimeToIso("not-a-date"), null);
+  assert.equal(clubDateTimeToIso("2026-03-08T02:30"), null);
+});
+
+test("season boundaries follow Central Time rather than UTC midnight", () => {
+  assert.deepEqual(getClubSeasonRange(2026), {
+    start: "2026-01-01T06:00:00.000Z",
+    end: "2027-01-01T06:00:00.000Z",
+  });
 });

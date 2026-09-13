@@ -7,6 +7,8 @@ import {
   formatCatchWeight,
   getExcludedCatches,
   getOfficialEligiblePoints,
+  compareOfficialStandings,
+  getOfficialStandingScore,
   isBillfishSpecies,
 } from "../../lib/scoring";
 import { createClient } from "../../lib/supabase/server";
@@ -83,6 +85,7 @@ export default async function MySeasonPage() {
         id,
         angler_id,
         weight,
+        line_class,
         points_awarded,
         released,
         tagged,
@@ -138,10 +141,10 @@ export default async function MySeasonPage() {
     .map(([id, group]) => ({
       id,
       name: group.name,
-      points: getOfficialEligiblePoints(group.catches),
+      ...getOfficialStandingScore(group.catches),
     }))
     .sort((left, right) =>
-      right.points - left.points || left.name.localeCompare(right.name),
+      compareOfficialStandings(left, right) || left.name.localeCompare(right.name),
     );
   const rankIndex = standings.findIndex(
     (standing) => Number(standing.id) === Number(angler.id),

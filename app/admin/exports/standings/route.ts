@@ -15,7 +15,7 @@ export async function GET() {
   const { year, start, end } = await getActiveSeasonRange(supabase);
   const { data, error } = await supabase
     .from("catches")
-    .select("id,boat_id,weight,released,tagged,points_awarded,boats(id,name),species(name)")
+    .select("id,boat_id,weight,line_class,released,tagged,points_awarded,boats(id,name),species(name)")
     .eq("status", "approved")
     .gte("catch_datetime", start)
     .lt("catch_datetime", end);

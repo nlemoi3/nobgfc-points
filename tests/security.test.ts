@@ -12,6 +12,25 @@ const securityMigration = readFileSync(
   ),
   "utf8",
 );
+const boatRequestMigration = readFileSync(
+  new URL(
+    "../supabase/migrations/202609130001_atomic_boat_profile_application.sql",
+    import.meta.url,
+  ),
+  "utf8",
+);
+const boatRequestPage = readFileSync(
+  new URL("../app/admin/boat-profile-requests/[id]/page.tsx", import.meta.url),
+  "utf8",
+);
+const confirmationRoute = readFileSync(
+  new URL("../app/auth/confirm/route.ts", import.meta.url),
+  "utf8",
+);
+const invitationAction = readFileSync(
+  new URL("../app/admin/invites/actions.ts", import.meta.url),
+  "utf8",
+);
 
 test("login destinations reject protocol-relative and external redirects", () => {
   assert.equal(getSafeAuthRedirect("/admin/catches", ""), "/admin/catches");
@@ -61,4 +80,32 @@ test("public schema objects default to no anonymous table privileges", () => {
     securityMigration,
     /revoke all on all sequences in schema public from anon, authenticated/,
   );
+});
+
+test("boat profile application updates the boat and request atomically", () => {
+  assert.match(boatRequestMigration, /^begin;/);
+  assert.match(boatRequestMigration, /for update;/);
+  assert.match(boatRequestMigration, /set status = 'applied'/);
+  assert.match(boatRequestMigration, /request_record\.status not in \('new', 'reviewed'\)/);
+  assert.match(boatRequestMigration, /commit;/);
+  assert.match(boatRequestPage, /admin_apply_boat_profile_request/);
+  assert.doesNotMatch(boatRequestPage, /admin_upsert_boat/);
+});
+
+test("atomic boat profile application remains admin-only", () => {
+  assert.match(boatRequestMigration, /private\.has_app_role\('admin'\)/);
+  assert.match(
+    boatRequestMigration,
+    /revoke all on function public\.admin_apply_boat_profile_request[\s\S]*?from public, anon/,
+  );
+  assert.match(
+    boatRequestMigration,
+    /grant execute on function public\.admin_apply_boat_profile_request[\s\S]*?to authenticated/,
+  );
+});
+
+test("email confirmation and invitation links choose usable destinations", () => {
+  assert.match(confirmationRoute, /passwordSetupTypes = new Set\(\["invite", "recovery"\]\)/);
+  assert.match(confirmationRoute, /\? "\/reset-password"\s*:\s*"\/dashboard"/);
+  assert.match(invitationAction, /redirectTo: `\$\{siteUrl\}\/reset-password`/);
 });

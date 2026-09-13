@@ -6,7 +6,7 @@ import { redirect } from "next/navigation";
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string; next?: string }>;
+  searchParams: Promise<{ error?: string; message?: string; next?: string }>;
 }) {
   const role = await getCurrentUserRole();
 
@@ -20,7 +20,7 @@ export default async function LoginPage({
     );
   }
 
-  const { error, next = "" } = await searchParams;
+  const { error, message, next = "" } = await searchParams;
 
   return (
     <main className="panel" style={{ margin: "60px auto", maxWidth: "460px" }}>
@@ -28,6 +28,7 @@ export default async function LoginPage({
       <p>Use your approved NOBGFC account.</p>
 
       {error && <p className="alert alert-danger">{error}</p>}
+      {message && <p className="alert alert-success">{message}</p>}
 
       {error ? (
         <p>

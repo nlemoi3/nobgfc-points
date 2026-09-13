@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "../../../../lib/supabase/server";
 import { requireRole } from "../../../../lib/auth";
+import ConfirmSubmitButton from "../../../components/confirm-submit-button";
 
 async function applyToExistingBoat(formData: FormData) {
   "use server";
@@ -10,58 +11,17 @@ async function applyToExistingBoat(formData: FormData) {
   const supabase = await createClient();
   const requestId = Number(formData.get("request_id"));
   const boatId = Number(formData.get("boat_id"));
-  const status = String(formData.get("status") || "applied");
 
   if (!boatId) {
     throw new Error("Please select a boat.");
   }
 
-  const { data: requestRows } = await supabase.rpc(
-    "admin_get_boat_profile_requests",
-    { p_id: requestId },
-  );
-  const request = Array.isArray(requestRows) ? requestRows[0] : null;
-
-  if (!request) {
-    throw new Error("Request not found.");
-  }
-
-  const { data: boatsData, error: loadBoatError } = await supabase.rpc(
-    "admin_get_boats",
-    { p_id: boatId },
-  );
-  const existingBoat = Array.isArray(boatsData) ? boatsData[0] : null;
-
-  if (loadBoatError || !existingBoat) {
-    throw new Error(loadBoatError?.message || "Boat not found.");
-  }
-
-  const { error: boatError } = await supabase.rpc("admin_upsert_boat", {
-    p_id: boatId,
-    p_record: {
-      ...existingBoat,
-      make: request.make,
-      model: request.model,
-      year: request.year,
-      length_feet: request.length_feet,
-      home_port: request.home_port,
-      website_url: request.website_url,
-      facebook_url: request.facebook_url,
-      instagram_url: request.instagram_url,
-      youtube_url: request.youtube_url,
-      notes: request.notes,
-      profile_status: "approved",
-    },
+  const { error } = await supabase.rpc("admin_apply_boat_profile_request", {
+    p_request_id: requestId,
+    p_boat_id: boatId,
   });
 
-  if (boatError) throw new Error(boatError.message);
-
-  const { error: requestError } = await supabase.rpc(
-    "admin_update_boat_profile_request_status",
-    { p_id: requestId, p_status: status },
-  );
-
-  if (requestError) throw new Error(requestError.message);
+  if (error) throw new Error(error.message);
 
   redirect(`/boats/${boatId}`);
 }
@@ -74,55 +34,14 @@ async function createNewBoatFromRequest(formData: FormData) {
   const supabase = await createClient();
   const requestId = Number(formData.get("request_id"));
 
-  const { data: requestRows } = await supabase.rpc(
-    "admin_get_boat_profile_requests",
-    { p_id: requestId },
+  const { data: newBoatId, error } = await supabase.rpc(
+    "admin_apply_boat_profile_request",
+    { p_request_id: requestId, p_boat_id: null },
   );
-  const request = Array.isArray(requestRows) ? requestRows[0] : null;
 
-  if (!request) {
-    throw new Error("Request not found.");
+  if (error || !newBoatId) {
+    throw new Error(error?.message || "Unable to create boat.");
   }
-
-  const { data: newBoatId, error: boatError } = await supabase.rpc(
-    "admin_upsert_boat",
-    {
-      p_id: null,
-      p_record: {
-      name: request.boat_name,
-      owner_name: "",
-      active: true,
-      make: request.make,
-      model: request.model,
-      year: request.year,
-      length_feet: request.length_feet,
-      home_port: request.home_port,
-      website_url: request.website_url,
-      facebook_url: request.facebook_url,
-      instagram_url: request.instagram_url,
-      youtube_url: request.youtube_url,
-      notes: request.notes,
-      captain_name: request.contact_name,
-      captain_email: request.contact_email,
-      profile_status: "approved",
-      owner_email: "",
-      photo_url: "",
-      logo_url: "",
-      user_id: null,
-      },
-    },
-  );
-
-  if (boatError || !newBoatId) {
-    throw new Error(boatError?.message || "Unable to create boat.");
-  }
-
-  const { error: requestError } = await supabase.rpc(
-    "admin_update_boat_profile_request_status",
-    { p_id: requestId, p_status: "applied" },
-  );
-
-  if (requestError) throw new Error(requestError.message);
 
   redirect(`/boats/${newBoatId}`);
 }
@@ -155,15 +74,12 @@ export default async function BoatProfileRequestDetailPage({
   const { id } = await params;
   const supabase = await createClient();
 
-  const { data: requestRows } = await supabase.rpc(
-    "admin_get_boat_profile_requests",
-    { p_id: Number(id) },
-  );
+  const [{ data: requestRows }, { data: boats }] = await Promise.all([
+    supabase.rpc("admin_get_boat_profile_requests", { p_id: Number(id) }),
+    supabase.rpc("admin_get_boats", { p_id: null }),
+  ]);
   const request = Array.isArray(requestRows) ? requestRows[0] : null;
-
-  const { data: boats } = await supabase.rpc("admin_get_boats", {
-    p_id: null,
-  });
+  const canApply = request?.status === "new" || request?.status === "reviewed";
 
   if (!request) {
     return (
@@ -207,7 +123,7 @@ export default async function BoatProfileRequestDetailPage({
         <p>
           <label>Select Existing Boat</label>
           <br />
-          <select name="boat_id" defaultValue="">
+          <select name="boat_id" defaultValue="" disabled={!canApply}>
             <option value="">-- Select Boat --</option>
             {boats?.map((boat: any) => (
               <option key={boat.id} value={boat.id}>
@@ -217,9 +133,12 @@ export default async function BoatProfileRequestDetailPage({
           </select>
         </p>
 
-        <input type="hidden" name="status" value="applied" />
-
-        <button type="submit">Apply To Existing Boat</button>
+        <ConfirmSubmitButton
+          confirmation="Apply this request to the selected boat? Existing profile fields from the request will be replaced."
+          disabled={!canApply}
+        >
+          Apply To Existing Boat
+        </ConfirmSubmitButton>
       </form>
 
       <hr />
@@ -234,8 +153,19 @@ export default async function BoatProfileRequestDetailPage({
           using the submitted profile information.
         </p>
 
-        <button type="submit">Create New Boat</button>
+        <ConfirmSubmitButton
+          confirmation={`Create a new boat named ${request.boat_name} and mark this request applied?`}
+          disabled={!canApply}
+        >
+          Create New Boat
+        </ConfirmSubmitButton>
       </form>
+
+      {!canApply && (
+        <p className="alert alert-warning">
+          This request is already {request.status}. Change it to new or reviewed before applying it again.
+        </p>
+      )}
 
       <hr />
 

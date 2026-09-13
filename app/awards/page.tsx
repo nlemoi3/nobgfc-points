@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { supabase } from "../../lib/supabase";
 import { isWeighedCatch } from "../../lib/scoring";
+import { getActiveSeasonRange } from "../../lib/season";
 
 const AWARD_SPECIES = [
   "Blue Marlin",
@@ -15,6 +16,7 @@ const AWARD_SPECIES = [
 ];
 
 export default async function AwardsPage() {
+const { year, start, end } = await getActiveSeasonRange(supabase);
 const { data: catches, error } = await supabase
   .from("catches")
   .select(`
@@ -24,9 +26,12 @@ const { data: catches, error } = await supabase
     species(name),
     anglers(id,first_name,last_name),
     boats(id,name),
-    events(id,name)
+    events(id,name),
+    catch_datetime
   `)
-  .eq("status", "approved");
+  .eq("status", "approved")
+  .gte("catch_datetime", start)
+  .lt("catch_datetime", end);
 
   const blueMarlinCatches =
     catches?.filter((c: any) => c.species?.name === "Blue Marlin") || [];
@@ -72,10 +77,10 @@ const { data: catches, error } = await supabase
 
   return (
     <main className="panel">
-      <h1>Annual Awards</h1>
+      <h1>{year} Annual Awards</h1>
 
-      <div style={{ display: "flex", gap: "40px", marginBottom: "30px" }}>
-        <div style={{ border: "1px solid #ccc", padding: "15px", minWidth: "300px" }}>
+      <div style={{ display: "flex", gap: "40px", marginBottom: "30px", flexWrap: "wrap" }}>
+        <div style={{ border: "1px solid #ccc", padding: "15px", flex: "1 1 260px" }}>
           <h2>Most Blue Marlin - Angler</h2>
           {topAngler ? (
             <>
@@ -97,7 +102,7 @@ const { data: catches, error } = await supabase
           )}
         </div>
 
-        <div style={{ border: "1px solid #ccc", padding: "15px", minWidth: "300px" }}>
+        <div style={{ border: "1px solid #ccc", padding: "15px", flex: "1 1 260px" }}>
           <h2>Most Blue Marlin - Boat</h2>
           {topBoat ? (
             <>
@@ -120,7 +125,8 @@ const { data: catches, error } = await supabase
 
       {error && <p style={{ color: "red" }}>Error: {error.message}</p>}
 
-      <table border={1} cellPadding={8} style={{ borderCollapse: "collapse" }}>
+      <div className="table-wrap mobile-card-wrap" role="region" aria-label={`${year} annual awards`} tabIndex={0}>
+      <table className="admin-table mobile-card-table">
         <thead>
           <tr>
             <th>Species</th>
@@ -137,15 +143,15 @@ const { data: catches, error } = await supabase
 
             return (
               <tr key={species}>
-                <td>{species}</td>
+                <td data-label="Species">{species}</td>
                 {catchRecord ? (
                   <>
-                    <td>
+                    <td data-label="Weight">
                       <Link href={`/catches/${catchRecord.id}`}>
                         {catchRecord.weight} lbs
                       </Link>
                     </td>
-                    <td>
+                    <td data-label="Angler">
                       {catchRecord.anglers?.id ? (
                         <Link href={`/anglers/${catchRecord.anglers.id}`}>
                           {catchRecord.anglers?.first_name}{" "}
@@ -158,7 +164,7 @@ const { data: catches, error } = await supabase
                         </>
                       )}
                     </td>
-                    <td>
+                    <td data-label="Boat">
                       {catchRecord.boats?.id ? (
                         <Link href={`/boats/${catchRecord.boats.id}`}>
                           {catchRecord.boats?.name}
@@ -167,7 +173,7 @@ const { data: catches, error } = await supabase
                         catchRecord.boats?.name
                       )}
                     </td>
-                    <td>
+                    <td data-label="Event">
                       {catchRecord.events?.id ? (
                         <Link href={`/tournaments/${catchRecord.events.id}`}>
                           {catchRecord.events?.name}
@@ -179,10 +185,10 @@ const { data: catches, error } = await supabase
                   </>
                 ) : (
                   <>
-                    <td>—</td>
-                    <td>—</td>
-                    <td>—</td>
-                    <td>—</td>
+                    <td data-label="Weight">—</td>
+                    <td data-label="Angler">—</td>
+                    <td data-label="Boat">—</td>
+                    <td data-label="Event">—</td>
                   </>
                 )}
               </tr>
@@ -190,6 +196,7 @@ const { data: catches, error } = await supabase
           })}
         </tbody>
       </table>
+      </div>
     </main>
   );
 }

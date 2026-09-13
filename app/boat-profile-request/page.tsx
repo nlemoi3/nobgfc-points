@@ -41,19 +41,19 @@ export default function BoatProfileRequestPage() {
         <p>
           <label>Boat Name</label>
           <br />
-          <input name="boat_name" required style={{ width: "500px" }} />
+          <input name="boat_name" required style={{ width: "100%", maxWidth: "500px" }} />
         </p>
 
         <p>
           <label>Your Name</label>
           <br />
-          <input name="contact_name" required style={{ width: "500px" }} />
+          <input name="contact_name" required style={{ width: "100%", maxWidth: "500px" }} />
         </p>
 
         <p>
           <label>Your Email</label>
           <br />
-          <input name="contact_email" type="email" required style={{ width: "500px" }} />
+          <input name="contact_email" type="email" required style={{ width: "100%", maxWidth: "500px" }} />
         </p>
 
         <hr />
@@ -93,31 +93,31 @@ export default function BoatProfileRequestPage() {
         <p>
           <label>Website URL</label>
           <br />
-          <input name="website_url" style={{ width: "500px" }} />
+          <input name="website_url" style={{ width: "100%", maxWidth: "500px" }} />
         </p>
 
         <p>
           <label>Facebook URL</label>
           <br />
-          <input name="facebook_url" style={{ width: "500px" }} />
+          <input name="facebook_url" style={{ width: "100%", maxWidth: "500px" }} />
         </p>
 
         <p>
           <label>Instagram URL</label>
           <br />
-          <input name="instagram_url" style={{ width: "500px" }} />
+          <input name="instagram_url" style={{ width: "100%", maxWidth: "500px" }} />
         </p>
 
         <p>
           <label>YouTube URL</label>
           <br />
-          <input name="youtube_url" style={{ width: "500px" }} />
+          <input name="youtube_url" style={{ width: "100%", maxWidth: "500px" }} />
         </p>
 
         <p>
           <label>Notes</label>
           <br />
-          <textarea name="notes" rows={5} style={{ width: "500px" }} />
+          <textarea name="notes" rows={5} style={{ width: "100%", maxWidth: "500px" }} />
         </p>
 
         <button type="submit">Submit Request</button>

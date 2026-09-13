@@ -1,10 +1,12 @@
 import Link from "next/link";
 import { supabase } from "../../../lib/supabase";
-import { getOfficialEligiblePoints } from "../../../lib/scoring";
+import { compareOfficialStandings, getOfficialStandingScore } from "../../../lib/scoring";
 import { requireRole } from "../../../lib/auth";
+import { getActiveSeasonRange } from "../../../lib/season";
 
 export default async function SeasonChampionsPage() {
 await requireRole("admin");
+const { year, start, end } = await getActiveSeasonRange(supabase);
 const { data: catches, error } = await supabase
   .from("catches")
   .select(`
@@ -14,11 +16,15 @@ const { data: catches, error } = await supabase
     tagged,
     status,
     weight,
+    line_class,
     boats(id,name),
     anglers(id,first_name,last_name,is_member,is_youth),
-    species(name)
+    species(name),
+    catch_datetime
   `)
-  .eq("status", "approved");
+  .eq("status", "approved")
+  .gte("catch_datetime", start)
+  .lt("catch_datetime", end);
 
   const boatCatches: Record<string, any[]> = {};
   const anglerCatches: Record<string, any[]> = {};
@@ -57,28 +63,28 @@ const { data: catches, error } = await supabase
     .map(([boatName, catches]) => ({
       boatName,
       boatId: catches[0]?.boats?.id,
-      points: getOfficialEligiblePoints(catches),
+      ...getOfficialStandingScore(catches),
       catches,
     }))
-    .sort((a, b) => b.points - a.points);
+    .sort(compareOfficialStandings);
 
   const anglerStandings = Object.entries(anglerCatches)
     .map(([anglerName, catches]) => ({
       anglerName,
       anglerId: catches[0]?.anglers?.id,
-      points: getOfficialEligiblePoints(catches),
+      ...getOfficialStandingScore(catches),
       catches,
     }))
-    .sort((a, b) => b.points - a.points);
+    .sort(compareOfficialStandings);
 
   const youthStandings = Object.entries(youthCatches)
     .map(([anglerName, catches]) => ({
       anglerName,
       anglerId: catches[0]?.anglers?.id,
-      points: getOfficialEligiblePoints(catches),
+      ...getOfficialStandingScore(catches),
       catches,
     }))
-    .sort((a, b) => b.points - a.points);
+    .sort(compareOfficialStandings);
 
   const boatChampion = boatStandings[0];
   const anglingChampion = anglerStandings[0];
@@ -86,7 +92,7 @@ const { data: catches, error } = await supabase
 
   return (
     <main className="panel">
-      <h1>Season Champions</h1>
+      <h1>{year} Season Champions</h1>
 
       {error && (
         <p style={{ color: "red" }}>

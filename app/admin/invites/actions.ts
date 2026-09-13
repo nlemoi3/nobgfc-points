@@ -68,7 +68,7 @@ export async function sendInvite(formData: FormData) {
   const supabase = createAdminClient();
   const { error } = await supabase.auth.admin.inviteUserByEmail(email, {
     data: name ? { name } : undefined,
-    redirectTo: `${siteUrl}/login`,
+    redirectTo: `${siteUrl}/reset-password`,
   });
 
   if (error) {
