@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { supabase } from "../../lib/supabase";
+import { getClubYear } from "../../lib/club-time";
 
 export const dynamic = "force-dynamic";
 
@@ -10,6 +11,7 @@ function formatDate(value: string | null) {
     month: "numeric",
     day: "numeric",
     year: "numeric",
+    timeZone: "America/Chicago",
   });
 }
 
@@ -24,7 +26,8 @@ function getLargestByYear(catches: any[], speciesList: string[]) {
     if (!c.weight || !c.catch_datetime) return;
     if (!speciesList.includes(speciesName(c))) return;
 
-    const year = new Date(c.catch_datetime).getFullYear();
+    const year = getClubYear(c.catch_datetime);
+    if (year === null) return;
 
     if (!byYear[year] || Number(c.weight) > Number(byYear[year].weight)) {
       byYear[year] = c;
