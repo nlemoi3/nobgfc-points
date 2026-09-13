@@ -68,7 +68,7 @@ const { data: catches, error } = await supabase
             <th>Line</th>
             <th>Released</th>
             <th>Tagged</th>
-            <th>Points</th>
+            <th>Annual Club Points</th>
           </tr>
         </thead>
 
@@ -131,7 +131,7 @@ const { data: catches, error } = await supabase
               <td data-label="Line">{c.line_class || "-"}</td>
               <td data-label="Released">{c.released ? "Yes" : "No"}</td>
               <td data-label="Tagged">{c.tagged ? "Yes" : "No"}</td>
-              <td data-label="Points">{c.points_awarded}</td>
+              <td data-label="Annual Club Points">{c.points_awarded}</td>
             </tr>
           ))}
         </tbody>

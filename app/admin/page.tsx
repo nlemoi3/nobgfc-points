@@ -271,6 +271,7 @@ export default async function AdminPage() {
             <p>Prepare the next season, manage dates, and review the project.</p>
             <Link href="/admin/season-setup">Next-season setup</Link>
             <Link href="/admin/events">Schedule and events</Link>
+            <Link href="/admin/tournament-registrations">NOIBT registrations</Link>
             <Link href="/admin/review-guide">Club evaluation walkthrough</Link>
           </article>
           <article className="admin-tool-card">

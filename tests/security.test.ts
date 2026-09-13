@@ -19,6 +19,20 @@ const boatRequestMigration = readFileSync(
   ),
   "utf8",
 );
+const noibtMigration = readFileSync(
+  new URL(
+    "../supabase/migrations/20260913160254_add_noibt_ruleset_and_registrations.sql",
+    import.meta.url,
+  ),
+  "utf8",
+);
+const noibtPolicyMigration = readFileSync(
+  new URL(
+    "../supabase/migrations/20260913163600_optimize_noibt_registration_policies.sql",
+    import.meta.url,
+  ),
+  "utf8",
+);
 const boatRequestPage = readFileSync(
   new URL("../app/admin/boat-profile-requests/[id]/page.tsx", import.meta.url),
   "utf8",
@@ -108,4 +122,69 @@ test("email confirmation and invitation links choose usable destinations", () =>
   assert.match(confirmationRoute, /passwordSetupTypes = new Set\(\["invite", "recovery"\]\)/);
   assert.match(confirmationRoute, /\? "\/reset-password"\s*:\s*"\/dashboard"/);
   assert.match(invitationAction, /redirectTo: `\$\{siteUrl\}\/reset-password`/);
+});
+
+test("NOIBT registration tables are private and protected by RLS", () => {
+  assert.match(
+    noibtMigration,
+    /alter table public\.tournament_registrations enable row level security/,
+  );
+  assert.match(
+    noibtMigration,
+    /alter table public\.tournament_registration_participants enable row level security/,
+  );
+  assert.match(
+    noibtMigration,
+    /revoke all on table[\s\S]*?tournament_registrations[\s\S]*?from public, anon, authenticated/,
+  );
+  assert.match(
+    noibtMigration,
+    /create policy "Admins can manage tournament registrations"[\s\S]*?has_app_role\('admin'\)/,
+  );
+});
+
+test("NOIBT registration policies avoid duplicate SELECT evaluation", () => {
+  assert.match(
+    noibtPolicyMigration,
+    /create index if not exists tournament_registrations_boat_id_idx/,
+  );
+  assert.match(
+    noibtPolicyMigration,
+    /drop policy if exists "Admins can manage tournament registrations"/,
+  );
+  assert.match(
+    noibtPolicyMigration,
+    /create policy "Admins can create tournament registrations"[\s\S]*?for insert/,
+  );
+  assert.doesNotMatch(noibtPolicyMigration, /for all/);
+});
+
+test("NOIBT approval requires the registered event, boat, and angler combination", () => {
+  assert.match(
+    noibtMigration,
+    /selected_event\.scoring_ruleset = 'noibt_2026'[\s\S]*?registration\.event_id = new\.event_id[\s\S]*?registration\.boat_id = new\.boat_id[\s\S]*?participant\.angler_id = new\.angler_id/,
+  );
+});
+
+test("event rulesets cannot change after catches or registrations exist", () => {
+  assert.match(
+    noibtMigration,
+    /create trigger protect_event_scoring_ruleset[\s\S]*?before update of scoring_ruleset on public\.events/,
+  );
+  assert.match(
+    noibtMigration,
+    /exists \(select 1 from public\.catches where event_id = old\.id\)[\s\S]*?public\.tournament_registrations where event_id = old\.id/,
+  );
+});
+
+test("event/date discrepancies are not automatically disqualified in the database", () => {
+  const workflowFunction =
+    noibtMigration.match(
+      /create or replace function public\.enforce_catch_event_workflow\(\)[\s\S]*?revoke all on function/,
+    )?.[0] || "";
+
+  assert.doesNotMatch(workflowFunction, /Catch date must fall within/);
+  assert.doesNotMatch(workflowFunction, /not selected_event\.is_tournament/);
+  assert.match(workflowFunction, /selected_event\.status = 'locked'/);
+  assert.match(workflowFunction, /selected_event\.status = 'cancelled'/);
 });

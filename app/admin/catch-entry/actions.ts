@@ -6,7 +6,8 @@ import {
   isValidSubmissionToken,
 } from "../../../lib/catch-entry";
 import {
-  calculateCatchPoints,
+  calculateAnnualCatchPoints,
+  getEventAssignmentWarnings,
   validateCatchInput,
   validateEventAssignment,
 } from "../../../lib/scoring";
@@ -56,7 +57,7 @@ export async function saveCatch(
         .single(),
       authenticatedSupabase
         .from("events")
-        .select("start_date,end_date,status,is_tournament")
+        .select("start_date,end_date,status,is_tournament,scoring_ruleset")
         .eq("id", event_id)
         .single(),
     ]);
@@ -91,6 +92,13 @@ export async function saveCatch(
       eventIsTournament: eventRow.is_tournament ?? null,
     }),
   );
+  const assignmentWarnings = getEventAssignmentWarnings({
+    catchDateTime: catchDateTimeInput,
+    eventStartDate: eventRow.start_date || null,
+    eventEndDate: eventRow.end_date || null,
+    eventStatus: eventRow.status || null,
+    eventIsTournament: eventRow.is_tournament ?? null,
+  });
 
   if (validationErrors.length > 0) {
     return { status: "error", message: validationErrors.join(" ") };
@@ -103,12 +111,13 @@ export async function saveCatch(
     };
   }
 
-  const points_awarded = calculateCatchPoints({
+  const points_awarded = calculateAnnualCatchPoints({
     speciesName,
     weight,
     lineClass: line_class,
     released,
     tagged,
+    eventScoringRuleset: eventRow.scoring_ruleset || null,
   });
 
   const { error } = await authenticatedSupabase.from("catches").upsert(
@@ -138,6 +147,8 @@ export async function saveCatch(
 
   return {
     status: "success",
-    message: "Catch saved as pending and ready for review.",
+    message: assignmentWarnings.length
+      ? `Catch saved as pending and ready for review. Review warning: ${assignmentWarnings.join(" ")}`
+      : "Catch saved as pending and ready for review.",
   };
 }

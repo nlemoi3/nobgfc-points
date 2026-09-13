@@ -3,9 +3,11 @@ import { notFound } from "next/navigation";
 import { supabase } from "../../../lib/supabase";
 import {
   compareTournamentStandings,
+  calculateTournamentCatchPoints,
+  countsTowardTournamentAnglerStandings,
+  countsTowardTournamentPointStandings,
+  EVENT_SCORING_RULESETS,
   formatCatchWeight,
-  isBillfishSpecies,
-  isCatchWithinEventDates,
   isWeighedCatch,
   laterValidTimestamp,
 } from "../../../lib/scoring";
@@ -46,7 +48,7 @@ export default async function TournamentPage({
   const [{ data: event }, { data: catches }] = await Promise.all([
     supabase
       .from("events")
-      .select("id,name,start_date,end_date,status,notes,is_tournament")
+      .select("id,name,start_date,end_date,status,notes,is_tournament,scoring_ruleset")
       .eq("id", eventId)
       .single(),
     supabase
@@ -54,6 +56,9 @@ export default async function TournamentPage({
       .select(`
         id,
         weight,
+        line_class,
+        released,
+        tagged,
         points_awarded,
         status,
         catch_datetime,
@@ -70,15 +75,20 @@ export default async function TournamentPage({
     notFound();
   }
 
-  const eligibleCatches =
-    catches?.filter((catchRecord: any) =>
-      isCatchWithinEventDates(
-        catchRecord.catch_datetime,
-        event?.start_date,
-        event?.end_date,
-      ),
-    ) || [];
-  const excludedCatchCount = (catches?.length || 0) - eligibleCatches.length;
+  const eligibleCatches = (catches || []).map((catchRecord: any) => ({
+    ...catchRecord,
+    tournamentPoints: calculateTournamentCatchPoints({
+      speciesName: catchRecord.species?.name || "",
+      weight:
+        catchRecord.weight === null ? null : Number(catchRecord.weight),
+      lineClass: Number(catchRecord.line_class || 130),
+      released: Boolean(catchRecord.released),
+      tagged: Boolean(catchRecord.tagged),
+      eventScoringRuleset: event.scoring_ruleset,
+    }),
+  }));
+  const isNoibt =
+    event.scoring_ruleset === EVENT_SCORING_RULESETS.NOIBT_2026;
 
   const boatScores: Record<
     string,
@@ -95,8 +105,16 @@ export default async function TournamentPage({
   > = {};
 
   eligibleCatches.forEach((c: any) => {
-    // Rule 12: tournament point rankings include billfish points only.
-    if (!isBillfishSpecies(c.species?.name)) return;
+    const standingInput = {
+      eventScoringRuleset: event.scoring_ruleset,
+      speciesName: c.species?.name || "",
+      released: Boolean(c.released),
+    };
+    const countsForBoat = countsTowardTournamentPointStandings(standingInput);
+    const countsForAngler =
+      countsTowardTournamentAnglerStandings(standingInput);
+
+    if (!countsForBoat && !countsForAngler) return;
 
     const boatName = c.boats?.name || "Unknown Boat";
     const boatKey = c.boats?.id ? String(c.boats.id) : `unknown:${boatName}`;
@@ -106,9 +124,9 @@ export default async function TournamentPage({
     const anglerKey = c.anglers?.id
       ? String(c.anglers.id)
       : `unknown:${anglerName}`;
-    const points = Number(c.points_awarded || 0);
+    const points = Number(c.tournamentPoints || 0);
 
-    if (!boatScores[boatKey]) {
+    if (countsForBoat && !boatScores[boatKey]) {
       boatScores[boatKey] = {
         points: 0,
         id: c.boats?.id,
@@ -117,22 +135,26 @@ export default async function TournamentPage({
       };
     }
 
-    boatScores[boatKey].points += points;
-    if (points > 0) {
+    if (countsForBoat) {
+      boatScores[boatKey].points += points;
+    }
+    if (countsForBoat && points > 0) {
       boatScores[boatKey].totalReachedAt = laterValidTimestamp(
         boatScores[boatKey].totalReachedAt,
         c.catch_datetime,
       );
     }
 
-    if (!anglerScores[anglerKey]) {
+    if (countsForAngler && !anglerScores[anglerKey]) {
       anglerScores[anglerKey] = {
         id: c.anglers?.id,
         name: anglerName,
         points: 0,
       };
     }
-    anglerScores[anglerKey].points += points;
+    if (countsForAngler) {
+      anglerScores[anglerKey].points += points;
+    }
   });
 
   const boatStandings = Object.entries(boatScores).sort(
@@ -156,7 +178,9 @@ export default async function TournamentPage({
   const largestTuna = eligibleCatches
     .filter(
       (c: any) =>
-        c.species?.name === "Yellowfin Tuna" &&
+        (isNoibt
+          ? ["Yellowfin Tuna", "Bigeye Tuna"].includes(c.species?.name)
+          : c.species?.name === "Yellowfin Tuna") &&
         isWeighedCatch(c)
     )
     .sort((a: any, b: any) => b.weight - a.weight)[0];
@@ -210,18 +234,18 @@ export default async function TournamentPage({
         </p>
       )}
 
-      {excludedCatchCount > 0 && (
+      <h2>Tournament Awards</h2>
+
+      {isNoibt && (
         <p className="schedule-notice">
-          {excludedCatchCount} legacy {excludedCatchCount === 1 ? "catch was" : "catches were"}{" "}
-          excluded because the recorded catch date falls outside this event.
+          NOIBT tournament points are calculated separately from annual NOBGFC
+          club points. NOIBT releases receive no line-class or tag bonus.
         </p>
       )}
 
-      <h2>Tournament Awards</h2>
-
       <div style={{ display: "flex", gap: "20px", flexWrap: "wrap", marginBottom: "30px" }}>
         <div style={{ border: "1px solid #ccc", padding: "15px", minWidth: "250px" }}>
-          <h3>1st Place Boat</h3>
+          <h3>{isNoibt ? "1st Place Release Team" : "1st Place Boat"}</h3>
           {firstPlaceBoat ? (
             <>
               <strong>
@@ -242,7 +266,7 @@ export default async function TournamentPage({
         </div>
 
         <div style={{ border: "1px solid #ccc", padding: "15px", minWidth: "250px" }}>
-          <h3>2nd Place Boat</h3>
+          <h3>{isNoibt ? "2nd Place Release Team" : "2nd Place Boat"}</h3>
           {secondPlaceBoat ? (
             <>
               <strong>
@@ -263,7 +287,7 @@ export default async function TournamentPage({
         </div>
 
         <div style={{ border: "1px solid #ccc", padding: "15px", minWidth: "250px" }}>
-          <h3>3rd Place Boat</h3>
+          <h3>{isNoibt ? "3rd Place Release Team" : "3rd Place Boat"}</h3>
           {thirdPlaceBoat ? (
             <>
               <strong>
@@ -305,9 +329,13 @@ export default async function TournamentPage({
         </div>
       </div>
 
-      <h2>Boat Standings</h2>
+      <h2>{isNoibt ? "Team Release Standings" : "Boat Standings"}</h2>
 
-      <p>Only billfish points count toward tournament rankings.</p>
+      <p>
+        {isNoibt
+          ? "Only NOIBT billfish release points count in these team release standings."
+          : "Only billfish points count toward tournament rankings."}
+      </p>
 
       {boatStandings.length === 0 ? (
         <p>No catches entered for this tournament.</p>
@@ -343,8 +371,9 @@ export default async function TournamentPage({
       )}
 
       <p className="muted">
-        Tied boat totals are ranked by which boat reached the total first, as
-        required by tournament Rule 5.
+        {isNoibt
+          ? "NOIBT release ties are ranked by which team reached its total first."
+          : "Tied boat totals are ranked by which boat reached the total first under the club rules."}
       </p>
 
       <h2 style={{ marginTop: "30px" }}>Angler Standings</h2>
@@ -358,7 +387,7 @@ export default async function TournamentPage({
             <tr>
               <th>Rank</th>
               <th>Angler</th>
-              <th>Points</th>
+              <th>{isNoibt ? "NOIBT Points" : "Points"}</th>
             </tr>
           </thead>
           <tbody>
@@ -394,7 +423,7 @@ export default async function TournamentPage({
           )}
         </li>
         <li>
-          Yellowfin Tuna:{" "}
+          {isNoibt ? "Tuna" : "Yellowfin Tuna"}:{" "}
           {largestTuna ? (
             <Link href={`/catches/${largestTuna.id}`}>
               {largestTuna.weight} lbs
@@ -439,7 +468,8 @@ export default async function TournamentPage({
               <th>Angler</th>
               <th>Species</th>
               <th>Weight</th>
-              <th>Points</th>
+              <th>{isNoibt ? "NOIBT Points" : "Points"}</th>
+              {isNoibt && <th>Annual Club Points</th>}
             </tr>
           </thead>
           <tbody>
@@ -486,7 +516,12 @@ export default async function TournamentPage({
                   <Link href={`/catches/${c.id}`}>{c.species?.name}</Link>
                 </td>
                 <td data-label="Weight">{formatCatchWeight(c)}</td>
-                <td data-label="Points">{c.points_awarded}</td>
+                <td data-label={isNoibt ? "NOIBT Points" : "Points"}>
+                  {c.tournamentPoints}
+                </td>
+                {isNoibt && (
+                  <td data-label="Annual Club Points">{c.points_awarded}</td>
+                )}
               </tr>
             ))}
           </tbody>

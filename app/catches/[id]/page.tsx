@@ -1,6 +1,10 @@
 import Link from "next/link";
 import { supabase } from "../../../lib/supabase";
-import { formatCatchWeight } from "../../../lib/scoring";
+import {
+  calculateTournamentCatchPoints,
+  EVENT_SCORING_RULESETS,
+  formatCatchWeight,
+} from "../../../lib/scoring";
 
 export const dynamic = "force-dynamic";
 
@@ -48,7 +52,7 @@ export default async function CatchDetailPage({
       boats(id,name),
       anglers(id,first_name,last_name),
       species(name),
-      events(id,name,start_date,end_date)
+      events(id,name,start_date,end_date,scoring_ruleset)
     `)
     .eq("id", catchId)
     .single();
@@ -71,6 +75,20 @@ export default async function CatchDetailPage({
   const anglerId = relationId(catchRecord.anglers);
   const eventId = relationId(catchRecord.events);
   const eventName = relationName(catchRecord.events);
+  const eventValue: any = Array.isArray(catchRecord.events)
+    ? catchRecord.events[0]
+    : catchRecord.events;
+  const isNoibt =
+    eventValue?.scoring_ruleset === EVENT_SCORING_RULESETS.NOIBT_2026;
+  const tournamentPoints = calculateTournamentCatchPoints({
+    speciesName: species,
+    weight:
+      catchRecord.weight === null ? null : Number(catchRecord.weight),
+    lineClass: Number(catchRecord.line_class || 130),
+    released: Boolean(catchRecord.released),
+    tagged: Boolean(catchRecord.tagged),
+    eventScoringRuleset: eventValue?.scoring_ruleset || null,
+  });
 
   const anglerValue: any = catchRecord.anglers;
 
@@ -121,11 +139,20 @@ const anglerName = Array.isArray(anglerValue)
         </div>
 
         <div style={{ border: "1px solid #ccc", padding: "15px", minWidth: "220px" }}>
-          <h3>Points</h3>
+          <h3>{isNoibt ? "Annual Club Points" : "Club Points"}</h3>
           <p>
             <strong>{Number(catchRecord.points_awarded || 0).toFixed(1)}</strong>
           </p>
         </div>
+
+        {isNoibt && (
+          <div style={{ border: "1px solid #ccc", padding: "15px", minWidth: "220px" }}>
+            <h3>NOIBT Tournament Points</h3>
+            <p>
+              <strong>{tournamentPoints.toFixed(1)}</strong>
+            </p>
+          </div>
+        )}
 
         <div style={{ border: "1px solid #ccc", padding: "15px", minWidth: "220px" }}>
           <h3>Line Class</h3>

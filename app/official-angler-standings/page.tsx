@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { supabase } from "../../lib/supabase";
-import { compareOfficialStandings, getOfficialStandingScore } from "../../lib/scoring";
+import { buildOfficialMemberAnglerStandings } from "../../lib/scoring";
 import { getActiveSeasonRange } from "../../lib/season";
 
 export default async function OfficialAnglerStandingsPage() {
@@ -22,38 +22,7 @@ const { data, error } = await supabase
   .gte("catch_datetime", seasonStart)
   .lt("catch_datetime", seasonEnd);
 
-  const anglerCatches = new Map<
-    string,
-    { anglerId?: number; anglerName: string; catches: any[] }
-  >();
-
-  data?.forEach((catchRecord: any) => {
-    if (!catchRecord.anglers?.is_member) return;
-
-    const anglerId = catchRecord.anglers?.id;
-    const anglerName =
-      `${catchRecord.anglers?.first_name || "Unknown"} ${catchRecord.anglers?.last_name || "Angler"}`;
-    const key = anglerId ? String(anglerId) : `unknown:${anglerName}`;
-    const group = anglerCatches.get(key) || {
-      anglerId,
-      anglerName,
-      catches: [],
-    };
-
-    group.catches.push(catchRecord);
-    anglerCatches.set(key, group);
-  });
-
-  const standings = Array.from(anglerCatches.values())
-    .map(({ anglerId, anglerName, catches }) => ({
-      anglerId,
-      anglerName,
-      ...getOfficialStandingScore(catches),
-    }))
-    .sort(
-      (a, b) =>
-        compareOfficialStandings(a, b) || a.anglerName.localeCompare(b.anglerName)
-    );
+  const standings = buildOfficialMemberAnglerStandings((data || []) as any[]);
 
   return (
     <main className="panel">

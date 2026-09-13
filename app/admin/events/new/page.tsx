@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import ScheduleNotePresets from "../../../components/schedule-note-presets";
 import { requireRole } from "../../../../lib/auth";
 import { createClient } from "../../../../lib/supabase/server";
+import { EVENT_SCORING_RULESETS } from "../../../../lib/scoring";
 
 async function createEvent(formData: FormData) {
   "use server";
@@ -19,6 +20,9 @@ async function createEvent(formData: FormData) {
       end_date: String(formData.get("end_date") || ""),
       status: String(formData.get("status") || "scheduled"),
       is_tournament: formData.get("is_tournament") === "true",
+      scoring_ruleset: String(
+        formData.get("scoring_ruleset") || EVENT_SCORING_RULESETS.CLUB,
+      ),
       notes: String(formData.get("notes") || ""),
     })
     .select("id")
@@ -71,6 +75,21 @@ export default async function NewEventPage({
             <select name="is_tournament" defaultValue="true">
               <option value="true">Tournament</option>
               <option value="false">Club Event</option>
+            </select>
+          </p>
+
+          <p className="field">
+            <label>Scoring Ruleset</label>
+            <select
+              name="scoring_ruleset"
+              defaultValue={EVENT_SCORING_RULESETS.CLUB}
+            >
+              <option value={EVENT_SCORING_RULESETS.CLUB}>
+                NOBGFC club rules
+              </option>
+              <option value={EVENT_SCORING_RULESETS.NOIBT_2026}>
+                2026 NOIBT rules
+              </option>
             </select>
           </p>
 
