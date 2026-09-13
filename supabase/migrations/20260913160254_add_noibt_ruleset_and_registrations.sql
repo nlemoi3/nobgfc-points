@@ -22,8 +22,9 @@ comment on column public.events.scoring_ruleset is
 
 update public.events
 set scoring_ruleset = 'noibt_2026'
-where id = 10
-  and name = 'New Orleans Invitational Billfish Tournament';
+where name = 'New Orleans Invitational Billfish Tournament'
+  and start_date >= date '2026-01-01'
+  and start_date < date '2027-01-01';
 
 create table if not exists public.tournament_registrations (
   id bigint generated always as identity primary key,
