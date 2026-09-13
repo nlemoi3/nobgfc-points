@@ -4,6 +4,7 @@ import { getActiveSeasonRange } from "../../lib/season";
 import {
   compareTournamentStandings,
   isBillfishSpecies,
+  isCatchWithinEventDates,
   laterValidTimestamp,
 } from "../../lib/scoring";
 
@@ -63,6 +64,7 @@ export default async function TournamentStandingsPage() {
 
     const event = c.events;
     if (!event?.is_tournament) return;
+    if (!isCatchWithinEventDates(c.catch_datetime, event.start_date, event.end_date)) return;
     const eventId = event?.id;
     const boatId = c.boats?.id;
     const boatName = c.boats?.name || "Unknown Boat";

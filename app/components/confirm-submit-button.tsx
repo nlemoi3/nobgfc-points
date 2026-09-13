@@ -7,11 +7,13 @@ export default function ConfirmSubmitButton({
   children,
   confirmation,
   className,
+  disabled = false,
   pendingLabel = "Working…",
 }: {
   children: ReactNode;
   confirmation: string;
   className?: string;
+  disabled?: boolean;
   pendingLabel?: string;
 }) {
   const { pending } = useFormStatus();
@@ -20,8 +22,8 @@ export default function ConfirmSubmitButton({
     <button
       type="submit"
       className={className}
-      disabled={pending}
-      aria-disabled={pending}
+      disabled={pending || disabled}
+      aria-disabled={pending || disabled}
       onClick={(event) => {
         if (!window.confirm(confirmation)) {
           event.preventDefault();

@@ -1,3 +1,5 @@
+import { getClubSeasonRange } from "./club-time";
+
 type SupabaseQueryClient = {
   from: (table: string) => any;
 };
@@ -12,9 +14,5 @@ export async function getActiveSeasonRange(client: SupabaseQueryClient) {
 
   const year = Number(data?.year || fallbackYear);
 
-  return {
-    year,
-    start: `${year}-01-01T00:00:00.000Z`,
-    end: `${year + 1}-01-01T00:00:00.000Z`,
-  };
+  return { year, ...getClubSeasonRange(year) };
 }

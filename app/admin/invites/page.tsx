@@ -4,6 +4,7 @@ import { requireRole } from "../../../lib/auth";
 import { getAdminUsers } from "../../../lib/admin-users";
 import { setMemberRole } from "../members/actions";
 import { sendInvite } from "./actions";
+import ConfirmSubmitButton from "../../components/confirm-submit-button";
 
 export default async function AdminInvitesPage({
   searchParams,
@@ -103,7 +104,12 @@ export default async function AdminInvitesPage({
                         <option value="weighmaster">Weighmaster</option>
                         <option value="admin">Admin</option>
                       </select>
-                      <button type="submit" className="btn btn-ghost">Save</button>
+                      <ConfirmSubmitButton
+                        className="btn btn-ghost"
+                        confirmation={`Assign the selected role to ${user.email || "this account"}?`}
+                      >
+                        Save
+                      </ConfirmSubmitButton>
                     </form>
                   </td>
                 </tr>

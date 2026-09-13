@@ -46,6 +46,7 @@ export default async function AnglerProfilePage({
     .select(`
       id,
       weight,
+      line_class,
       points_awarded,
       released,
       tagged,

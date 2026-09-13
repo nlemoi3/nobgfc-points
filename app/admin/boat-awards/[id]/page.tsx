@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "../../../../lib/supabase/server";
 import { requireRole } from "../../../../lib/auth";
+import ConfirmSubmitButton from "../../../components/confirm-submit-button";
 
 async function updateBoatAward(formData: FormData) {
   "use server";
@@ -136,12 +137,12 @@ export default async function EditBoatAwardPage({
       <form action={deleteBoatAward}>
         <input type="hidden" name="id" value={award.id} />
 
-        <button
-          type="submit"
-          style={{ color: "red" }}
+        <ConfirmSubmitButton
+          confirmation={`Delete ${award.award_name} for ${award.award_year}? This cannot be undone from the website.`}
+          className="btn btn-danger"
         >
           Delete Boat Award
-        </button>
+        </ConfirmSubmitButton>
       </form>
     </main>
   );

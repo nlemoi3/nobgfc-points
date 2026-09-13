@@ -11,6 +11,7 @@ import {
   validateEventAssignment,
 } from "../../../lib/scoring";
 import { createClient } from "../../../lib/supabase/server";
+import { clubDateTimeToIso } from "../../../lib/club-time";
 
 export async function saveCatch(
   _previousState: CatchEntryState,
@@ -29,7 +30,8 @@ export async function saveCatch(
   const line_class = Number(formData.get("line_class"));
   const released = formData.get("released") === "on";
   const tagged = formData.get("tagged") === "on";
-  const catch_datetime = String(formData.get("catch_datetime") || "") || null;
+  const catchDateTimeInput = String(formData.get("catch_datetime") || "") || null;
+  const catch_datetime = clubDateTimeToIso(catchDateTimeInput);
 
   if (!isValidSubmissionToken(entry_token)) {
     return {
@@ -82,7 +84,7 @@ export async function saveCatch(
 
   validationErrors.push(
     ...validateEventAssignment({
-      catchDateTime: catch_datetime,
+      catchDateTime: catchDateTimeInput,
       eventStartDate: eventRow.start_date || null,
       eventEndDate: eventRow.end_date || null,
       eventStatus: eventRow.status || null,
@@ -92,6 +94,13 @@ export async function saveCatch(
 
   if (validationErrors.length > 0) {
     return { status: "error", message: validationErrors.join(" ") };
+  }
+
+  if (!catch_datetime) {
+    return {
+      status: "error",
+      message: "Enter a valid catch date and time in Central Time.",
+    };
   }
 
   const points_awarded = calculateCatchPoints({

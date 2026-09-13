@@ -12,6 +12,8 @@ function formatDate(value: string | null) {
     year: "numeric",
     hour: "numeric",
     minute: "2-digit",
+    timeZone: "America/Chicago",
+    timeZoneName: "short",
   });
 }
 
@@ -39,11 +41,8 @@ export default async function AdminBoatProfileRequestsPage() {
         <p>No requests submitted yet.</p>
       )}
 
-      <table
-        border={1}
-        cellPadding={8}
-        style={{ borderCollapse: "collapse" }}
-      >
+      <div className="table-wrap mobile-card-wrap" role="region" aria-label="Boat profile requests" tabIndex={0}>
+      <table className="admin-table mobile-card-table">
         <thead>
           <tr>
             <th>Submitted</th>
@@ -59,17 +58,17 @@ export default async function AdminBoatProfileRequestsPage() {
         <tbody>
           {requests?.map((request: any) => (
             <tr key={request.id}>
-              <td>{formatDate(request.created_at)}</td>
+              <td data-label="Submitted">{formatDate(request.created_at)}</td>
 
-              <td>{request.boat_name}</td>
+              <td data-label="Boat">{request.boat_name}</td>
 
-              <td>
+              <td data-label="Contact">
                 {request.contact_name}
                 <br />
                 {request.contact_email}
               </td>
 
-              <td>
+              <td data-label="Details">
                 {[request.year, request.make, request.model]
                   .filter(Boolean)
                   .join(" ")}
@@ -81,7 +80,7 @@ export default async function AdminBoatProfileRequestsPage() {
                 {request.home_port || ""}
               </td>
 
-              <td>
+              <td data-label="Links">
                 {request.website_url && (
                   <p>Website: {request.website_url}</p>
                 )}
@@ -99,9 +98,9 @@ export default async function AdminBoatProfileRequestsPage() {
                 )}
               </td>
 
-              <td>{request.notes || "-"}</td>
+              <td data-label="Notes">{request.notes || "-"}</td>
 
-              <td>
+              <td data-label="Status / Review">
                 <Link
                   href={`/admin/boat-profile-requests/${request.id}`}
                 >
@@ -112,6 +111,7 @@ export default async function AdminBoatProfileRequestsPage() {
           ))}
         </tbody>
       </table>
+      </div>
     </main>
   );
 }

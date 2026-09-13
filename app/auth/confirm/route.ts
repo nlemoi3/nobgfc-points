@@ -16,9 +16,13 @@ export async function GET(request: NextRequest) {
   const requestUrl = new URL(request.url);
   const tokenHash = requestUrl.searchParams.get("token_hash");
   const requestedType = requestUrl.searchParams.get("type");
+  const passwordSetupTypes = new Set(["invite", "recovery"]);
+  const defaultDestination = passwordSetupTypes.has(requestedType || "")
+    ? "/reset-password"
+    : "/dashboard";
   const next = getSafeAuthRedirect(
     requestUrl.searchParams.get("next"),
-    "/reset-password",
+    defaultDestination,
   );
 
   if (

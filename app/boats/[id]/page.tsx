@@ -4,7 +4,8 @@ import { supabase } from "../../../lib/supabase";
 import {
   formatCatchWeight,
   getExcludedCatches,
-  getOfficialEligiblePoints,
+  compareOfficialStandings,
+  getOfficialStandingScore,
   isWeighedCatch,
 } from "../../../lib/scoring";
 import { getActiveSeasonRange } from "../../../lib/season";
@@ -127,6 +128,7 @@ export default async function BoatProfilePage({
     id,
     boat_id,
     weight,
+    line_class,
     points_awarded,
     released,
     tagged,
@@ -195,10 +197,10 @@ const historicalResults =
     .map(([groupedBoatId, catches]) => ({
       id: Number(groupedBoatId),
       name: catches[0]?.boats?.name || "Unknown Boat",
-      points: getOfficialEligiblePoints(catches),
+      ...getOfficialStandingScore(catches),
     }))
     .sort(
-      (a, b) => b.points - a.points || a.name.localeCompare(b.name),
+      (a, b) => compareOfficialStandings(a, b) || a.name.localeCompare(b.name),
     );
 
   const rankIndex = boatStandings.findIndex((b) => b.id === boatId);

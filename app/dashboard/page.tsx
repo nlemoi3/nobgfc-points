@@ -3,7 +3,8 @@ import { unstable_noStore as noStore } from "next/cache";
 import { supabase } from "../../lib/supabase";
 import {
   formatCatchWeight,
-  getOfficialEligiblePoints,
+  compareOfficialStandings,
+  getOfficialStandingScore,
   isWeighedCatch,
 } from "../../lib/scoring";
 import { getActiveSeasonRange } from "../../lib/season";
@@ -99,6 +100,7 @@ export default async function DashboardPage() {
       id,
       points_awarded,
       weight,
+      line_class,
       released,
       tagged,
       status,
@@ -153,9 +155,9 @@ export default async function DashboardPage() {
     .map(({ id, name, catches }) => ({
       id,
       name,
-      points: getOfficialEligiblePoints(catches),
+      ...getOfficialStandingScore(catches),
     }))
-    .sort((a, b) => b.points - a.points || a.name.localeCompare(b.name));
+    .sort((a, b) => compareOfficialStandings(a, b) || a.name.localeCompare(b.name));
 
   const boatLeader = boatStandings[0];
 
@@ -163,9 +165,9 @@ export default async function DashboardPage() {
     .map(({ id, name, catches }) => ({
       id,
       name,
-      points: getOfficialEligiblePoints(catches),
+      ...getOfficialStandingScore(catches),
     }))
-    .sort((a, b) => b.points - a.points || a.name.localeCompare(b.name));
+    .sort((a, b) => compareOfficialStandings(a, b) || a.name.localeCompare(b.name));
 
   const anglerLeader = anglerStandings[0];
 

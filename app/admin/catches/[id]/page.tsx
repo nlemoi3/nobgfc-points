@@ -12,6 +12,10 @@ import {
   formatClubDate,
   getSubmissionTiming,
 } from "../../../../lib/submission-timing";
+import {
+  clubDateTimeToIso,
+  isoToClubDateTimeInput,
+} from "../../../../lib/club-time";
 
 async function uploadCatchPhoto(file: File | null, catchId: number) {
   if (!file || file.size === 0) return null;
@@ -89,7 +93,8 @@ async function updateCatch(formData: FormData) {
   const tagged = formData.get("tagged") === "on";
   const status = String(formData.get("status") || "pending");
   const event_id = Number(formData.get("event_id"));
-  const catch_datetime = String(formData.get("catch_datetime") || "") || null;
+  const catchDateTimeInput = String(formData.get("catch_datetime") || "") || null;
+  const catch_datetime = clubDateTimeToIso(catchDateTimeInput);
   const eligibility_notes = String(formData.get("eligibility_notes") || "").trim();
 
   const { data: speciesRow, error: speciesError } = await authenticatedSupabase
@@ -126,7 +131,7 @@ async function updateCatch(formData: FormData) {
 
     validationErrors.push(
       ...validateEventAssignment({
-        catchDateTime: catch_datetime,
+        catchDateTime: catchDateTimeInput,
         eventStartDate: eventRow?.start_date || null,
         eventEndDate: eventRow?.end_date || null,
         eventStatus: eventRow?.status || null,
@@ -144,6 +149,12 @@ async function updateCatch(formData: FormData) {
   if (status === "rejected" && !eligibility_notes) {
     redirect(
       `${returnUrl}?error=${encodeURIComponent("A rejection reason is required.")}`,
+    );
+  }
+
+  if (!catch_datetime) {
+    redirect(
+      `${returnUrl}?error=${encodeURIComponent("Enter a valid catch date and time in Central Time.")}`,
     );
   }
 
@@ -295,9 +306,7 @@ export default async function EditCatchPage({
 
   const isLocked = currentEvent?.status === "locked";
 
-  const defaultDateTime = catchRecord.catch_datetime
-    ? new Date(catchRecord.catch_datetime).toISOString().slice(0, 16)
-    : "";
+  const defaultDateTime = isoToClubDateTimeInput(catchRecord.catch_datetime);
 
   return (
     <main className="panel">

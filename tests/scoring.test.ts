@@ -3,10 +3,12 @@ import test from "node:test";
 
 import {
   calculateCatchPoints,
+  compareOfficialStandings,
   compareTournamentStandings,
   formatCatchWeight,
   getExcludedCatches,
   getOfficialEligiblePoints,
+  getOfficialStandingScore,
   isBillfishSpecies,
   isCatchWithinEventDates,
   isWeighedCatch,
@@ -80,6 +82,55 @@ test("weighed points use whole pounds and line multiplier", () => {
       tagged: false,
     }),
     37.5,
+  );
+});
+
+test("fractional weighed points break otherwise tied annual standings", () => {
+  const higherFraction = getOfficialStandingScore([
+    {
+      id: 1,
+      points_awarded: 37.5,
+      weight: 25.6,
+      line_class: 50,
+      released: false,
+      tagged: false,
+      species: { name: "Dolphin" },
+    },
+  ]);
+  const lowerFraction = getOfficialStandingScore([
+    {
+      id: 2,
+      points_awarded: 37.5,
+      weight: 25.1,
+      line_class: 50,
+      released: false,
+      tagged: false,
+      species: { name: "Dolphin" },
+    },
+  ]);
+
+  assert.equal(higherFraction.points, lowerFraction.points);
+  assert.ok(higherFraction.tieBreakPoints > lowerFraction.tieBreakPoints);
+  assert.ok(compareOfficialStandings(higherFraction, lowerFraction) < 0);
+});
+
+test("fractional line-class points select the best limited catches", () => {
+  const dolphin = [
+    { id: 1, weight: 20.1, line_class: 50 },
+    { id: 2, weight: 20.2, line_class: 50 },
+    { id: 3, weight: 20.3, line_class: 50 },
+    { id: 4, weight: 20.9, line_class: 50 },
+  ].map((catchRecord) => ({
+    ...catchRecord,
+    points_awarded: 30,
+    released: false,
+    tagged: false,
+    species: { name: "Dolphin" },
+  }));
+
+  assert.deepEqual(
+    getExcludedCatches(dolphin).map((catchRecord) => catchRecord.id),
+    [1],
   );
 });
 

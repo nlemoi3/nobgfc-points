@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "../../../../lib/supabase/server";
 import { requireRole } from "../../../../lib/auth";
+import ConfirmSubmitButton from "../../../components/confirm-submit-button";
 
 async function updateHistoricalStanding(formData: FormData) {
   "use server";
@@ -137,9 +138,12 @@ export default async function EditHistoricalStandingPage({
 
       <form action={deleteHistoricalStanding}>
         <input type="hidden" name="id" value={row.id} />
-        <button type="submit" style={{ color: "red" }}>
+        <ConfirmSubmitButton
+          confirmation={`Delete ${row.boat_name}'s ${row.season_year} historical standing? This cannot be undone from the website.`}
+          className="btn btn-danger"
+        >
           Delete Historical Standing
-        </button>
+        </ConfirmSubmitButton>
       </form>
     </main>
   );

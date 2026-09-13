@@ -1,7 +1,8 @@
 import {
   calculateCatchPoints,
+  compareOfficialStandings,
   getExcludedCatches,
-  getOfficialEligiblePoints,
+  getOfficialStandingScore,
   isCatchWithinEventDates,
 } from "./scoring";
 import { getSubmissionTiming } from "./submission-timing";
@@ -61,17 +62,21 @@ export function buildBoatStandings(catches: any[]) {
   }
 
   return Array.from(groups.values())
-    .map((group) => ({
-      boatId: group.boatId,
-      boatName: group.boatName,
-      approvedCatches: group.catches.length,
-      countingCatches:
-        group.catches.length - getExcludedCatches(group.catches).length,
-      officialPoints: getOfficialEligiblePoints(group.catches),
-    }))
+    .map((group) => {
+      const score = getOfficialStandingScore(group.catches);
+      return {
+        boatId: group.boatId,
+        boatName: group.boatName,
+        approvedCatches: group.catches.length,
+        countingCatches:
+          group.catches.length - getExcludedCatches(group.catches).length,
+        officialPoints: score.points,
+        ...score,
+      };
+    })
     .sort(
       (left, right) =>
-        right.officialPoints - left.officialPoints ||
+        compareOfficialStandings(left, right) ||
         left.boatName.localeCompare(right.boatName),
     )
     .map((row, index) => ({ ...row, rank: index + 1 }));

@@ -4,6 +4,7 @@ export type CatchRecord = {
   released: boolean | null;
   tagged: boolean | null;
   weight: number | null;
+  line_class?: number | null;
   species?: {
     name: string;
   } | null;
@@ -258,9 +259,20 @@ export function calculateCatchPoints({
 function rankForEligibility(a: CatchRecord, b: CatchRecord) {
   return (
     Number(b.points_awarded || 0) - Number(a.points_awarded || 0) ||
-    Number(b.weight || 0) - Number(a.weight || 0) ||
+    getCatchTieBreakPoints(b) - getCatchTieBreakPoints(a) ||
     a.id - b.id
   );
+}
+
+function getCatchTieBreakPoints(catchRecord: CatchRecord) {
+  const officialPoints = Number(catchRecord.points_awarded || 0);
+  if (!isWeighedCatch(catchRecord)) return officialPoints;
+
+  const multiplier = LINE_CLASS_MULTIPLIERS[Number(catchRecord.line_class)];
+  if (multiplier === undefined) return officialPoints;
+
+  const fractionalPounds = Number(catchRecord.weight) % 1;
+  return officialPoints + fractionalPounds * multiplier;
 }
 
 function selectOfficialCatches(catches: CatchRecord[]) {
@@ -333,10 +345,29 @@ function selectOfficialCatches(catches: CatchRecord[]) {
 }
 
 export function getOfficialEligiblePoints(catches: CatchRecord[]) {
-  return selectOfficialCatches(catches).reduce(
+  return getOfficialStandingScore(catches).points;
+}
+
+export function getOfficialStandingScore(catches: CatchRecord[]) {
+  const eligibleCatches = selectOfficialCatches(catches);
+
+  return {
+    points: eligibleCatches.reduce(
     (total, catchRecord) => total + Number(catchRecord.points_awarded || 0),
-    0
-  );
+      0,
+    ),
+    tieBreakPoints: eligibleCatches.reduce(
+      (total, catchRecord) => total + getCatchTieBreakPoints(catchRecord),
+      0,
+    ),
+  };
+}
+
+export function compareOfficialStandings(
+  a: { points: number; tieBreakPoints: number },
+  b: { points: number; tieBreakPoints: number },
+) {
+  return b.points - a.points || b.tieBreakPoints - a.tieBreakPoints;
 }
 
 export function getExcludedCatches(catches: CatchRecord[]) {
