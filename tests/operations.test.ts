@@ -13,6 +13,7 @@ import {
 import { getSubmissionTiming } from "../lib/submission-timing.ts";
 import {
   clubDateTimeToIso,
+  getClubYear,
   getClubSeasonRange,
   isoToClubDateTimeInput,
 } from "../lib/club-time.ts";
@@ -140,4 +141,10 @@ test("season boundaries follow Central Time rather than UTC midnight", () => {
     start: "2026-01-01T06:00:00.000Z",
     end: "2027-01-01T06:00:00.000Z",
   });
+});
+
+test("catch years follow the Central Time calendar date", () => {
+  assert.equal(getClubYear("2027-01-01T05:30:00.000Z"), 2026);
+  assert.equal(getClubYear("2027-01-01T06:30:00.000Z"), 2027);
+  assert.equal(getClubYear("not-a-date"), null);
 });

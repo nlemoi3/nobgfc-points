@@ -1,4 +1,5 @@
 import { supabase } from "../../lib/supabase";
+import { getClubYear } from "../../lib/club-time";
 
 export const dynamic = "force-dynamic";
 
@@ -51,7 +52,8 @@ export default async function StatsPage() {
 
   catches?.forEach((c: any) => {
     if (!c.catch_datetime) return;
-    const year = new Date(c.catch_datetime).getFullYear().toString();
+    const year = getClubYear(c.catch_datetime)?.toString();
+    if (!year) return;
     yearCounts[year] = (yearCounts[year] || 0) + 1;
   });
 

@@ -86,6 +86,15 @@ export function isoToClubDateTimeInput(value: string | null | undefined) {
   return `${parts.year}-${pad(parts.month)}-${pad(parts.day)}T${pad(parts.hour)}:${pad(parts.minute)}`;
 }
 
+/** Return the calendar year of a stored timestamp in the club timezone. */
+export function getClubYear(value: string | null | undefined) {
+  if (!value) return null;
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+
+  return getClubParts(date).year;
+}
+
 export function getClubSeasonRange(year: number) {
   return {
     start: clubDateTimeToIso(`${year}-01-01T00:00`)!,
