@@ -1,5 +1,5 @@
 import {
-  calculateCatchPoints,
+  calculateAnnualCatchPoints,
   compareOfficialStandings,
   getExcludedCatches,
   getOfficialStandingScore,
@@ -8,13 +8,14 @@ import {
 import { getSubmissionTiming } from "./submission-timing";
 
 export function getCatchChecks(catchRecord: any) {
-  const expectedPoints = calculateCatchPoints({
+  const expectedPoints = calculateAnnualCatchPoints({
     speciesName: catchRecord.species?.name || "",
     weight:
       catchRecord.weight === null ? null : Number(catchRecord.weight),
     lineClass: Number(catchRecord.line_class || 130),
     released: Boolean(catchRecord.released),
     tagged: Boolean(catchRecord.tagged),
+    eventScoringRuleset: catchRecord.events?.scoring_ruleset || null,
   });
   const storedPoints = Number(catchRecord.points_awarded || 0);
   const scoreMatches = Math.abs(storedPoints - expectedPoints) < 0.01;

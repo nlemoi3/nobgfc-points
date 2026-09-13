@@ -3,8 +3,9 @@ import { supabase } from "../../lib/supabase";
 import { getActiveSeasonRange } from "../../lib/season";
 import {
   compareTournamentStandings,
-  isBillfishSpecies,
-  isCatchWithinEventDates,
+  calculateTournamentCatchPoints,
+  countsTowardTournamentPointStandings,
+  EVENT_SCORING_RULESETS,
   laterValidTimestamp,
 } from "../../lib/scoring";
 
@@ -39,9 +40,13 @@ export default async function TournamentStandingsPage() {
     .select(`
       id,
       points_awarded,
+      weight,
+      line_class,
+      released,
+      tagged,
       catch_datetime,
       status,
-      events(id,name,start_date,end_date,status,is_tournament),
+      events(id,name,start_date,end_date,status,is_tournament,scoring_ruleset),
       boats(id,name),
       species(name)
     `)
@@ -59,17 +64,25 @@ export default async function TournamentStandingsPage() {
   const eventInfo: Record<string, any> = {};
 
   catches?.forEach((c: any) => {
-    // Rule 12: tournament boat awards are based on billfish points only.
-    if (!isBillfishSpecies(c.species?.name)) return;
-
     const event = c.events;
     if (!event?.is_tournament) return;
-    if (!isCatchWithinEventDates(c.catch_datetime, event.start_date, event.end_date)) return;
+    if (!countsTowardTournamentPointStandings({
+      eventScoringRuleset: event.scoring_ruleset,
+      speciesName: c.species?.name || "",
+      released: Boolean(c.released),
+    })) return;
     const eventId = event?.id;
     const boatId = c.boats?.id;
     const boatName = c.boats?.name || "Unknown Boat";
     const boatKey = boatId ? String(boatId) : `unknown:${boatName}`;
-    const points = Number(c.points_awarded || 0);
+    const points = calculateTournamentCatchPoints({
+      speciesName: c.species?.name || "",
+      weight: c.weight === null ? null : Number(c.weight),
+      lineClass: Number(c.line_class || 130),
+      released: Boolean(c.released),
+      tagged: Boolean(c.tagged),
+      eventScoringRuleset: event.scoring_ruleset,
+    });
 
     if (!eventId) return;
 
@@ -103,7 +116,7 @@ export default async function TournamentStandingsPage() {
       <div className="toolbar">
         <div>
           <h1>Tournament Standings</h1>
-          <p>Billfish-point rankings by tournament.</p>
+          <p>Club billfish rankings and NOIBT team release rankings.</p>
         </div>
         <Link href="/events" className="btn btn-ghost">
           Event Schedule
@@ -169,8 +182,9 @@ export default async function TournamentStandingsPage() {
             </table>
             </div>
             <p className="muted">
-              Tied boat totals are ranked by which boat reached the total first,
-              as required by tournament Rule 5.
+              {event?.scoring_ruleset === EVENT_SCORING_RULESETS.NOIBT_2026
+                ? "NOIBT release ties are ranked by which team reached its total first."
+                : "Tied boat totals are ranked by which boat reached the total first under the club rules."}
             </p>
           </section>
         );

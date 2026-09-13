@@ -1,7 +1,10 @@
 import Link from "next/link";
 import { unstable_noStore as noStore } from "next/cache";
 import { createClient } from "../../../lib/supabase/server";
-import { formatCatchWeight } from "../../../lib/scoring";
+import {
+  formatCatchWeight,
+  PROVISIONAL_SWORDFISH_LIMIT_NOTE,
+} from "../../../lib/scoring";
 import { getCatchChecks } from "../../../lib/reconciliation";
 import { formatClubDate } from "../../../lib/submission-timing";
 
@@ -38,7 +41,7 @@ export default async function ScoringAuditPage() {
       boats(id,name),
       anglers(id,first_name,last_name),
       species(name),
-      events(id,name,status,start_date,end_date)
+      events(id,name,status,start_date,end_date,scoring_ruleset)
     `)
     .order("catch_datetime", { ascending: false });
 
@@ -68,6 +71,11 @@ export default async function ScoringAuditPage() {
       <p>
         This page recalculates every catch and compares expected points against
         stored points.
+      </p>
+
+      <p className="alert alert-warning">
+        <strong>Provisional Swordfish limit:</strong>{" "}
+        {PROVISIONAL_SWORDFISH_LIMIT_NOTE}
       </p>
 
       {error && <p style={{ color: "red" }}>Error: {error.message}</p>}
@@ -126,8 +134,8 @@ export default async function ScoringAuditPage() {
             <th>Line</th>
             <th>Released</th>
             <th>Tagged</th>
-            <th>Stored</th>
-            <th>Expected</th>
+            <th>Annual Stored</th>
+            <th>Annual Expected</th>
             <th>Difference</th>
             <th>Action</th>
             </tr>

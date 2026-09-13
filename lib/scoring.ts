@@ -1,5 +1,6 @@
 export type CatchRecord = {
   id: number;
+  status?: string | null;
   points_awarded: number | null;
   released: boolean | null;
   tagged: boolean | null;
@@ -9,6 +10,22 @@ export type CatchRecord = {
     name: string;
   } | null;
 };
+
+export const EVENT_SCORING_RULESETS = {
+  CLUB: "nobgfc_club",
+  NOIBT_2026: "noibt_2026",
+} as const;
+
+export type EventScoringRuleset =
+  (typeof EVENT_SCORING_RULESETS)[keyof typeof EVENT_SCORING_RULESETS];
+
+export function normalizeEventScoringRuleset(
+  ruleset: string | null | undefined,
+): EventScoringRuleset {
+  return ruleset === EVENT_SCORING_RULESETS.NOIBT_2026
+    ? EVENT_SCORING_RULESETS.NOIBT_2026
+    : EVENT_SCORING_RULESETS.CLUB;
+}
 
 type CatchWeight = {
   weight: number | string | null;
@@ -97,12 +114,19 @@ const LIMITED_TUNA_SPECIES = ["Yellowfin Tuna", "Bigeye Tuna"] as const;
 const ANNUAL_LIMITED_TUNA_SPECIES = "Yellowfin Tuna";
 const LIMITED_RELEASE_SPECIES = ["Swordfish"] as const;
 
+export const PROVISIONAL_SWORDFISH_LIMIT_NOTE =
+  "Working interpretation pending club confirmation: no more than three qualifying Swordfish releases per angler per fishing year for individual standings, and no more than three per boat per fishing year for boat standings.";
+
 type PointCalculationInput = {
   speciesName: string;
   weight: number | null;
   lineClass: number;
   released: boolean;
   tagged: boolean;
+};
+
+type EventPointCalculationInput = PointCalculationInput & {
+  eventScoringRuleset?: string | null;
 };
 
 type CatchValidationInput = PointCalculationInput & {
@@ -187,20 +211,8 @@ export function isCatchWithinEventDates(
 export function validateEventAssignment(input: EventAssignmentValidationInput) {
   const errors: string[] = [];
 
-  if (input.eventIsTournament === false) {
-    errors.push("Catches can only be assigned to tournament events.");
-  }
-
   if (!input.catchDateTime?.slice(0, 10)) {
     errors.push("Catch date and time are required.");
-  } else if (
-    !isCatchWithinEventDates(
-      input.catchDateTime,
-      input.eventStartDate,
-      input.eventEndDate,
-    )
-  ) {
-    errors.push("Catch date must fall within the selected event dates.");
   }
 
   if (["locked", "cancelled"].includes(input.eventStatus || "")) {
@@ -208,6 +220,29 @@ export function validateEventAssignment(input: EventAssignmentValidationInput) {
   }
 
   return errors;
+}
+
+export function getEventAssignmentWarnings(
+  input: EventAssignmentValidationInput,
+) {
+  const warnings: string[] = [];
+
+  if (input.eventIsTournament === false) {
+    warnings.push("The selected event is not classified as a tournament.");
+  }
+
+  if (
+    input.catchDateTime?.slice(0, 10) &&
+    !isCatchWithinEventDates(
+      input.catchDateTime,
+      input.eventStartDate,
+      input.eventEndDate,
+    )
+  ) {
+    warnings.push("The catch date falls outside the selected event dates.");
+  }
+
+  return warnings;
 }
 
 export function calculateCatchPoints({
@@ -254,6 +289,195 @@ export function calculateCatchPoints({
   }
 
   return basePoints * multiplier + tagBonus;
+}
+
+export function calculateAnnualCatchPoints({
+  eventScoringRuleset,
+  ...input
+}: EventPointCalculationInput) {
+  const ruleset = normalizeEventScoringRuleset(eventScoringRuleset);
+
+  // NOIBT Rule 15 allows an untagged release to earn tournament points, but
+  // only a properly tagged released billfish receives annual club credit.
+  if (
+    ruleset === EVENT_SCORING_RULESETS.NOIBT_2026 &&
+    input.released &&
+    isBillfishSpecies(input.speciesName) &&
+    !input.tagged
+  ) {
+    return 0;
+  }
+
+  return calculateCatchPoints(input);
+}
+
+export function calculateTournamentCatchPoints({
+  eventScoringRuleset,
+  speciesName,
+  weight,
+  released,
+  lineClass,
+  tagged,
+}: EventPointCalculationInput) {
+  const ruleset = normalizeEventScoringRuleset(eventScoringRuleset);
+
+  if (ruleset !== EVENT_SCORING_RULESETS.NOIBT_2026) {
+    return calculateCatchPoints({
+      speciesName,
+      weight,
+      lineClass,
+      released,
+      tagged,
+    });
+  }
+
+  if (released) {
+    if (speciesName === "Blue Marlin") return 500;
+    if (["White Marlin", "Sailfish", "Spearfish"].includes(speciesName)) {
+      return 200;
+    }
+    return 0;
+  }
+
+  if (
+    weight !== null &&
+    [
+      "Blue Marlin",
+      "Dolphin",
+      "Yellowfin Tuna",
+      "Bigeye Tuna",
+      "Wahoo",
+    ].includes(speciesName)
+  ) {
+    return weight;
+  }
+
+  return 0;
+}
+
+export function countsTowardTournamentPointStandings({
+  eventScoringRuleset,
+  speciesName,
+  released,
+}: Pick<
+  EventPointCalculationInput,
+  "eventScoringRuleset" | "speciesName" | "released"
+>) {
+  const ruleset = normalizeEventScoringRuleset(eventScoringRuleset);
+
+  if (ruleset === EVENT_SCORING_RULESETS.NOIBT_2026) {
+    // NOIBT publishes team release standings; weighed-fish awards are ranked
+    // as individual fish by weight rather than as a cumulative team score.
+    return (
+      released &&
+      ["Blue Marlin", "White Marlin", "Sailfish", "Spearfish"].includes(
+        speciesName,
+      )
+    );
+  }
+
+  return isBillfishSpecies(speciesName);
+}
+
+export function countsTowardTournamentAnglerStandings({
+  eventScoringRuleset,
+  speciesName,
+  released,
+}: Pick<
+  EventPointCalculationInput,
+  "eventScoringRuleset" | "speciesName" | "released"
+>) {
+  const ruleset = normalizeEventScoringRuleset(eventScoringRuleset);
+
+  if (ruleset === EVENT_SCORING_RULESETS.NOIBT_2026) {
+    return (
+      ["Blue Marlin", "White Marlin", "Sailfish", "Spearfish"].includes(
+        speciesName,
+      ) &&
+      (released || speciesName === "Blue Marlin")
+    );
+  }
+
+  return isBillfishSpecies(speciesName);
+}
+
+export function isPublishedCatch(catchRecord: { status?: string | null }) {
+  return catchRecord.status === "approved";
+}
+
+type OfficialStandingCatch = CatchRecord & {
+  boat_id?: number | null;
+  angler_id?: number | null;
+  boats?: { id?: number | null; name?: string | null } | null;
+  anglers?: {
+    id?: number | null;
+    first_name?: string | null;
+    last_name?: string | null;
+    is_member?: boolean | null;
+  } | null;
+};
+
+export function buildOfficialBoatStandings(catches: OfficialStandingCatch[]) {
+  const groups = new Map<
+    string,
+    { boatId?: number; boatName: string; catches: OfficialStandingCatch[] }
+  >();
+
+  catches.filter(isPublishedCatch).forEach((catchRecord) => {
+    const boatId = Number(catchRecord.boat_id || catchRecord.boats?.id) || undefined;
+    const boatName = catchRecord.boats?.name || "Unknown Boat";
+    const key = boatId ? String(boatId) : `unknown:${boatName}`;
+    const group = groups.get(key) || { boatId, boatName, catches: [] };
+
+    group.catches.push(catchRecord);
+    groups.set(key, group);
+  });
+
+  return Array.from(groups.values())
+    .map(({ boatId, boatName, catches: boatCatches }) => ({
+      boatId,
+      boatName,
+      ...getOfficialStandingScore(boatCatches),
+    }))
+    .sort(
+      (a, b) =>
+        compareOfficialStandings(a, b) || a.boatName.localeCompare(b.boatName),
+    );
+}
+
+export function buildOfficialMemberAnglerStandings(
+  catches: OfficialStandingCatch[],
+) {
+  const groups = new Map<
+    string,
+    { anglerId?: number; anglerName: string; catches: OfficialStandingCatch[] }
+  >();
+
+  catches.filter(isPublishedCatch).forEach((catchRecord) => {
+    if (!catchRecord.anglers?.is_member) return;
+
+    const anglerId =
+      Number(catchRecord.angler_id || catchRecord.anglers?.id) || undefined;
+    const anglerName =
+      `${catchRecord.anglers?.first_name || "Unknown"} ${catchRecord.anglers?.last_name || "Angler"}`;
+    const key = anglerId ? String(anglerId) : `unknown:${anglerName}`;
+    const group = groups.get(key) || { anglerId, anglerName, catches: [] };
+
+    group.catches.push(catchRecord);
+    groups.set(key, group);
+  });
+
+  return Array.from(groups.values())
+    .map(({ anglerId, anglerName, catches: anglerCatches }) => ({
+      anglerId,
+      anglerName,
+      ...getOfficialStandingScore(anglerCatches),
+    }))
+    .sort(
+      (a, b) =>
+        compareOfficialStandings(a, b) ||
+        a.anglerName.localeCompare(b.anglerName),
+    );
 }
 
 function rankForEligibility(a: CatchRecord, b: CatchRecord) {

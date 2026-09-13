@@ -4,7 +4,8 @@ import ConfirmSubmitButton from "../../../components/confirm-submit-button";
 import { createClient } from "../../../../lib/supabase/server";
 import { requireRole } from "../../../../lib/auth";
 import {
-  calculateCatchPoints,
+  calculateAnnualCatchPoints,
+  getEventAssignmentWarnings,
   validateCatchInput,
   validateEventAssignment,
 } from "../../../../lib/scoring";
@@ -113,13 +114,19 @@ async function updateCatch(formData: FormData) {
   const minimumWeight =
     speciesRow.minimum_weight === null ? null : Number(speciesRow.minimum_weight);
 
-  if (status === "approved") {
-    const { data: eventRow } = await authenticatedSupabase
-      .from("events")
-      .select("start_date,end_date,status,is_tournament")
-      .eq("id", event_id)
-      .single();
+  const { data: eventRow, error: eventError } = await authenticatedSupabase
+    .from("events")
+    .select("start_date,end_date,status,is_tournament,scoring_ruleset")
+    .eq("id", event_id)
+    .single();
 
+  if (eventError || !eventRow) {
+    redirect(
+      `${returnUrl}?error=${encodeURIComponent("The selected event could not be loaded.")}`,
+    );
+  }
+
+  if (status === "approved") {
     const validationErrors = validateCatchInput({
       speciesName,
       minimumWeight,
@@ -132,12 +139,26 @@ async function updateCatch(formData: FormData) {
     validationErrors.push(
       ...validateEventAssignment({
         catchDateTime: catchDateTimeInput,
-        eventStartDate: eventRow?.start_date || null,
-        eventEndDate: eventRow?.end_date || null,
-        eventStatus: eventRow?.status || null,
-        eventIsTournament: eventRow?.is_tournament ?? null,
+        eventStartDate: eventRow.start_date || null,
+        eventEndDate: eventRow.end_date || null,
+        eventStatus: eventRow.status || null,
+        eventIsTournament: eventRow.is_tournament ?? null,
       })
     );
+
+    const assignmentWarnings = getEventAssignmentWarnings({
+      catchDateTime: catchDateTimeInput,
+      eventStartDate: eventRow.start_date || null,
+      eventEndDate: eventRow.end_date || null,
+      eventStatus: eventRow.status || null,
+      eventIsTournament: eventRow.is_tournament ?? null,
+    });
+
+    if (assignmentWarnings.length > 0 && !eligibility_notes) {
+      validationErrors.push(
+        `Document the Weighmaster/Admin eligibility decision before approving this exception: ${assignmentWarnings.join(" ")}`,
+      );
+    }
 
     if (validationErrors.length > 0) {
       redirect(
@@ -158,12 +179,13 @@ async function updateCatch(formData: FormData) {
     );
   }
 
-  const points_awarded = calculateCatchPoints({
+  const points_awarded = calculateAnnualCatchPoints({
     speciesName,
     weight,
     lineClass: line_class,
     released,
     tagged,
+    eventScoringRuleset: eventRow.scoring_ruleset || null,
   });
 
   const photoFile = formData.get("photo_file");
@@ -198,8 +220,7 @@ async function updateCatch(formData: FormData) {
       catch_datetime,
       photo_url: uploadedPhotoUrl || currentPhotoUrl,
       points_awarded,
-      eligibility_notes:
-        status === "approved" ? null : eligibility_notes || null,
+      eligibility_notes: eligibility_notes || null,
     })
     .eq("id", id);
 
@@ -466,12 +487,12 @@ export default async function EditCatchPage({
         </p>
 
         <p>
-          <label>Review / Rejection Notes</label>
+          <label>Eligibility Review Notes</label>
           <br />
           <textarea
             name="eligibility_notes"
             defaultValue={catchRecord.eligibility_notes || ""}
-            placeholder="Required when rejecting a catch"
+            placeholder="Required for rejections and approved date/event exceptions"
             rows={3}
             disabled={isLocked}
           />

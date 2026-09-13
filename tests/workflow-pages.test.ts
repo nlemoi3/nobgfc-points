@@ -17,9 +17,16 @@ test("annual award and champion previews are limited to the active season", () =
   }
 });
 
-test("aggregate tournament standings enforce the same event dates as details", () => {
+test("published tournament standings honor approved status without auto-disqualifying date exceptions", () => {
   const page = source("../app/tournament-standings/page.tsx");
-  assert.match(page, /isCatchWithinEventDates\(c\.catch_datetime, event\.start_date, event\.end_date\)/);
+  assert.match(page, /\.eq\("status", "approved"\)/);
+  assert.doesNotMatch(page, /isCatchWithinEventDates/);
+});
+
+test("NOIBT registration mutations require an administrator", () => {
+  const page = source("../app/admin/tournament-registrations/page.tsx");
+  assert.equal(page.match(/await requireRole\("admin"\)/g)?.length, 5);
+  assert.match(page, /tournament_registration_participants/);
 });
 
 test("catch creation and editing convert Central Time before persistence", () => {

@@ -2,6 +2,8 @@ import Link from "next/link";
 import { unstable_noStore as noStore } from "next/cache";
 import { supabase } from "../../../lib/supabase";
 import {
+  calculateTournamentCatchPoints,
+  countsTowardTournamentPointStandings,
   formatCatchWeight,
   getExcludedCatches,
   compareOfficialStandings,
@@ -139,7 +141,7 @@ export default async function BoatProfilePage({
     boats(id,name),
     species(name),
     anglers(id,first_name,last_name),
-    events(id,name)
+    events(id,name,scoring_ruleset)
   `)
   .eq("status", "approved")
   .gte("catch_datetime", seasonStart)
@@ -239,11 +241,24 @@ const totalApprovedCatches = boatCatches.length;
     const eventName = c.events?.name || "Unknown Event";
     const eventId = c.events?.id;
 
+    if (!countsTowardTournamentPointStandings({
+      eventScoringRuleset: c.events?.scoring_ruleset,
+      speciesName: c.species?.name || "",
+      released: Boolean(c.released),
+    })) return;
+
     if (!tournamentScores[eventName]) {
       tournamentScores[eventName] = { eventId, points: 0 };
     }
 
-    tournamentScores[eventName].points += Number(c.points_awarded || 0);
+    tournamentScores[eventName].points += calculateTournamentCatchPoints({
+      speciesName: c.species?.name || "",
+      weight: c.weight === null ? null : Number(c.weight),
+      lineClass: Number(c.line_class || 130),
+      released: Boolean(c.released),
+      tagged: Boolean(c.tagged),
+      eventScoringRuleset: c.events?.scoring_ruleset,
+    });
   });
 
   const tournamentHistory = Object.entries(tournamentScores).sort(

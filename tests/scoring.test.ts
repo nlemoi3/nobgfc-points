@@ -2,11 +2,19 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
+  buildOfficialBoatStandings,
+  buildOfficialMemberAnglerStandings,
+  calculateAnnualCatchPoints,
   calculateCatchPoints,
+  calculateTournamentCatchPoints,
   compareOfficialStandings,
   compareTournamentStandings,
+  countsTowardTournamentAnglerStandings,
+  countsTowardTournamentPointStandings,
+  EVENT_SCORING_RULESETS,
   formatCatchWeight,
   getExcludedCatches,
+  getEventAssignmentWarnings,
   getOfficialEligiblePoints,
   getOfficialStandingScore,
   isBillfishSpecies,
@@ -139,6 +147,26 @@ test("billfish release and tag bonuses follow club rules", () => {
     calculateCatchPoints({
       speciesName: "Blue Marlin",
       weight: null,
+      lineClass: 130,
+      released: true,
+      tagged: false,
+    }),
+    500,
+  );
+  assert.equal(
+    calculateCatchPoints({
+      speciesName: "White Marlin",
+      weight: null,
+      lineClass: 130,
+      released: true,
+      tagged: false,
+    }),
+    150,
+  );
+  assert.equal(
+    calculateCatchPoints({
+      speciesName: "Blue Marlin",
+      weight: null,
       lineClass: 30,
       released: true,
       tagged: true,
@@ -154,6 +182,208 @@ test("billfish release and tag bonuses follow club rules", () => {
       tagged: true,
     }),
     475,
+  );
+});
+
+test("NOIBT release values ignore line class and tournament tag bonuses", () => {
+  assert.equal(
+    calculateTournamentCatchPoints({
+      eventScoringRuleset: EVENT_SCORING_RULESETS.NOIBT_2026,
+      speciesName: "Blue Marlin",
+      weight: null,
+      lineClass: 2,
+      released: true,
+      tagged: true,
+    }),
+    500,
+  );
+
+  for (const speciesName of ["White Marlin", "Sailfish", "Spearfish"]) {
+    assert.equal(
+      calculateTournamentCatchPoints({
+        eventScoringRuleset: EVENT_SCORING_RULESETS.NOIBT_2026,
+        speciesName,
+        weight: null,
+        lineClass: 2,
+        released: true,
+        tagged: true,
+      }),
+      200,
+    );
+  }
+});
+
+test("NOIBT weighed fish score one tournament point per pound", () => {
+  for (const speciesName of [
+    "Blue Marlin",
+    "Dolphin",
+    "Yellowfin Tuna",
+    "Bigeye Tuna",
+    "Wahoo",
+  ]) {
+    assert.equal(
+      calculateTournamentCatchPoints({
+        eventScoringRuleset: EVENT_SCORING_RULESETS.NOIBT_2026,
+        speciesName,
+        weight: 125.6,
+        lineClass: 2,
+        released: false,
+        tagged: false,
+      }),
+      125.6,
+    );
+  }
+
+  assert.equal(
+    calculateTournamentCatchPoints({
+      eventScoringRuleset: EVENT_SCORING_RULESETS.NOIBT_2026,
+      speciesName: "Swordfish",
+      weight: null,
+      lineClass: 130,
+      released: true,
+      tagged: false,
+    }),
+    0,
+  );
+});
+
+test("NOIBT release teams and Top Angler use their distinct eligible catches", () => {
+  const noibt = EVENT_SCORING_RULESETS.NOIBT_2026;
+
+  assert.equal(
+    countsTowardTournamentPointStandings({
+      eventScoringRuleset: noibt,
+      speciesName: "Blue Marlin",
+      released: true,
+    }),
+    true,
+  );
+  assert.equal(
+    countsTowardTournamentPointStandings({
+      eventScoringRuleset: noibt,
+      speciesName: "Blue Marlin",
+      released: false,
+    }),
+    false,
+  );
+  assert.equal(
+    countsTowardTournamentAnglerStandings({
+      eventScoringRuleset: noibt,
+      speciesName: "Blue Marlin",
+      released: false,
+    }),
+    true,
+  );
+  assert.equal(
+    countsTowardTournamentAnglerStandings({
+      eventScoringRuleset: noibt,
+      speciesName: "Dolphin",
+      released: false,
+    }),
+    false,
+  );
+});
+
+test("one tagged NOIBT White Marlin produces independent tournament and annual scores", () => {
+  const catchInput = {
+    eventScoringRuleset: EVENT_SCORING_RULESETS.NOIBT_2026,
+    speciesName: "White Marlin",
+    weight: null,
+    lineClass: 50,
+    released: true,
+    tagged: true,
+  };
+
+  assert.equal(calculateTournamentCatchPoints(catchInput), 200);
+  assert.equal(calculateAnnualCatchPoints(catchInput), 250);
+});
+
+test("an untagged NOIBT billfish release earns tournament points but no annual club points", () => {
+  const catchInput = {
+    eventScoringRuleset: EVENT_SCORING_RULESETS.NOIBT_2026,
+    speciesName: "White Marlin",
+    weight: null,
+    lineClass: 50,
+    released: true,
+    tagged: false,
+  };
+
+  assert.equal(calculateTournamentCatchPoints(catchInput), 200);
+  assert.equal(calculateAnnualCatchPoints(catchInput), 0);
+});
+
+test("guest catches count for boats but not member-individual standings", () => {
+  const guestCatch = {
+    id: 1,
+    status: "approved",
+    points_awarded: 500,
+    released: true,
+    tagged: false,
+    weight: null,
+    line_class: 130,
+    boats: { id: 4, name: "Guest Boat" },
+    anglers: {
+      id: 8,
+      first_name: "Guest",
+      last_name: "Angler",
+      is_member: false,
+    },
+    species: { name: "Blue Marlin" },
+  };
+
+  assert.equal(buildOfficialBoatStandings([guestCatch])[0]?.points, 500);
+  assert.deepEqual(buildOfficialMemberAnglerStandings([guestCatch]), []);
+});
+
+test("ordinary approved event catches score without a roster record", () => {
+  const ordinaryCatch = {
+    id: 2,
+    status: "approved",
+    points_awarded: 150,
+    released: true,
+    tagged: false,
+    weight: null,
+    line_class: 130,
+    boats: { id: 5, name: "Ordinary Boat" },
+    anglers: {
+      id: 9,
+      first_name: "Club",
+      last_name: "Member",
+      is_member: true,
+    },
+    species: { name: "White Marlin" },
+  };
+
+  assert.equal(buildOfficialBoatStandings([ordinaryCatch])[0]?.points, 150);
+  assert.equal(
+    buildOfficialMemberAnglerStandings([ordinaryCatch])[0]?.points,
+    150,
+  );
+});
+
+test("pending and rejected catches are excluded from published standings", () => {
+  const catches = ["approved", "pending", "rejected"].map((status, index) => ({
+    id: index + 1,
+    status,
+    points_awarded: 500,
+    released: true,
+    tagged: false,
+    weight: null,
+    line_class: 130,
+    boats: { id: 6, name: "Review Boat" },
+    anglers: {
+      id: 10,
+      first_name: "Review",
+      last_name: "Angler",
+      is_member: true,
+    },
+    species: { name: "Blue Marlin" },
+  }));
+
+  assert.equal(buildOfficialBoatStandings(catches)[0]?.points, 500);
+  assert.equal(
+    buildOfficialMemberAnglerStandings(catches)[0]?.points,
+    500,
   );
 });
 
@@ -259,7 +489,7 @@ test("minimum weight and tag/release combinations are enforced", () => {
   );
 });
 
-test("catch date must fall inside an unlocked event", () => {
+test("date discrepancies are review warnings rather than automatic decisions", () => {
   assert.deepEqual(
     validateEventAssignment({
       catchDateTime: "2027-05-15T08:00",
@@ -277,7 +507,17 @@ test("catch date must fall inside an unlocked event", () => {
       eventEndDate: "2027-05-16",
       eventStatus: "scheduled",
     }),
-    ["Catch date must fall within the selected event dates."],
+    [],
+  );
+
+  assert.deepEqual(
+    getEventAssignmentWarnings({
+      catchDateTime: "2027-05-17T08:00",
+      eventStartDate: "2027-05-15",
+      eventEndDate: "2027-05-16",
+      eventStatus: "scheduled",
+    }),
+    ["The catch date falls outside the selected event dates."],
   );
 
   assert.deepEqual(
@@ -332,7 +572,7 @@ test("locked and cancelled events reject catch assignment", () => {
   }
 });
 
-test("non-tournament club events reject catch assignment", () => {
+test("non-tournament event assignment is flagged for official review", () => {
   assert.deepEqual(
     validateEventAssignment({
       catchDateTime: "2027-04-18T18:00",
@@ -341,6 +581,16 @@ test("non-tournament club events reject catch assignment", () => {
       eventStatus: "completed",
       eventIsTournament: false,
     }),
-    ["Catches can only be assigned to tournament events."],
+    [],
+  );
+  assert.deepEqual(
+    getEventAssignmentWarnings({
+      catchDateTime: "2027-04-18T18:00",
+      eventStartDate: "2027-04-18",
+      eventEndDate: "2027-04-18",
+      eventStatus: "completed",
+      eventIsTournament: false,
+    }),
+    ["The selected event is not classified as a tournament."],
   );
 });

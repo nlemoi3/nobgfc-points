@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "../../../lib/supabase/server";
-import { calculateCatchPoints } from "../../../lib/scoring";
+import { calculateAnnualCatchPoints } from "../../../lib/scoring";
 import { requireRole } from "../../../lib/auth";
 import ConfirmSubmitButton from "../../components/confirm-submit-button";
 
@@ -20,7 +20,7 @@ async function recalculateScores() {
     tagged,
     points_awarded,
     species(name),
-    events(status)
+    events(status,scoring_ruleset)
     `);
 
   if (error) throw new Error(error.message);
@@ -31,13 +31,14 @@ async function recalculateScores() {
     if (eventStatus === "locked") {
       continue;
     }
-    const points = calculateCatchPoints({
+    const points = calculateAnnualCatchPoints({
       speciesName: (catchRecord as any).species?.name || "",
       weight:
         catchRecord.weight === null ? null : Number(catchRecord.weight),
       lineClass: Number(catchRecord.line_class || 130),
       released: Boolean(catchRecord.released),
       tagged: Boolean(catchRecord.tagged),
+      eventScoringRuleset: (catchRecord as any).events?.scoring_ruleset || null,
     });
 
     if (Math.abs(Number(catchRecord.points_awarded || 0) - points) < 0.01) {

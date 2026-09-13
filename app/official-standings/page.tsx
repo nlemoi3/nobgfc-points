@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { supabase } from "../../lib/supabase";
-import { compareOfficialStandings, getOfficialStandingScore } from "../../lib/scoring";
+import { buildOfficialBoatStandings } from "../../lib/scoring";
 import { getActiveSeasonRange } from "../../lib/season";
 
 export default async function OfficialStandingsPage() {
@@ -22,31 +22,7 @@ const { data, error } = await supabase
   .gte("catch_datetime", seasonStart)
   .lt("catch_datetime", seasonEnd);
 
-  const boatCatches = new Map<
-    string,
-    { boatId?: number; boatName: string; catches: any[] }
-  >();
-
-  data?.forEach((catchRecord: any) => {
-    const boatId = catchRecord.boats?.id;
-    const boatName = catchRecord.boats?.name || "Unknown Boat";
-    const key = boatId ? String(boatId) : `unknown:${boatName}`;
-    const group = boatCatches.get(key) || { boatId, boatName, catches: [] };
-
-    group.catches.push(catchRecord);
-    boatCatches.set(key, group);
-  });
-
-  const standings = Array.from(boatCatches.values())
-    .map(({ boatId, boatName, catches }) => ({
-      boatId,
-      boatName,
-      ...getOfficialStandingScore(catches),
-    }))
-    .sort(
-      (a, b) =>
-        compareOfficialStandings(a, b) || a.boatName.localeCompare(b.boatName)
-    );
+  const standings = buildOfficialBoatStandings((data || []) as any[]);
 
   return (
     <main className="panel">
