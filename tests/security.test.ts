@@ -26,6 +26,13 @@ const noibtMigration = readFileSync(
   ),
   "utf8",
 );
+const noibtPolicyMigration = readFileSync(
+  new URL(
+    "../supabase/migrations/20260913163600_optimize_noibt_registration_policies.sql",
+    import.meta.url,
+  ),
+  "utf8",
+);
 const boatRequestPage = readFileSync(
   new URL("../app/admin/boat-profile-requests/[id]/page.tsx", import.meta.url),
   "utf8",
@@ -134,6 +141,22 @@ test("NOIBT registration tables are private and protected by RLS", () => {
     noibtMigration,
     /create policy "Admins can manage tournament registrations"[\s\S]*?has_app_role\('admin'\)/,
   );
+});
+
+test("NOIBT registration policies avoid duplicate SELECT evaluation", () => {
+  assert.match(
+    noibtPolicyMigration,
+    /create index if not exists tournament_registrations_boat_id_idx/,
+  );
+  assert.match(
+    noibtPolicyMigration,
+    /drop policy if exists "Admins can manage tournament registrations"/,
+  );
+  assert.match(
+    noibtPolicyMigration,
+    /create policy "Admins can create tournament registrations"[\s\S]*?for insert/,
+  );
+  assert.doesNotMatch(noibtPolicyMigration, /for all/);
 });
 
 test("NOIBT approval requires the registered event, boat, and angler combination", () => {
